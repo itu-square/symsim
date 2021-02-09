@@ -1,1 +1,1 @@
-![build](https://github.com/itu-square/symsim/workflows/scala.yaml/badge.svg)
+![Scala CI](https://github.com/itu-square/symsim/workflows/Scala%20CI/badge.svg)
