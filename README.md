@@ -1,1 +1,1 @@
-/github/workflow/status/itu-square/symsim/scala.yaml
+![build](https://github.com/itu-square/symsim/workflows/scala.yaml/badge.svg)
