@@ -16,7 +16,7 @@ object Car
       val ss = for {
           v <- Seq (0.0, 5.0, 10.0)
           p <- Seq (0.0, 5.0, 10.0, 15.0)
-        } yield CarState (v,p)
+      } yield CarState (v,p)
 
       BoundedEnumerableFromList (ss: _*)
     }
@@ -37,7 +37,7 @@ object Car
       CarState (dv min 10.0, dp min 15.0)
     }
 
-    def reward (s: CarState) (a: CarAction): CarReward =
+    private def carReward (s: CarState) (a: CarAction): CarReward =
       if (s.p >= 10.0) -10
       else if (s.p < 10.0 && s.v == 0.0) 10.0 - s.p
       else -1.0
@@ -49,7 +49,7 @@ object Car
       val p1 = Math.min (s.p + s.v*t + 0.5*a*t*t, 10.0)
       val v1 = Math.max (s.v + a*t, 0.0)
       val s1 = CarState (p1, v1)
-      s1 -> reward (s1) (a)
+      s1 -> carReward (s1) (a)
     }
 
     def initialize: Randomized[CarState] =
