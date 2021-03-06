@@ -11,7 +11,7 @@ class Experiments
 
   "test run" ignore {
 
-    // import evidence that states and actions can be enumerated
+    // Import evidence that states and actions can be enumerated
     import Car._
 
     val sarsa = ConcreteSarsa[

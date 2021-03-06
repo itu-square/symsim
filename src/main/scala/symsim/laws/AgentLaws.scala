@@ -6,6 +6,10 @@ import cats.syntax.functor._
 import cats.syntax.flatMap._
 import cats.kernel.laws._
 
+import org.scalacheck.Prop
+import org.scalacheck.Prop.forAll
+import org.scalacheck.Arbitrary
+
 import symsim._
 
 /**
@@ -17,7 +21,6 @@ import symsim._
  * the design of tests still should be investigated.  But we have something that
  * can be used to run tests for now.
  */
-
 class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_]] (
   val a: Agent[State, FiniteState, Action, Reward, Scheduler]
 ){
@@ -25,20 +28,25 @@ class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_]] (
 
   val finiteStates = a.enumState.membersAscending
 
-  def discretizeIsIntoFiniteState (s: State): IsEq[Boolean] =
-    finiteStates.contains (a.discretize (s)) <-> true
+  /** Law: every state from the environment/agent state space
+    * can be discretized and represented in the enumerable finite state
+    * space that the agent uses for learning and for control decisions.
+    */
+  def discretizeIsIntoFiniteState (implicit as: Arbitrary[State]) =
+    forAll { s: State => finiteStates.contains (a.discretize (s)) }
 
-  // TODO: this one is fishy; seed should go out as at this level of abstration
-  // we have no idea what is the state of the scheduler.  It appears that we
-  // need to know what is the state space of the scheduler, at least abstractly,
-  // in order to write laws.  So likely Monad is not enough to know about the
-  // scheduler.
-  def initializeIsIntoFiniteState (seed: concrete.Seed): IsEq[Scheduler[Boolean]] = {
-    val d = for {
-          s <- a.initialize
-          d =  a.discretize (s)
+  /** Law: every initialization ends up being discritized to an enumerable value
+    * of FiniteState.
+    */
+  def initializeIsIntoFiniteState
+    (implicit checkInScheduler: Scheduler[Boolean] => Prop): Prop = {
+
+      val scheduledProp = for {
+            s <- a.initialize
+            d =  a.discretize (s)
       } yield finiteStates.contains (d)
-    d <-> ms.pure (true)
+
+      checkInScheduler (scheduledProp)
   }
 
 }
