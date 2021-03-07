@@ -10,8 +10,6 @@ import org.scalacheck.Prop
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Arbitrary
 
-import symsim._
-
 /**
  * Laws that have to be obeyed by any refinement of symsim.Agent
  *
@@ -21,32 +19,46 @@ import symsim._
  * the design of tests still should be investigated.  But we have something that
  * can be used to run tests for now.
  */
-class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_]] (
-  val a: Agent[State, FiniteState, Action, Reward, Scheduler]
-){
-  implicit val ms: Monad[Scheduler] = a.schedulerIsMonad
+class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_] ]
+  (val agent: Agent[State, FiniteState, Action, Reward, Scheduler])
+{
 
-  val finiteStates = a.enumState.membersAscending
+  import agent.instances._
 
-  /** Law: every state from the environment/agent state space
+  val finiteStates = enumState.membersAscending
+
+  /** Law: Every state from the environment/agent state space
     * can be discretized and represented in the enumerable finite state
     * space that the agent uses for learning and for control decisions.
     */
-  def discretizeIsIntoFiniteState (implicit as: Arbitrary[State]) =
-    forAll { s: State => finiteStates.contains (a.discretize (s)) }
+  def discretizeIsIntoFiniteState: Prop =
+    forAll { s: State =>
+      finiteStates.contains (agent.discretize (s)) }
 
-  /** Law: every initialization ends up being discritized to an enumerable value
+  /** Law: Every initialization ends up being discritized to an enumerable value
     * of FiniteState.
     */
-  def initializeIsIntoFiniteState
-    (implicit checkInScheduler: Scheduler[Boolean] => Prop): Prop = {
+  def initializeIsIntoFiniteState: Prop =
+    agent.initialize
+      .map { agent.discretize _ }
+      .map { finiteStates.contains _ }
+      .toProp
 
-      val scheduledProp = for {
-            s <- a.initialize
-            d =  a.discretize (s)
-      } yield finiteStates.contains (d)
+  /** Law: Initial state is not final, regardless scheduler. */
+  def initialStateIsNotFinal: Prop =
+    agent.initialize
+      .map { s => !agent.isFinal (s) }
+      .toProp
 
-      checkInScheduler (scheduledProp)
-  }
+  /** Law: An agent step from any state lands in a state that be discretized
+    * into FiniteState.
+    */
+  def stepIsIntoFiniteState: Prop =
+    forAll { s0: State =>
+      forAll { a: Action =>
+        val (s1, r) = agent.step (s0) (a)
+        val d1 = agent.discretize (s1)
+        finiteStates.contains (d1)
+    } }
 
 }

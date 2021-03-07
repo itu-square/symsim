@@ -1,23 +1,18 @@
 package symsim
-package examples.breaking.concrete
-
-import symsim.examples.concrete.breaking._
-
-import symsim.concrete.Randomized
-import symsim.examples.concrete.breaking.instances._
-
+package examples.concrete.breaking
 
 class CarIsAgentSpec extends SymSimSpec {
 
-  import symsim.concrete.Randomized.propInScheduler
+  checkAll( "concrete.breaking.Car is an Agent",
 
-  checkAll ("concrete.breaking.Car is an Agent",
-    symsim.laws.discipline.AgentTests[
+    new laws.discipline.AgentTests[
       CarState,
       CarFiniteState,
       CarAction,
       CarReward,
-      Randomized
-    ].agent (Car))
+      concrete.Randomized
+    ].agent (Car)
+
+  )
 
 }
