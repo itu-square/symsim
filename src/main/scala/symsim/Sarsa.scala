@@ -21,9 +21,9 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
 
     type A = Agent[State, FiniteState, Action, Reward, Scheduler]
 
-    def agent: A
+    val agent: A
 
-    private implicit val ms = agent.schedulerIsMonad
+    import agent.instances._
 
     type Q = Map[FiniteState, Map[Action, Reward]]
 
@@ -76,7 +76,8 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
         val f = (learn1 _).tupled
         val p = { qs: (Q,State) => agent.isFinal (qs._2) }
 
-        ms.iterateUntilM[(Q,State)] (initial) (f) (p)
+        Monad[Scheduler]
+          .iterateUntilM[(Q,State)] (initial) (f) (p)
           .map { _._1 }
     }
 

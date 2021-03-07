@@ -1,7 +1,7 @@
 package symsim
 
 import org.scalacheck.Gen
-import org.scalacheck.Arbitrary._
+import org.scalacheck.Arbitrary.arbitrary
 
 
 package object concrete {
@@ -11,7 +11,6 @@ package object concrete {
 
   /** A purely functional wrapping of scala.util.Random */
   type Randomized[A] = cats.data.State[scala.util.Random,A]
-
 
   implicit class RandomizedOps[A] (ra: Randomized[A]) {
 

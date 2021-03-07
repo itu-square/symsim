@@ -6,6 +6,7 @@ import cats.kernel.laws.discipline._
 import org.scalacheck.Prop
 import org.scalacheck.util.Pretty
 import org.scalacheck.util.Pretty._
+import cats.kernel.BoundedEnumerable
 
 /**
  * Laws that have to be obeyed by any refinement of symsim.SARSA
@@ -21,6 +22,8 @@ import org.scalacheck.util.Pretty._
 class SarsaLaws[State,FiniteState, Action, Reward: Arith, Scheduler[_]] (
   val s: Sarsa[State, FiniteState, Action, Reward, Scheduler]
 ) {
+
+  import s.agent.instances._
 
   type S = Sarsa[State, FiniteState, Action, Reward, Scheduler]
   type A = S#A
@@ -42,13 +45,15 @@ class SarsaLaws[State,FiniteState, Action, Reward: Arith, Scheduler[_]] (
   // TODO initQ creates a matrix of the right size that is total and
   // initialized to zeroes
 
+  // TODO  "this is for RL: eventually we arrive at final (episodic agent)" ->
+  //      Prop.falsified,
 
     /** Check that the initialization of Q matrix is correct */
     def initQRightSize: Prop = {
 
       val q0 = s.initQ
-      val actions = s.agent.enumAction.membersAscending.size
-      val states = s.agent.enumState.membersAscending.size
+      val actions = BoundedEnumerable[Action].membersAscending.size
+      val states = BoundedEnumerable[Action].membersAscending.size
 
       val innerCounts =
         q0.values.map[Prop] { _.size <-> actions  }

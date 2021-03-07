@@ -1,15 +1,13 @@
 package symsim.concrete
 
-
-// TODO: This import and the propInScheduler function seem to be in a wrong
-// module (shouldn't this be somewhere on the testing side?)
-import org.scalacheck.Prop
-import cats.Eq
-import cats.data.State
-
 /** A purely functional wrapping of scala.util.Random. Delegations. */
 object Randomized {
 
+  // TODO: This import and the propInScheduler function seem to be in a wrong
+  // module (shouldn't this be somewhere on the testing side?)
+
+  import cats.data.State
+  import org.scalacheck.Prop
 
   def const[A] (a: A): Randomized[A] =
     State { r => (r, a) }
@@ -37,9 +35,16 @@ object Randomized {
     yield choices (i)
 
 
-  implicit def propInScheduler[A] (implicit ev: A => Prop)
-    : Randomized[A] => Prop =
-    { ra: Randomized[A] => Prop.forAllNoShrink (ra.toGen) { a => ev(a) } }
+  // TODO: Car seems to have instances in breaking, perhaps we should move these
+  implicit def randomizedIsMonad: cats.Monad[Randomized] =
+    cats.data.IndexedStateT.catsDataMonadForIndexedStateT
+
+
+  implicit val canTestInRandomized =
+    new symsim.CanTestIn[Randomized] {
+      def test (rProp: Randomized[Boolean]) =
+          Prop.forAllNoShrink (rProp.toGen) (identity[Boolean])
+    }
 
 }
 

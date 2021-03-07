@@ -1,6 +1,7 @@
 package symsim
 package concrete
 
+import cats.kernel.BoundedEnumerable
 
 case class ConcreteSarsa [
   State,
@@ -18,6 +19,9 @@ case class ConcreteSarsa [
 ) extends Sarsa[State, FiniteState, Action, Double, Randomized] {
 
 
+  import agent.instances._
+
+
   // TODO: it is a bit unclear if this is general (if it turns out to be the
   // same im symbolic SARSA we should promote this to the trait
 
@@ -30,12 +34,11 @@ case class ConcreteSarsa [
 
 
   /** Action selection policy based on argMax and randomzation.  */
-
   def chooseAction (q: Q) (s: State): Randomized[Action] =
     for {
       distracted <- Randomized.coin (distraction)
       action <- if (distracted)
-                  Randomized.oneOf (agent.enumAction.membersAscending)
+                  Randomized.oneOf (agent.instances.enumAction.membersAscending)
                 else Randomized.const (bestAction (q) (s))
     } yield action
 
@@ -44,14 +47,12 @@ case class ConcreteSarsa [
   /** Construct a zero initialized Q matrix */
   def initQ: Q = {
     // Create the initial Q matrix (zero's everywhere)
-    val qa = agent
-      .enumAction
+    val qa = BoundedEnumerable[Action]
       .membersAscending
       .map { a => (a, agent.zeroReward) }
       .toMap
 
-    val q0 = agent
-      .enumState
+    val q0 = BoundedEnumerable[FiniteState]
       .membersAscending
       .map { state => (state, qa) }
       .toMap
