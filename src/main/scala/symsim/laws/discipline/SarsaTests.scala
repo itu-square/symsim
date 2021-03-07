@@ -17,11 +17,15 @@ class SarsaTests[State, FiniteState, Action, Reward, Scheduler[_]]
 
   def sarsa: RuleSet = new SimpleRuleSet (
       "sarsa",
-      // TODO: deactivated tentatively
-      // "initQ produces a zero matrix of the right size" ->
-      //   laws.initQRightSize,
-      // TODO: remove this one soon
-      "sanity always passes law" ->
-        forAll (laws.alwaysPassesSanity _)
+
+      "initQ defined for all FiniteStates" ->
+        laws.initQDefinedForAllFiniteStates,
+
+      "initQ defined for all Actions for each source state" ->
+        laws.initQDefinedForAllActions,
+
+      "initQ contains only zeroRewards" ->
+        laws.initQAllValuesZero,
+
     )
 }
