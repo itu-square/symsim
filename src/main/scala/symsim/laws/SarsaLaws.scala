@@ -48,28 +48,30 @@ class SarsaLaws[State,FiniteState, Action, Reward, Scheduler[_]] (
   // TODO  "this is for RL: eventually we arrive at final (episodic agent)" ->
   //      Prop.falsified,
 
+    /** Law: Q matrix has a action-reward map for each finite state */
+    def initQDefinedForAllFiniteStates: Prop =
+      s.initQ.keySet <-> BoundedEnumerable[FiniteState].membersAscending.toSet
+
     /** Check that the initialization of Q matrix is correct */
-    def initQRightSize: Prop = {
+    def initQDefinedForAllActions: Prop = {
 
-      val q0 = s.initQ
-      val actions = BoundedEnumerable[Action].membersAscending.size
-      val states = BoundedEnumerable[Action].membersAscending.size
+      val inType = BoundedEnumerable[Action].membersAscending.toSet
+      val inQ: Iterable[Set[Action]] = s.initQ
+        .values
+        .map[Set[Action]] { _.keySet }
 
-      val innerCounts =
-        q0.values.map[Prop] { _.size <-> actions  }
-          .reduce { _ && _ }
-
-      // implicitly[cats.kernel.Eq[Reward]]
-      // implicitly[Reward => Pretty]
-
-      val innerValues =
-        q0.values.flatMap[Prop] { _.values.map[Prop] { _ <-> s.agent.zeroReward } }.reduce { _ && _ }
-
-      (states <->  q0.size) && innerCounts && innerValues
+      inQ.forall { _ == inType }
     }
 
+    /** Law: All values in Q matrix are zeroReward initially */
+    def initQAllValuesZero: Prop = {
 
+      val props =  for {
+        vector <- s.initQ.values
+        cell   <- vector.values
+      } yield cell == s.agent.zeroReward
 
-    def alwaysPassesSanity (u: Unit): IsEq[Boolean] = true <-> true
+      props.forall (identity)
+    }
 
 }
