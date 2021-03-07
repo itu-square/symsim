@@ -54,7 +54,7 @@ object Car
   * needs to be able to do to work in the framework.
   */
 object CarInstances
-  extends AgentConstraints[CarState, CarFiniteState, CarAction, Randomized] {
+  extends AgentConstraints[CarState, CarFiniteState, CarAction, CarReward, Randomized] {
 
   import cats.{Eq, Monad}
   import cats.kernel.BoundedEnumerable
@@ -93,4 +93,7 @@ object CarInstances
 
   implicit lazy val arbitraryAction =
     Arbitrary (Gen.double)
+
+  implicit lazy val rewardArith: Arith[CarReward] =
+    Arith.arithDouble
 }

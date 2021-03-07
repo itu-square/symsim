@@ -54,7 +54,7 @@ trait Agent[State, FiniteState, Action, Reward, Scheduler[_]] {
   /** Type evidence required to consider a generic instance of Agent to be
     * an agent for the rest of the framework
     */
-  val instances: AgentConstraints[State, FiniteState, Action, Scheduler]
+  val instances: AgentConstraints[State, FiniteState, Action, Reward, Scheduler]
 
 }
 
@@ -62,7 +62,7 @@ trait Agent[State, FiniteState, Action, Reward, Scheduler[_]] {
 /** Type evidence required to consider a generic instance of Agent to be
   * an agent for the rest of the framework
   */
-trait AgentConstraints[State, FiniteState, Action, Scheduler[_]] {
+trait AgentConstraints[State, FiniteState, Action, Reward, Scheduler[_]] {
 
   import org.scalacheck.Arbitrary
   import cats.kernel.BoundedEnumerable
@@ -90,5 +90,8 @@ trait AgentConstraints[State, FiniteState, Action, Scheduler[_]] {
 
   /** We can generate random actions for testing */
   implicit def arbitraryAction: Arbitrary[Action]
+
+  /** Reward is an arithmetic type according to Arith */
+  implicit def rewardArith: Arith[Reward]
 
 }
