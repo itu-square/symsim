@@ -1,8 +1,8 @@
 package symsim
 package concrete
 
-import symsim.examples.concrete.breaking.{Car, CarState, CarFiniteState, CarAction, CarReward}
-import symsim.laws.discipline.SarsaTests
+import _root_.symsim.examples.concrete.breaking.{Car, CarState, CarFiniteState, CarAction, CarReward}
+import _root_.symsim.laws.discipline.SarsaTests
 
 class ConcreteSarsaIsSarsaSpec extends SymSimSpec {
 
