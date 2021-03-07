@@ -6,7 +6,6 @@ import _root_.symsim.laws.discipline.SarsaTests
 
 class ConcreteSarsaIsSarsaSpec extends SymSimSpec {
 
-    // TODO: This would be nice to pbt
     val csarsa = ConcreteSarsa[
       CarState,
       CarFiniteState,
@@ -21,6 +20,6 @@ class ConcreteSarsaIsSarsaSpec extends SymSimSpec {
     )
 
   checkAll ("concrete.ConcreteSarsa is Sarsa",
-    SarsaTests[CarState, CarFiniteState, CarAction, CarReward, Randomized].sarsa (csarsa) )
+    new SarsaTests[CarState, CarFiniteState, CarAction, CarReward, Randomized] (csarsa).sarsa )
 
 }

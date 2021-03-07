@@ -6,32 +6,22 @@ import cats.laws.discipline._
 import org.scalacheck.Arbitrary
 import org.scalacheck.Prop.forAll
 
-trait SarsaTests[State, FiniteState, Action, Reward, Scheduler[_]]
-  extends org.typelevel.discipline.Laws {
+class SarsaTests[State, FiniteState, Action, Reward, Scheduler[_]]
+  (s: Sarsa[State, FiniteState, Action, Reward, Scheduler])
+    extends org.typelevel.discipline.Laws
+{
 
-  implicit def evReward: Arith[Reward]
+  type S = Sarsa[State, FiniteState, Action, Reward, Scheduler]
 
-  def laws (s: Sarsa[State, FiniteState, Action, Reward, Scheduler]) =
-    new symsim.laws.SarsaLaws (s)
+  val laws = new symsim.laws.SarsaLaws (s)
 
-  def sarsa (s: Sarsa[State, FiniteState, Action, Reward, Scheduler])
-    (implicit arbUnit: Arbitrary[Unit], eqUnit: Eq[Unit]): RuleSet =
-    new SimpleRuleSet (
+  def sarsa: RuleSet = new SimpleRuleSet (
       "sarsa",
       // TODO: deactivated tentatively
       // "initQ produces a zero matrix of the right size" ->
-      //   laws (s).initQRightSize,
+      //   laws.initQRightSize,
       // TODO: remove this one soon
       "sanity always passes law" ->
-        forAll (laws (s).alwaysPassesSanity _)
+        forAll (laws.alwaysPassesSanity _)
     )
-}
-
-object SarsaTests {
-
-  def apply[State, FiniteState, Action, Reward: Arith, Scheduler[_]]
-  : SarsaTests[State, FiniteState, Action, Reward, Scheduler] =
-    new SarsaTests[State, FiniteState, Action, Reward, Scheduler] {
-      override def evReward = implicitly[Arith[Reward]]
-    }
 }

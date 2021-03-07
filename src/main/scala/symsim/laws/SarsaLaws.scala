@@ -19,7 +19,7 @@ import cats.kernel.BoundedEnumerable
  *
  * Same comment in AgentLaws.scala
  */
-class SarsaLaws[State,FiniteState, Action, Reward: Arith, Scheduler[_]] (
+class SarsaLaws[State,FiniteState, Action, Reward, Scheduler[_]] (
   val s: Sarsa[State, FiniteState, Action, Reward, Scheduler]
 ) {
 

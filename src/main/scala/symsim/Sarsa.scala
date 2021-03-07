@@ -34,60 +34,53 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
 
     def chooseAction (q: Q) (s: State): Scheduler[Action]
 
-    /**
-     * A single step of the learning algorithm
-     *
-     * @param q the last Q-matrix
-     * @param s_t current state
-     * @return the updated matrix Q, the successor state, and a
-     * reward difference (the size of the update performed)
-     */
-    def learn1 (q: Q, s_t: State) (implicit ar: Arith[Reward])
-    : Scheduler[(Q,State)] =
-        for {
-          a_t <- chooseAction (q) (s_t)
 
-          (s_tt, r_tt) = agent.step (s_t) (a_t)
+    /** A single step of the learning algorithm
+      *
+      * @param q the last Q-matrix
+      * @param s_t current state
+      * @return the updated matrix Q, the successor state, and a
+      * reward difference (the size of the update performed)
+      */
+    def learn1 (q: Q, s_t: State): Scheduler[(Q,State)] = for {
 
-          a_tt = bestAction (q) (s_tt)
+      a_t <- chooseAction (q) (s_t)
 
-          // Still concerned that this is Q-learning not SARSA (p.844 in Russel
-          // and Norvig)
-          ds_t = agent.discretize (s_t)
-          ds_tt = agent.discretize (s_tt)
-          old_entry = q (ds_t) (a_t)
-          correction = r_tt + gamma * q (ds_tt) (a_tt) - old_entry
-          qval = old_entry + alpha * correction
+      (s_tt, r_tt) = agent.step (s_t) (a_t)
 
-          q1 = q + (ds_t -> (q (ds_t) + (a_t -> qval)))
+      a_tt = bestAction (q) (s_tt)
 
-        } yield (q1, s_tt)
+      // concerned that this is Q-learning not SARSA (p.844 in Russel & Norvig)
+      ds_t = agent.discretize (s_t)
+      ds_tt = agent.discretize (s_tt)
+      old_entry = q (ds_t) (a_t)
+      correction = r_tt + gamma * q (ds_tt) (a_tt) - old_entry
+      qval = old_entry + alpha * correction
+
+      q1 = q + (ds_t -> (q (ds_t) + (a_t -> qval)))
+
+    } yield (q1, s_tt)
 
 
 
-    /**
-     * Execute a full learning episode (until the final state of agent is
-     * reached).
-     */
-    def learn (q: Q, s_t: State)
-      (implicit ar: Arith[Reward]): Scheduler[Q] = {
-
-        val initial = q -> s_t
-        val f = (learn1 _).tupled
-        val p = { qs: (Q,State) => agent.isFinal (qs._2) }
-
-        Monad[Scheduler]
-          .iterateUntilM[(Q,State)] (initial) (f) (p)
-          .map { _._1 }
+    /** Execute a full learning episode (until the final state of agent is
+      * reached).
+      */
+    def learn (q: Q, s_t: State): Scheduler[Q] = {
+      val initial = q -> s_t
+      val f = (learn1 _).tupled
+      val p = { qs: (Q,State) => agent.isFinal (qs._2) }
+      Monad[Scheduler]
+        .iterateUntilM[(Q,State)] (initial) (f) (p)
+        .map { _._1 }
     }
 
 
 
-    /**
-     * Execute a full  learning episode from initial  state (until the
-     * final state of agent is reached).
-     */
-    def learn (q: Q) (implicit ar: Arith[Reward]): Scheduler[Q] =
+    /** Execute a full  learning episode from initial  state (until the
+      * final state of agent is reached).
+      */
+    def learn (q: Q): Scheduler[Q] =
       for {
         s0 <- agent.initialize
         result <- learn (q, s0)
