@@ -25,7 +25,7 @@ class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_] ]
 
   import agent.instances._
   import symsim.concrete._
-  import symsim.CanTestIn.testIn
+  import symsim.CanTestIn._
 
   val finiteStates = enumState.membersAscending
 
@@ -43,8 +43,7 @@ class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_] ]
     */
   def initializeIsIntoFiniteState: Prop = {
     val ini = agent.initialize
-    val gen = testIn[Scheduler].toGen (ini)
-    forAll (gen) { s: State =>
+    forAll (ini.toGen) { s: State =>
       finiteStates.contains (agent.discretize (s)) }
   }
 
@@ -52,8 +51,7 @@ class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_] ]
   /** Law: Initial state is not final, regardless scheduler. */
   def initialStateIsNotFinal: Prop = {
     val ini = agent.initialize
-    val gen = testIn[Scheduler].toGen (ini)
-    forAll (gen) { s: State =>
+    forAll (ini.toGen) { s: State =>
       ! agent.isFinal (s) }
   }
 
