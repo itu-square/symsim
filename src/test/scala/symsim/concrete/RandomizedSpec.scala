@@ -16,9 +16,9 @@ class RandomizedSpec extends org.scalatest.freespec.AnyFreeSpec
       forAll { mn: (Double, Double) =>
         val m = Math.min (mn._1, mn._2)
         val n = Math.max (mn._1, mn._2)
-        val gen = testIn[Randomized].toGen (Randomized.between (m, n))
+        val between = Randomized.between (m, n)
         m != n ==>
-          forAll (gen) { x => m <= x && x < n }
+          forAll (between.toGen) { x => m <= x && x < n }
       }
     }
 
@@ -26,9 +26,9 @@ class RandomizedSpec extends org.scalatest.freespec.AnyFreeSpec
       forAll { mn: (Int, Int) =>
         val m = Math.min (mn._1, mn._2)
         val n = Math.max (mn._1, mn._2)
-        val gen = testIn[Randomized].toGen (Randomized.between (m, n))
+        val between = Randomized.between (m, n)
         m != n ==>
-          forAll (gen) { x => m <= x && x < n }
+          forAll (between.toGen) { x => m <= x && x < n }
       }
     }
 
