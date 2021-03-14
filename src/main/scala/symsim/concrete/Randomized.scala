@@ -3,12 +3,13 @@ package symsim.concrete
 /** A purely functional wrapping of scala.util.Random. Delegations. */
 object Randomized {
 
-  // TODO: This import and the propInScheduler function seem to be in a wrong
-  // module (shouldn't this be somewhere on the testing side?)
-
   import cats.data.State
   import org.scalacheck.Prop
 
+  /** Create a generator that always produces a. Used to create deterministic
+    * values when a scheduler/randomized type is expected. TODO: this could
+    * likely be moved to a super class for all schedulers.
+    */
   def const[A] (a: A): Randomized[A] =
     State { r => (r, a) }
 
