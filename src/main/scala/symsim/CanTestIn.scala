@@ -25,7 +25,6 @@ trait CanTestIn[F[_]] {
     * testing on scheduled values only.
     */
   def toGen[A] (fa: F[A]): Gen[A]
-
 }
 
 object CanTestIn {
