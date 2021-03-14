@@ -1,6 +1,6 @@
 name := "symsim"
 
-scalaVersion := "2.13.4"
+scalaVersion := "2.13.5"
 
 scalacOptions ++= Seq (
   "-deprecation", 
