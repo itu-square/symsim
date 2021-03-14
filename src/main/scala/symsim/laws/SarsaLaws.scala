@@ -3,7 +3,9 @@ package laws
 
 import cats.kernel.laws._
 import cats.kernel.laws.discipline._
+import org.scalacheck.Arbitrary._
 import org.scalacheck.Prop
+import org.scalacheck.Prop.forAll
 import org.scalacheck.util.Pretty
 import org.scalacheck.util.Pretty._
 import cats.kernel.BoundedEnumerable
@@ -20,13 +22,16 @@ import cats.kernel.BoundedEnumerable
  * Same comment in AgentLaws.scala
  */
 class SarsaLaws[State,FiniteState, Action, Reward, Scheduler[_]] (
-  val s: Sarsa[State, FiniteState, Action, Reward, Scheduler]
+  val sarsa: Sarsa[State, FiniteState, Action, Reward, Scheduler]
 ) {
 
-  import s.agent.instances._
+  import sarsa.agent.instances._
+  import symsim.CanTestIn._
 
   type S = Sarsa[State, FiniteState, Action, Reward, Scheduler]
   type A = S#A
+
+  val actions = enumAction.membersAscending
 
   // TODO: If learn1 starts with a positive values, then we end with positive
   // values
@@ -37,7 +42,7 @@ class SarsaLaws[State,FiniteState, Action, Reward, Scheduler[_]] (
 
   // TODO: learnN (1) is the same as learn
 
-  // TODO: best_action and choose_action always return actions that can be
+  // TODO: best_action return actions that can be
   // discretized to FiniteState elem (or are in Action elem)
 
   // TODO qToPolicy preserves that state and action domains of Q
@@ -50,13 +55,13 @@ class SarsaLaws[State,FiniteState, Action, Reward, Scheduler[_]] (
 
     /** Law: Q matrix has a action-reward map for each finite state */
     def initQDefinedForAllFiniteStates: Prop =
-      s.initQ.keySet <-> BoundedEnumerable[FiniteState].membersAscending.toSet
+      sarsa.initQ.keySet <-> BoundedEnumerable[FiniteState].membersAscending.toSet
 
     /** Check that the initialization of Q matrix is correct */
     def initQDefinedForAllActions: Prop = {
 
       val inType = BoundedEnumerable[Action].membersAscending.toSet
-      val inQ: Iterable[Set[Action]] = s.initQ
+      val inQ: Iterable[Set[Action]] = sarsa.initQ
         .values
         .map[Set[Action]] { _.keySet }
 
@@ -67,11 +72,22 @@ class SarsaLaws[State,FiniteState, Action, Reward, Scheduler[_]] (
     def initQAllValuesZero: Prop = {
 
       val props =  for {
-        vector <- s.initQ.values
+        vector <- sarsa.initQ.values
         cell   <- vector.values
-      } yield cell == s.agent.zeroReward
+      } yield cell == sarsa.agent.zeroReward
 
       props.forall (identity)
     }
+
+    /** Law: chooseAction gives one of the enumerable actions */
+    def chooseActionGivesEnumerableAction: Prop =
+      forAll { q: sarsa.Q =>
+        forAll { s: State =>
+          val sa: Scheduler[Action] = sarsa.chooseAction (q) (s)
+          forAll (sa.toGen) { a =>
+            this.actions.contains (a)
+          }
+        }
+      }
 
 }
