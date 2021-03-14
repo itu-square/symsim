@@ -5,6 +5,8 @@ object Randomized {
 
   import cats.data.State
   import org.scalacheck.Prop
+  import org.scalacheck.Gen
+  import org.scalacheck.Arbitrary.arbitrary
 
   /** Create a generator that always produces a. Used to create deterministic
     * values when a scheduler/randomized type is expected. TODO: this could
@@ -43,8 +45,15 @@ object Randomized {
 
   implicit val canTestInRandomized =
     new symsim.CanTestIn[Randomized] {
-      def test (rProp: Randomized[Boolean]) =
-          Prop.forAllNoShrink (rProp.toGen) (identity[Boolean])
+
+      def toProp (rProp: Randomized[Boolean]) =
+          Prop.forAllNoShrink (toGen (rProp)) (identity[Boolean])
+
+      def toGen[A] (ra: Randomized[A]): Gen[A] = for {
+        n <- arbitrary[Long]
+        r = new scala.util.Random (n)
+        a = ra.runA (r).value
+      } yield a
     }
 
 }

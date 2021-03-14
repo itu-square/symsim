@@ -1,7 +1,10 @@
 package symsim
 package concrete
 
+import CanTestIn._
+
 import org.scalacheck.Prop.{forAll, propBoolean}
+import symsim.concrete.Randomized.canTestInRandomized
 
 /** Sanity tests for Randomized as a Scheduler */
 class RandomizedSpec extends org.scalatest.freespec.AnyFreeSpec
@@ -13,8 +16,9 @@ class RandomizedSpec extends org.scalatest.freespec.AnyFreeSpec
       forAll { mn: (Double, Double) =>
         val m = Math.min (mn._1, mn._2)
         val n = Math.max (mn._1, mn._2)
+        val gen = testIn[Randomized].toGen (Randomized.between (m, n))
         m != n ==>
-          forAll (Randomized.between (m, n).toGen) { x => m <= x && x < n }
+          forAll (gen) { x => m <= x && x < n }
       }
     }
 
@@ -22,8 +26,9 @@ class RandomizedSpec extends org.scalatest.freespec.AnyFreeSpec
       forAll { mn: (Int, Int) =>
         val m = Math.min (mn._1, mn._2)
         val n = Math.max (mn._1, mn._2)
+        val gen = testIn[Randomized].toGen (Randomized.between (m, n))
         m != n ==>
-          forAll (Randomized.between (m, n).toGen) { x => m <= x && x < n }
+          forAll (gen) { x => m <= x && x < n }
       }
     }
 

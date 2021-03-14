@@ -24,6 +24,8 @@ class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_] ]
 {
 
   import agent.instances._
+  import symsim.concrete._
+  import symsim.CanTestIn.testIn
 
   val finiteStates = enumState.membersAscending
 
@@ -35,20 +37,26 @@ class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_] ]
     forAll { s: State =>
       finiteStates.contains (agent.discretize (s)) }
 
+
   /** Law: Every initialization ends up being discritized to an enumerable value
     * of FiniteState.
     */
-  def initializeIsIntoFiniteState: Prop =
-    agent.initialize
-      .map { agent.discretize _ }
-      .map { finiteStates.contains _ }
-      .toProp
+  def initializeIsIntoFiniteState: Prop = {
+    val ini = agent.initialize
+    val gen = testIn[Scheduler].toGen (ini)
+    forAll (gen) { s: State =>
+      finiteStates.contains (agent.discretize (s)) }
+  }
+
 
   /** Law: Initial state is not final, regardless scheduler. */
-  def initialStateIsNotFinal: Prop =
-    agent.initialize
-      .map { s => !agent.isFinal (s) }
-      .toProp
+  def initialStateIsNotFinal: Prop = {
+    val ini = agent.initialize
+    val gen = testIn[Scheduler].toGen (ini)
+    forAll (gen) { s: State =>
+      ! agent.isFinal (s) }
+  }
+
 
   /** Law: An agent step from any state lands in a state that be discretized
     * into FiniteState.
