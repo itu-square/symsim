@@ -1,5 +1,8 @@
 package symsim
 
+import org.scalacheck.Gen
+import org.scalacheck.Prop
+
 /** A simple type class that defines contexts (schedulers) in which we can test
  *  with scalacheck
  */
@@ -12,7 +15,7 @@ trait CanTestIn[F[_]] {
     * the created law does not look very much as a logical specification because
     * the quantifier is hidden in the implementation of test.
     */
-  def toProp (fProp: F[Boolean]): org.scalacheck.Prop
+  def toProp (fProp: F[Boolean]): Prop
 
   /** This is an alternative to 'test' that can be used to turn a scheduled
     * value into a generator.  Then this generator can be fed into a regular
@@ -21,7 +24,7 @@ trait CanTestIn[F[_]] {
     * may be falsely assuming that we are testing on random values, but we are
     * testing on scheduled values only.
     */
-  def toGen[A] (fa: F[A]): org.scalacheck.Gen[A]
+  def toGen[A] (fa: F[A]): Gen[A]
 
 }
 
@@ -31,5 +34,18 @@ object CanTestIn {
     * CanTestIn for F.
     */
   def testIn[F[_]: CanTestIn] = implicitly[CanTestIn[F]]
+
+  implicit class CanTestInOpsBoolean[F[_]: CanTestIn] (fb: F[Boolean]) {
+
+    def toProp: Prop =
+      testIn[F].toProp (fb)
+  }
+
+  implicit class CanTestInOps[F[_]: CanTestIn, A] (fa: F[A]) {
+
+    def toGen: Gen[A] =
+      testIn[F].toGen (fa)
+
+  }
 
 }
