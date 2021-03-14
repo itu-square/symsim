@@ -27,5 +27,8 @@ class SarsaTests[State, FiniteState, Action, Reward, Scheduler[_]]
       "initQ contains only zeroRewards" ->
         laws.initQAllValuesZero,
 
+      "chooseAction (q) (s) ∈ Action for all q and s" ->
+        laws.chooseActionGivesEnumerableAction,
+
     )
 }

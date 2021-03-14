@@ -88,8 +88,14 @@ trait AgentConstraints[State, FiniteState, Action, Reward, Scheduler[_]] {
   /** We can generate random states for testing */
   implicit def arbitraryState: Arbitrary[State]
 
+  /** We can generate random finite states for testing */
+  implicit def arbitraryFiniteState: Arbitrary[FiniteState]
+
   /** We can generate random actions for testing */
   implicit def arbitraryAction: Arbitrary[Action]
+
+  /** We can generate randome Reward values */
+  implicit def arbitraryReward: Arbitrary[Reward]
 
   /** Reward is an arithmetic type according to Arith */
   implicit def rewardArith: Arith[Reward]
