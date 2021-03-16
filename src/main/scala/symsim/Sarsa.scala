@@ -10,6 +10,8 @@ import cats.instances.lazyList._
 
 import Arith.arithOps
 import Arith.doubleOps
+import org.scalacheck.Gen
+import cats.kernel.BoundedEnumerable
 
 // TODO: right now the Action type is a dead type, and all algorithms are just
 // sampling across all values (as the action shall be enumarable).  Instead of
@@ -118,15 +120,39 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
 
 
 
-    /**
-     *  Convert the matrix Q after training into a Policy map
-     */
+    /** Convert the matrix Q after training into a Policy map */
     def qToPolicy (q: Q) (implicit order: Ordering[Reward]): Policy = {
 
       def best (m: Map[Action,Reward]): Action =
         m.map { _.swap } (m.values.max)
 
       q.view.mapValues (best).to (Map)
+    }
+
+    /** Generate total Q matrices for testing. */
+    val genQ: Gen[Q] = {
+
+      val as = BoundedEnumerable[Action].membersAscending
+      val genReward = agent.instances.arbitraryReward.arbitrary
+
+      val genActionReward: Gen[Map[Action,Reward]] =
+        for {
+          // TODO refactor, seek what is available for maps
+          rewards <- Gen.sequence[List[Reward],Reward]
+            { List.fill (as.size) (genReward) }
+          ars = as zip rewards
+        } yield Map (ars: _*)
+
+      val fs = BoundedEnumerable[FiniteState].membersAscending
+      val genStateActionRewards: Gen[Q] =
+        for  {
+          // TODO refactor, seek what is available for maps
+          mars <- Gen.sequence[List[Map[Action,Reward]], Map[Action,Reward]]
+            { List.fill (fs.size) (genActionReward) }
+          smars = fs zip mars
+        } yield Map (smars: _*)
+
+      genStateActionRewards
     }
 
 }

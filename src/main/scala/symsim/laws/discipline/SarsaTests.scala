@@ -27,8 +27,13 @@ class SarsaTests[State, FiniteState, Action, Reward, Scheduler[_]]
       "initQ contains only zeroRewards" ->
         laws.initQAllValuesZero,
 
+      "generated Q matrices are total for finite state space" ->
+        laws.generatedQMatricesAreTotalWRTStateSpace,
+
+      "generated Q matrices are total for action state space" ->
+        laws.generatedQMatricesAreTotalWRTActionSpace,
+
       "chooseAction (q) (s) ∈ Action for all q and s" ->
         laws.chooseActionGivesEnumerableAction,
-
     )
 }
