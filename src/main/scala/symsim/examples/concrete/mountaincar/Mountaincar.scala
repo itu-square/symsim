@@ -6,6 +6,8 @@ import symsim.concrete.Randomized
 
 object MountainCar
   extends Agent[CarState, CarFiniteState, CarAction, CarReward, Randomized] {
+    def roundAt(p: Int)(n: Double): Double = { val s = math pow (10, p); (math round n * s) / s }
+
 
     def isFinal (s: CarState): Boolean =
         s.p >= 0.5
@@ -16,10 +18,10 @@ object MountainCar
       require (s.v >= -1.5, s"s.v = ${s.v} is not within the boundaries")
       require (s.v <= 1.5, s"s.v = ${s.v} is not within the boundaries")
 
-      val dp = -1.2 +(((s.p + 1.2)/0.17).floor + 1)* 0.17
-      val dv = -1.5 + (((s.v + 1.5)/0.3).floor + 1)* 0.3
+      val dp = roundAt(2)(-1.2+((((s.p + 1.2)/0.17).floor)*0.17))
+      val dv = roundAt(2)(-1.5+(((s.v + 1.5)/0.3).floor)*0.3)
 
-      CarState (dv min 1.5, dp min 0.5)
+      CarState (Math.max(Math.min(dv.toDouble,1.5),-1.5), Math.max(Math.min(dp.toDouble,0.5),-1.2))
     }
 
     private def carReward (s: CarState) (a: CarAction): CarReward =
@@ -36,16 +38,19 @@ object MountainCar
 
     // TODO: this is now deterministic but eventually needs to be randomized
     def step (s: CarState) (a: CarAction): (CarState, CarReward) = {
-      val v1 = Math.max (s.v + (gravity * mass * Math.cos(3.0 * s.p) + (a/mass) - (friction*s.v)) * t, -1.5)
-      val p1 = Math.min (s.p + (v1 * t), 0.5)
+      val v1 = Math.min(1.5, Math.max (s.v + (gravity * mass * Math.cos(3.0 * s.p) + (a/mass) - (friction*s.v)) * t, -1.5))
+      val p1 = Math.max(-1.2,Math.min (s.p + (v1 * t), 0.5))
       val s1 = CarState (v=v1, p=p1)
+
+
       s1 -> carReward (s1) (a)
+
     }
 
     def initialize: Randomized[CarState] = for {
       p <- Randomized.between (-1.2, 0.5)
       v <- Randomized.between (-1.5, 1.5)
-      s0 = CarState (v=v,p=p)
+      s0 = CarState (v,p)
       s <- if (isFinal (s0)) initialize
            else Randomized.const (s0)
     } yield s
@@ -70,13 +75,13 @@ object CarInstances
   import org.scalacheck.Arbitrary.arbitrary
 
   implicit lazy val enumAction: BoundedEnumerable[CarAction] =
-    BoundedEnumerableFromList (-0.2, 0.0, +0.2)
+    BoundedEnumerableFromList (-0.2, 0.0, 0.2)
 
   implicit lazy val enumState: BoundedEnumerable[CarFiniteState] = {
     val ss = for {
-        v <- Seq (-1.2, -1.03, -0.86,-0.52,-0.35,-0.18,-0.01,0.16,0.33,0.5)
-        p <- Seq (-1.5, -1.2,-0.9,-0.6,-0.3,0.0,0.3,0.6,0.9,1.2,1.5)
-    } yield CarState (v=v,p=p)
+        p0 <- Seq (-1.2,-1.03,-0.86,-0.69,-0.52,-0.35,-0.18,-0.01,0.16,0.33,0.5)
+        v0 <- Seq (-1.5,-1.2,-0.9,-0.6,-0.3,0.0,0.3,0.6,0.9,1.2,1.5)
+    } yield CarState (v=v0,p=p0)
     BoundedEnumerableFromList (ss: _*)
   }
 
@@ -87,9 +92,9 @@ object CarInstances
     concrete.Randomized.canTestInRandomized
 
   lazy val genCarState: Gen[CarState] = for {
-    v <- Gen.choose(-1.2,0.5)
-    p <- Gen.choose(-1.5,1.5)
-  } yield CarState (Math.abs (v), Math.abs (p))
+    p <- Gen.choose(-1.2,0.5)
+    v <- Gen.choose(-1.5,1.5)
+  } yield CarState (v, p)
 
   implicit lazy val arbitraryState: Arbitrary[CarState] =
     Arbitrary (genCarState)

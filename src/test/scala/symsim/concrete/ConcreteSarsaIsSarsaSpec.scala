@@ -1,7 +1,7 @@
 package symsim
 package concrete
 
-import _root_.symsim.examples.concrete.breaking.{Car, CarState, CarFiniteState, CarAction, CarReward}
+import _root_.symsim.examples.concrete.mountaincar.{MountainCar, CarState, CarFiniteState, CarAction, CarReward}
 import _root_.symsim.laws.discipline.SarsaTests
 
 class ConcreteSarsaIsSarsaSpec extends SymSimSpec {
@@ -11,7 +11,7 @@ class ConcreteSarsaIsSarsaSpec extends SymSimSpec {
       CarFiniteState,
       CarAction
     ] (
-      agent = Car,
+      agent = MountainCar,
       alpha = 0.1,
       gamma = 0.1,
       distraction = 0.05,
