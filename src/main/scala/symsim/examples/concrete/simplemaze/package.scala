@@ -1,6 +1,6 @@
 package symsim.examples.concrete
 
-package object simple-maze {
+package object simplemaze {
 
   /**
    * Russell, Norvig, Fig 17.1, p. 646
@@ -17,10 +17,10 @@ package object simple-maze {
   // type MazeAction = Int // Can we use an enumeration type { Up, Down, Left, Right } ?
   type MazeReward = Int
 
-  trait MazeAction
-  case object Left extends MazeAction
-  case object Right extends MazeAction
-  case object Up extends MazeAction
-  case object Down extends MazeAction
+  trait MazeAction 
+  case object Left extends MazeAction 
+  case object Right extends MazeAction 
+  case object Up extends MazeAction 
+  case object Down extends MazeAction 
   
 }
