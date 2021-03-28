@@ -15,8 +15,8 @@ package object simplemaze {
   case class MazeState (x: Int, y: Int)
   type MazeFiniteState = MazeState
   // type MazeAction = Int // Can we use an enumeration type { Up, Down, Left, Right } ?
-  type MazeReward = Int
-
+  type MazeReward = Double
+  
   trait MazeAction 
   case object Left extends MazeAction 
   case object Right extends MazeAction 

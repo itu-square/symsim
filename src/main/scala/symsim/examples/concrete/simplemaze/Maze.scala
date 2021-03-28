@@ -25,7 +25,7 @@ object Maze
     def step (s: MazeState) (a: MazeAction): (MazeState, MazeReward) = { // Do cases over MazeAction
       a match {
         case Up =>    (stepUp(s),   1);
-        case Down =>  (stepDown,    1); 
+        case Down =>  (stepDown(s), 1); 
         case Left =>  (stepLeft(s), 1);
         case Right => (stepRight(s),1);
       }
@@ -33,30 +33,30 @@ object Maze
 
 // I would like to select the step-function based on an enumeration type of actions
     def stepUp(s: MazeState): MazeState = {
-      val y1 = if (s.x == 2 || s.y = 3) then (s.y) else s.y+1;
-      mazeState(x=s.x,y=y1)
+      val y1 = if (s.x == 2 || s.y == 3)  (s.y) else s.y+1;
+      MazeState(x=s.x,y=y1)
     }
 
     def stepDown(s: MazeState): MazeState = {
-      val y1 = if (s.x == 2 || s.y = 1) then (s.y) else s.y-1
-      mazeState(x=s.x,y=y1)
+      val y1 = if (s.x == 2 || s.y == 1)  (s.y) else s.y-1
+      MazeState(x=s.x,y=y1)
     }
     
     def stepLeft(s: MazeState): MazeState = {
-      val x1 = if (s.y == 2 || s.x = 1) then (s.x) else s.x-1
-      mazeState(x=x1,y=s.y)
+      val x1 = if (s.y == 2 || s.x == 1)  (s.x) else s.x-1
+      MazeState(x=x1,y=s.y)
       }
 
     def stepRight(s: MazeState): MazeState = {
-      val x1 = if (s = MazeState(y=1,x=2) || s.x = 4) then (s.x) else s.x-1
-      mazeState(x=x1,y=s.y)
+      val x1 = if (s == MazeState(y=1,x=2) || s.x == 4)  (s.x) else s.x-1
+      MazeState(x=x1,y=s.y)
       }
 
     def initialize: Randomized[MazeState] = for {
       y <- Randomized.between (1, 3)
       x <- Randomized.between (1, 4)
       s0 = MazeState (x,y)
-      s <- if (isFinal (s0) || (s == MazeState(2,2))) initialize
+      s <- if (isFinal (s0) || (s0 == MazeState(2,2))) initialize
            else Randomized.const (s0)
     } yield s
 
@@ -80,7 +80,7 @@ object MazeInstances
   import org.scalacheck.Arbitrary.arbitrary
 
   implicit lazy val enumAction: BoundedEnumerable[MazeAction] =
-    BoundedEnumerableFromList (-10, -5, -2.5)
+    BoundedEnumerableFromList (Up, Down, Left, Right)
 
   implicit lazy val enumState: BoundedEnumerable[MazeFiniteState] = {
     val ss = for {
@@ -97,8 +97,8 @@ object MazeInstances
     concrete.Randomized.canTestInRandomized
 
   lazy val genMazeState: Gen[MazeState] = for {
-      y <- arbitrary[Int]
-      x <- arbitrary[Int]
+      y <- Gen.choose(1,4)
+      x <- Gen.choose(1,3) 
   } yield MazeState (y=Math.abs (y), x=Math.abs (x))
 
   implicit lazy val arbitraryState: Arbitrary[MazeState] =
@@ -108,7 +108,7 @@ object MazeInstances
     Eq.fromUniversalEquals
 
   implicit lazy val arbitraryAction =
-    Arbitrary (Gen.double)
+    Arbitrary (Gen.oneOf(Up, Down, Left, Right))
 
   implicit lazy val rewardArith: Arith[MazeReward] =
     Arith.arithDouble
