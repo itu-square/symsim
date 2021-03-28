@@ -8,54 +8,55 @@ object Maze
   extends Agent[MazeState, MazeFiniteState, MazeAction, MazeReward, Randomized] {
 
     def isFinal (s: MazeState): Boolean =
-      s.h == 4.0 && (s.v == 2.0 || s.v == 3.0)
+      s.x == 4 && (s.y == 2 || s.y == 3)
 
     // Maze is already discrete 
     def discretize (s: MazeState): MazeFiniteState =  { s }
 
     private def mazeReward (s: MazeState) (a: MazeAction): MazeReward =
-      if s == MazeState(v=3,h=4) 10.0 //Good final state
-      else if s == MazeState(v=2,h=4) -10.0 // Bad final state
-      else -1.0
+      if (s == MazeState(x=4,y=3)) 10 //Good final state
+      else if (s == MazeState(x=4,y=2)) -10 // Bad final state
+      else -1
 
     // Does this even make sense for the maze? 
     /** Granularity of the step in seconds */
-    private val t: Double = 1.0
+    // private val t: Double = 1.0
 
     // TODO: this is now deterministic but eventually needs to be randomized
     def step (s: MazeState) (a: MazeAction): (MazeState, MazeReward) = { // Do cases over MazeAction
-      val h1 = Math.min (s.h + s.v*t + 0.5*a*t*t, 10.0)
-      val v1 = Math.max (s.v + a*t, 0.0)
-      val s1 = MazeState (h1, v1)
-      s1 -> mazeReward (s1) (a)
-    }
+      a match
+        case Up =>    (stepUp(s),   1)
+        case Down =>  (stepDown,    1)
+        case Left =>  (stepLeft(s), 1)
+        case Right => (stepRight(s),1)
+}
 
 // I would like to select the step-function based on an enumeration type of actions
     def stepUp(s: MazeState): MazeState =
-      val v1 = if (s.h == 2 || s.v = 3) then s.v else s.v+1
-      mazeState(v=v1,h=s.h)
+      val y1 = if (s.x == 2 || s.y = 3) then s.y else s.y+1
+      mazeState(x=s.x,y=y1)
 
     def stepDown(s: MazeState): MazeState =
-      val v1 = if (s.h == 2 || s.v = 1) then s.v else s.v-1
-      mazeState(v=v1,h=s.h)
+      val y1 = if (s.x == 2 || s.y = 1) then s.y else s.y-1
+      mazeState(x=s.x,y=y1)
 
     def stepLeft(s: MazeState): MazeState =
-      val h1 = if (s.v == 2 || s.h = 1) then s.h else s.h-1
-      mazeState(h=h1,v=s.v)
+      val x1 = if (s.y == 2 || s.x = 1) then s.x else s.x-1
+      mazeState(x=x1,y=s.y)
 
     def stepRight(s: MazeState): MazeState =
-      val h1 = if (s = MazeState(v=1,h=2) || s.h = 4) then s.h else s.h-1
-      mazeState(h=h1,v=s.v)
+      val x1 = if (s = MazeState(y=1,x=2) || s.x = 4) then s.x else s.x-1
+      mazeState(x=x1,y=s.y)
 
     def initialize: Randomized[MazeState] = for {
-      v <- Randomized.between (1.0, 3.0)
-      h <- Randomized.between (1.0, 4.0)
-      s0 = MazeState (v,h)
+      y <- Randomized.between (1, 3)
+      x <- Randomized.between (1, 4)
+      s0 = MazeState (x,y)
       s <- if (isFinal (s0) || s == MazeState(2,2)) initialize
            else Randomized.const (s0)
     } yield s
 
-    override def zeroReward: MazeReward = 0.0
+    override def zeroReward: MazeReward = 0
 
     lazy val instances = MazeInstances
 }
@@ -79,9 +80,9 @@ object MazeInstances
 
   implicit lazy val enumState: BoundedEnumerable[MazeFiniteState] = {
     val ss = for {
-        v <- Seq (1.0, 2.0, 3.0)
-        h <- Seq (1.0, 2.0, 3.0, 4.0)
-    } yield MazeState (v,h)
+        y <- Seq (1, 2, 3)
+        x <- Seq (1, 2, 3, 4)
+    } yield MazeState (x,y)
     BoundedEnumerableFromList (ss: _*)
   }
 
@@ -92,9 +93,9 @@ object MazeInstances
     concrete.Randomized.canTestInRandomized
 
   lazy val genMazeState: Gen[MazeState] = for {
-      v <- arbitrary[Double]
-      h <- arbitrary[Double]
-  } yield MazeState (Math.abs (v), Math.abs (h))
+      y <- arbitrary[Int]
+      x <- arbitrary[Int]
+  } yield MazeState (y=Math.abs (y), x=Math.abs (x))
 
   implicit lazy val arbitraryState: Arbitrary[MazeState] =
     Arbitrary (genMazeState)
