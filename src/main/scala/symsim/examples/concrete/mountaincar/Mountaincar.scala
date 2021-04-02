@@ -6,7 +6,10 @@ import symsim.concrete.Randomized
 
 object MountainCar
   extends Agent[CarState, CarFiniteState, CarAction, CarReward, Randomized] {
-    def roundAt(p: Int)(n: Double): Double = { val s = math pow (10, p); (math round n * s) / s }
+    def roundAt (p: Int) (n: Double): Double = {
+    val s = Math.pow (10, p)
+    Math.round (n * s) / s 
+   }
 
 
     def isFinal (s: CarState): Boolean =
