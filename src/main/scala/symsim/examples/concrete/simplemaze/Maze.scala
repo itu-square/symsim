@@ -44,7 +44,7 @@ object Maze
       }
 
     def stepRight(s: MazeState): MazeState = {
-      val x1 = if (s == MazeState(y=1,x=2) || s.x == 4)  s.x else s.x-1
+      val x1 = if (s == MazeState(y=1,x=2) || s.x == 4)  s.x else s.x+1
       MazeState(x=x1,y=s.y)
       }
 

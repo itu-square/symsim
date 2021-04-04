@@ -1,4 +1,4 @@
-Package symsim
+package symsim
 package examples.concrete.simplemaze
 
 class MazeIsAgentSpec extends SymSimSpec {
