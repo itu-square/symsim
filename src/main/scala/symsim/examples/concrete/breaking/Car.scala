@@ -68,7 +68,7 @@ object CarInstances
   import org.scalacheck.Arbitrary.arbitrary
 
   implicit lazy val enumAction: BoundedEnumerable[CarAction] =
-    BoundedEnumerableFromList (-10, -5, -2.5)
+    BoundedEnumerableFromList (-10, -5, -2.5, -0.5, -0.05, -0.01, -0.001)
 
   implicit lazy val enumState: BoundedEnumerable[CarFiniteState] = {
     val ss = for {
