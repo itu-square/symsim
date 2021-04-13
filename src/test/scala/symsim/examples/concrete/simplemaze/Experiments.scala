@@ -1,5 +1,5 @@
 package symsim
-package examples.concrete.breaking
+package examples.concrete.simplemaze
 
 import symsim.concrete.ConcreteSarsa
 import org.typelevel.paiges.Doc
@@ -10,21 +10,21 @@ class Experiments
   with org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
   with org.scalatest.prop.TableDrivenPropertyChecks {
 
-  "test run" ignore {
+  "test run" in {
 
     // Import evidence that states and actions can be enumerated
-    import Car._
+    import Maze._
 
     val sarsa = ConcreteSarsa[
-      CarState,
-      CarFiniteState,
-      CarAction
+      MazeState,
+      MazeFiniteState,
+      MazeAction
     ] (
-      agent = Car,
+      agent = Maze,
       alpha = 0.1,
-      gamma = 0.1,
+      gamma = 1.0,
       distraction = 0.05, // explore vs exploit ratio
-      epochs = 5000,
+      epochs = 100000,
       seed = 1000
     )
 

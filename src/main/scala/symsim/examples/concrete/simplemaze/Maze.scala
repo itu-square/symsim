@@ -25,28 +25,25 @@ object Maze
         case Left =>  stepLeft(s)
         case Right => stepRight(s)
       }
-      (newstate, mazeReward(newstate))
+      if(isValid(newstate))
+        (newstate, mazeReward(newstate))
+      else
+        (s, mazeReward(s))
     }
 
-    def stepUp(s: MazeState): MazeState = {
-      val y1 = if (s.x == 2 || s.y == 3)  s.y else s.y+1
-      MazeState(x=s.x,y=y1)
-    }
+    def  isValid (s: MazeState) = s.x >= 1 && s.x <=4 && s.y >= 1 && s.y <= 3 && (s != MazeState (2,2))
 
-    def stepDown(s: MazeState): MazeState = {
-      val y1 = if (s.x == 2 || s.y == 1)  s.y else s.y-1
-      MazeState(x=s.x,y=y1)
-    }
+    def stepUp(s: MazeState): MazeState = MazeState(x=s.x,y=s.y+1)
 
-    def stepLeft(s: MazeState): MazeState = {
-      val x1 = if (s.y == 2 || s.x == 1)  s.x else s.x-1
-      MazeState(x=x1,y=s.y)
-      }
 
-    def stepRight(s: MazeState): MazeState = {
-      val x1 = if (s == MazeState(y=1,x=2) || s.x == 4)  s.x else s.x+1
-      MazeState(x=x1,y=s.y)
-      }
+    def stepDown(s: MazeState): MazeState = MazeState(x=s.x,y=s.y-1)
+
+
+    def stepLeft(s: MazeState): MazeState = MazeState(x=s.x-1,y=s.y)
+
+
+    def stepRight(s: MazeState): MazeState = MazeState(x=s.x+1,y=s.y)
+
 
     def initialize: Randomized[MazeState] = for {
       y <- Randomized.between (1, 3)
