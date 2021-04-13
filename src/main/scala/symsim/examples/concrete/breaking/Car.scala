@@ -30,8 +30,12 @@ object Car
 
     // TODO: this is now deterministic but eventually needs to be randomized
     def step (s: CarState) (a: CarAction): (CarState, CarReward) = {
-      val p1 = Math.min (s.p + s.v*t + 0.5*a*t*t, 10.0)
-      val v1 = Math.max (s.v + a*t, 0.0)
+
+      // Stop moving when velecity is zero, breaking is not moving backwards
+      val t1 = Math.min (- s.v / a, t)
+
+      val p1 = Math.min (s.p + s.v*t1 + 0.5*a*t1*t1, 10.0)
+      val v1 = Math.max (s.v + a*t1, 0.0)
       val s1 = CarState (p1, v1)
       s1 -> carReward (s1) (a)
     }
@@ -68,8 +72,8 @@ object CarInstances
 
   implicit lazy val enumState: BoundedEnumerable[CarFiniteState] = {
     val ss = for {
-        v <- Seq (0.0, 5.0, 10.0)
-        p <- Seq (0.0, 5.0, 10.0, 15.0)
+      v <- Seq (0.0, 5.0, 10.0)
+      p <- Seq (0.0, 5.0, 10.0, 15.0)
     } yield CarState (v,p)
     BoundedEnumerableFromList (ss: _*)
   }
@@ -81,9 +85,9 @@ object CarInstances
     concrete.Randomized.canTestInRandomized
 
   lazy val genCarState: Gen[CarState] = for {
-      v <- Arbitrary.arbDouble.arbitrary if v > 0
-      p <- Arbitrary.arbDouble.arbitrary if p > 0
-  } yield CarState (Math.abs (v), Math.abs (p))
+    v <- Arbitrary.arbDouble.arbitrary if v > 0
+    p <- Arbitrary.arbDouble.arbitrary if p > 0
+  } yield CarState (v, p)
 
   implicit lazy val arbitraryState: Arbitrary[CarState] =
     Arbitrary (genCarState)
