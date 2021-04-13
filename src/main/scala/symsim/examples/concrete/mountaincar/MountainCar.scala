@@ -8,7 +8,7 @@ object MountainCar
   extends Agent[CarState, CarFiniteState, CarAction, CarReward, Randomized] {
     def roundAt (p: Int) (n: Double): Double = {
     val s = Math.pow (10, p)
-    Math.round (n * s) / s 
+    Math.round (n * s) / s
    }
 
 
@@ -60,14 +60,14 @@ object MountainCar
 
     override def zeroReward: CarReward = 0.0
 
-    lazy val instances = CarInstances
+    lazy val instances = MountainCarInstances
 }
 
 
 /** Here is a proof that our types actually deliver on everything that an Agent
   * needs to be able to do to work in the framework.
   */
-object CarInstances
+object MountainCarInstances
   extends AgentConstraints[CarState, CarFiniteState, CarAction, CarReward, Randomized] {
 
   import cats.{Eq, Monad}
@@ -105,7 +105,7 @@ object CarInstances
   implicit lazy val eqCarState: Eq[CarState] =
     Eq.fromUniversalEquals
 
-  implicit lazy val arbitraryAction =
+  implicit lazy val arbitraryReward =
     Arbitrary (Gen.double)
 
   implicit lazy val rewardArith: Arith[CarReward] =
