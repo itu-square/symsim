@@ -31,14 +31,11 @@ class SarsaLaws[State,FiniteState, Action, Reward, Scheduler[_]] (
   type S = Sarsa[State, FiniteState, Action, Reward, Scheduler]
   type A = S#A
 
-  val actions = sarsa.agent.instances.enumAction.membersAscending
-  val finiteStates = sarsa.agent.instances.enumState.membersAscending
-
   def isStateTotal (q: sarsa.Q): Boolean =
-    q.keySet == this.finiteStates.toSet
+    q.keySet == sarsa.agent.instances.allFiniteStates.toSet
 
   def isActionTotal (q: sarsa.Q): Boolean =
-    q.values.forall { _.keySet == this.actions.toSet }
+    q.values.forall { _.keySet == sarsa.agent.instances.allActions.toSet }
 
 
   // TODO: If learn1 starts with a positive values, then we end with positive
@@ -95,7 +92,7 @@ class SarsaLaws[State,FiniteState, Action, Reward, Scheduler[_]] (
         forAll { s: State =>
           val sa: Scheduler[Action] = sarsa.chooseAction (q) (s)
           forAll (sa.toGen) { a =>
-            !this.actions.contains (a)
+            sarsa.agent.instances.allActions.contains (a)
           }
         }
       }

@@ -132,7 +132,7 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
     /** Generate total Q matrices for testing. */
     val genQ: Gen[Q] = {
 
-      val as = BoundedEnumerable[Action].membersAscending
+      val as = agent.instances.allActions
       val genReward = agent.instances.arbitraryReward.arbitrary
 
       val genActionReward: Gen[Map[Action,Reward]] =
@@ -143,7 +143,7 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
           ars = as zip rewards
         } yield Map (ars: _*)
 
-      val fs = BoundedEnumerable[FiniteState].membersAscending
+      val fs = agent.instances.allFiniteStates
       val genStateActionRewards: Gen[Q] =
         for  {
           // TODO refactor, seek what is available for maps

@@ -75,10 +75,18 @@ trait AgentConstraints[State, FiniteState, Action, Reward, Scheduler[_]] {
     */
   implicit def enumAction: BoundedEnumerable[Action]
 
+  /** Ensure that we use efficient lists (not iterating repeatedly) */
+  lazy val allActions: List[Action] =
+    enumAction.membersAscending.toList
+
   /** Enforce that states are enumerable because otherwise we cannot
     * represent a policy as a map.
     */
   implicit def enumState: BoundedEnumerable[FiniteState]
+
+  /** Ensure that we use efficient lists (not iterating repeatedly) */
+  lazy val allFiniteStates: List[FiniteState] =
+    enumState.membersAscending.toList
 
   /** We need to know that a scheduler is a monad */
   implicit def schedulerIsMonad: Monad[Scheduler]
