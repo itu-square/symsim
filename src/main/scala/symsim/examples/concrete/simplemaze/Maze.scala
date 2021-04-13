@@ -9,8 +9,8 @@ object Maze
     def isFinal (s: MazeState): Boolean =
       s.x == 4 && (s.y == 2 || s.y == 3)
 
-    // Maze is discrete 
-    def discretize (s: MazeState): MazeFiniteState =  s 
+    // Maze is discrete
+    def discretize (s: MazeState): MazeFiniteState =  s
 
     private def mazeReward (s: MazeState) : MazeReward =
       if (s == MazeState(x=4,y=3)) 10        //Good final state
@@ -18,12 +18,12 @@ object Maze
       else -1
 
     // TODO: this is now deterministic but eventually needs to be randomized
-    def step (s: MazeState) (a: MazeAction): (MazeState, MazeReward) = { 
+    def step (s: MazeState) (a: MazeAction): (MazeState, MazeReward) = {
       val newstate = a match {
         case Up =>    stepUp(s)
         case Down =>  stepDown(s)
-        case Left =>  stepLeft(s) 
-        case Right => stepRight(s) 
+        case Left =>  stepLeft(s)
+        case Right => stepRight(s)
       }
       (newstate, mazeReward(newstate))
     }
@@ -37,7 +37,7 @@ object Maze
       val y1 = if (s.x == 2 || s.y == 1)  s.y else s.y-1
       MazeState(x=s.x,y=y1)
     }
-    
+
     def stepLeft(s: MazeState): MazeState = {
       val x1 = if (s.y == 2 || s.x == 1)  s.x else s.x-1
       MazeState(x=x1,y=s.y)
@@ -50,8 +50,8 @@ object Maze
 
     def initialize: Randomized[MazeState] = for {
       y <- Randomized.between (1, 3)
-      x <- Randomized.between (1, 4) 
-      s0 = MazeState (x,y) 
+      x <- Randomized.between (1, 4)
+      s0 = MazeState (x,y)
       s <- if (isFinal (s0) || (s0 == MazeState(2,2))) initialize
            else Randomized.const (s0)
     } yield s
@@ -103,8 +103,8 @@ object MazeInstances
   implicit lazy val eqMazeState: Eq[MazeState] =
     Eq.fromUniversalEquals
 
-  implicit lazy val arbitraryAction =
-    Arbitrary (Gen.oneOf(Up, Down, Left, Right))
+  implicit lazy val arbitraryReward =
+    Arbitrary (Gen.double)
 
   implicit lazy val rewardArith: Arith[MazeReward] =
     Arith.arithDouble
