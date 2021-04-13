@@ -81,21 +81,15 @@ object CarInstances
     concrete.Randomized.canTestInRandomized
 
   lazy val genCarState: Gen[CarState] = for {
-      v <- Arbitrary.arbDouble.arbitrary
-      p <- Arbitrary.arbDouble.arbitrary
+      v <- Arbitrary.arbDouble.arbitrary if v > 0
+      p <- Arbitrary.arbDouble.arbitrary if p > 0
   } yield CarState (Math.abs (v), Math.abs (p))
 
   implicit lazy val arbitraryState: Arbitrary[CarState] =
     Arbitrary (genCarState)
 
-  implicit lazy val arbitraryFiniteState: Arbitrary[CarFiniteState] =
-    Arbitrary (Gen.oneOf (enumState.membersAscending))
-
   implicit lazy val eqCarState: Eq[CarState] =
     Eq.fromUniversalEquals
-
-  implicit lazy val arbitraryAction =
-    Arbitrary (Gen.double)
 
   implicit lazy val arbitraryReward =
     Arbitrary (Gen.double)

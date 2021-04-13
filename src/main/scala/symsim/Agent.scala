@@ -65,6 +65,7 @@ trait Agent[State, FiniteState, Action, Reward, Scheduler[_]] {
 trait AgentConstraints[State, FiniteState, Action, Reward, Scheduler[_]] {
 
   import org.scalacheck.Arbitrary
+  import org.scalacheck.Gen
   import cats.kernel.BoundedEnumerable
   import cats.Monad
 
@@ -97,10 +98,12 @@ trait AgentConstraints[State, FiniteState, Action, Reward, Scheduler[_]] {
   implicit def arbitraryState: Arbitrary[State]
 
   /** We can generate random finite states for testing */
-  implicit def arbitraryFiniteState: Arbitrary[FiniteState]
+  implicit lazy val arbitraryFiniteState: Arbitrary[FiniteState] =
+    Arbitrary (Gen.oneOf (allFiniteStates))
 
   /** We can generate random actions for testing */
-  implicit def arbitraryAction: Arbitrary[Action]
+  implicit lazy val arbitraryAction =
+    Arbitrary (Gen.oneOf (allActions))
 
   /** We can generate randome Reward values */
   implicit def arbitraryReward: Arbitrary[Reward]
