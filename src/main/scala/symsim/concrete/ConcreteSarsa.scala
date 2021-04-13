@@ -62,20 +62,13 @@ case class ConcreteSarsa [
 
 
 
-  def run: Policy = {
+  def runQ: Q =
+    learnN (epochs, initQ)
+      // Got a Randomized[QS], run it from the seed
+      .runA (new scala.util.Random (seed))
+      // Get the value out of run (which returns an Eval)
+      .value
 
-    val q0: Q = initQ
-
-    // Learn
-    val q1: Q =
-      learnN (epochs, q0)
-        // Got a Randomized[QS], run it from the seed
-        .runA (new scala.util.Random (seed))
-        // Get the value out of run (which returns an Eval)
-        .value
-
-    // Return the trained policy
-    qToPolicy (q1)
-  }
+  override def run: Policy = qToPolicy (this.runQ)
 
 }

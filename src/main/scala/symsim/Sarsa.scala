@@ -10,8 +10,9 @@ import cats.instances.lazyList._
 
 import Arith.arithOps
 import Arith.doubleOps
-import org.scalacheck.Gen
 import cats.kernel.BoundedEnumerable
+import org.scalacheck.Gen
+import org.typelevel.paiges.Doc
 
 // TODO: right now the Action type is a dead type, and all algorithms are just
 // sampling across all values (as the action shall be enumarable).  Instead of
@@ -154,5 +155,21 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
 
       genStateActionRewards
     }
+
+  def pp_Q (q: Q): Doc = {
+    def fmt (ar: Map[Action, Reward]): Doc =
+      Doc.tabulate (' ', " ",
+        ar.toList
+          .map { case (a,r) =>
+            val k = a.toString
+            val v = Doc.text (r.toString.take (7).padTo (7, ' ')) + Doc.text (" |")
+            k -> v
+          }
+      )
+    val rows = q
+      .toIterable
+      .map { case (s,ar) => (s.toString, fmt (ar).flatten) }
+    Doc.tabulate (' ', "... ", rows)
+  }
 
 }

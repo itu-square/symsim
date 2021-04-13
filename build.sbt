@@ -19,7 +19,8 @@ libraryDependencies ++= Seq (
   "com.github.alexarchambault" %% "scalacheck-shapeless_1.14" % "1.2.3" % Test,
   "org.typelevel" %% "cats-core" % "2.3.1",
   "org.typelevel" %% "cats-laws" % "2.3.1",
-  "org.typelevel" %% "discipline-scalatest" % "2.1.1"
+  "org.typelevel" %% "discipline-scalatest" % "2.1.1",
+  "org.typelevel" %% "paiges-core" % "0.3.0"
 )
 
 testOptions in Test += Tests.Argument("-oD")
