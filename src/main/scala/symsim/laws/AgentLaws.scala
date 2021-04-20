@@ -59,7 +59,10 @@ class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_] ]
   def stepIsIntoFiniteState: Prop =
     forAll { (s0: State) =>
       forAll { (a: Action) =>
-        val (s1, r) = agent.step (s0) (a)
-        val d1 = agent.discretize (s1)
-        finiteStates.contains (d1)
-    } }
+        (for
+            s1r <- agent.step (s0) (a)
+            (s1,r) = s1r
+            d1 = agent.discretize (s1)
+        yield finiteStates contains d1).toProp
+      }
+    }

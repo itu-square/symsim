@@ -12,7 +12,7 @@ case class ConcreteSarsa [
   val agent: Agent[State, FiniteState, Action, Double, Randomized],
   val alpha: Double,
   val gamma: Double,
-  val distraction: Probability,
+  val epsilon: Probability,
   val epochs: Int,
   val seed: Long
 
@@ -20,23 +20,21 @@ case class ConcreteSarsa [
 
   import agent.instances.given
 
-  // TODO: it is a bit unclear if this is general (if it turns out to be the
+  // TODO: unclear if this is general (if it turns out to be the
   // same im symbolic SARSA we should promote this to the trait
 
   def bestAction (q: Q) (s: State): Action =
     val qs = q (agent.discretize (s)) map { _.swap }
-    val M = qs.keys.max
-    qs (M)
+    qs (qs.keys.max)
 
 
-
-  /** Action selection policy based on argMax and randomzation.  */
+  /** Action selection policy based on argMax and randomization.  */
   def chooseAction (q: Q) (s: State): Randomized[Action] =
     for
-      distracted <- Randomized.coin (distraction)
+      distracted <- Randomized.coin (epsilon)
       action <- if distracted
-                then Randomized.oneOf (agent.instances.enumAction.membersAscending)
-                else Randomized.const (bestAction (q) (s))
+        then Randomized.oneOf (agent.instances.enumAction.membersAscending: _*)
+        else Randomized.const (bestAction (q) (s))
     yield action
 
 

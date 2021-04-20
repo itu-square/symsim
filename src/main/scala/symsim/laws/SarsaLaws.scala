@@ -57,6 +57,8 @@ class SarsaLaws[State,FiniteState, Action, Reward, Scheduler[_]] (
 
   // TODO  "this is for RL: eventually we arrive at final (episodic agent)" ->
   //      Prop.falsified,
+  //
+  // TODO the utility of all actions in the terminal state should be zero
 
   /** Law: Q matrix has a action-reward map for each finite state */
   def initQDefinedForAllFiniteStates: Prop = isStateTotal (sarsa.initQ)

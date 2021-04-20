@@ -21,9 +21,9 @@ class Experiments
       MazeAction
     ] (
       agent = Maze,
-      alpha = 0.1,
+      alpha = 1.0,
       gamma = 1.0,
-      distraction = 0.05, // explore vs exploit ratio
+      epsilon = 0.05, // explore vs exploit ratio
       epochs = 100000,
       seed = 1000
     )

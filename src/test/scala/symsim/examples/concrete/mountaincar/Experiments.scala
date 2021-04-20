@@ -22,7 +22,7 @@ class Experiments
       agent = MountainCar,
       alpha = 0.1,
       gamma = 0.1,
-      distraction = 0.05, // explore vs exploit ration.
+      epsilon = 0.05, // explore vs exploit ration.
       epochs = 5000,
       seed = 1000
     )

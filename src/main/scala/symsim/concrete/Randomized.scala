@@ -32,11 +32,12 @@ object Randomized:
     State { r => (r, r.between (minInclusive, maxExclusive)) }
 
 
+  /** Toss a coing biased towards true with probabilty 'bias' */
   def coin (bias: Probability): Randomized[Boolean] =
     for toss <- prob yield toss <= bias
 
 
-  def oneOf[A] (choices: Seq[A]): Randomized[A] =
+  def oneOf[A] (choices: A*): Randomized[A] =
     for i <- between (0, choices.size) yield choices (i)
 
 
