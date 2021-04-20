@@ -9,6 +9,7 @@ import org.scalacheck.Gen
 import org.scalacheck.Arbitrary
 
 import symsim.concrete.Randomized
+import Math.cos
 
 /**
  * We map the car states to
@@ -41,11 +42,9 @@ object MountainCar
     require (s.p <= 0.5, s"s.p = ${s.p} is not within the boundaries")
     require (s.v >= -1.5, s"s.v = ${s.v} is not within the boundaries")
     require (s.v <= 1.5, s"s.v = ${s.v} is not within the boundaries")
-
-    val dp = roundAt(2)(-1.2+((((s.p + 1.2)/0.17).floor)*0.17))
-    val dv = roundAt(2)(-1.5+(((s.v + 1.5)/0.3).floor)*0.3)
-
-    CarState (Math.max(Math.min(dv.toDouble,1.5),-1.5), Math.max(Math.min(dp.toDouble,0.5),-1.2))
+    val dp = roundAt (2) (-1.2 + ((((s.p + 1.2)/0.17).floor)*0.17))
+    val dv = roundAt (2) (-1.5 + (((s.v + 1.5)/0.3).floor)*0.3)
+    CarState (v = dv.min (1.5).max (-1.5), p = dp.min (0.5).max (-1.2))
 
 
   private def carReward (s: CarState) (a: CarAction): CarReward =
@@ -61,11 +60,13 @@ object MountainCar
 
 
   // TODO: this is now deterministic but eventually needs to be randomized
-  def step (s: CarState) (a: CarAction): (CarState, CarReward) =
-    val v1 = Math.min(1.5, Math.max (s.v + (gravity * mass * Math.cos(3.0 * s.p) + (a/mass) - (friction*s.v)) * t, -1.5))
-    val p1 = Math.max(-1.2,Math.min (s.p + (v1 * t), 0.5))
-    val s1 = CarState (v=v1, p=p1)
-    s1 -> carReward (s1) (a)
+  def step (s: CarState) (a: CarAction): Randomized[(CarState, CarReward)] =
+    val v = s.v + (gravity*mass*cos (3.0*s.p) + a/mass - friction*s.v) * t
+    val v1 = v.max (-1.5).min (1.5)
+    val p1 = Math.max (-1.2,Math.min (s.p + (v1 * t), 0.5))
+    val s1 = CarState (v = v1, p = p1)
+    Randomized.const (s1 -> carReward (s1) (a))
+
 
   def initialize: Randomized[CarState] = for
     p <- Randomized.between (-1.2, 0.5)

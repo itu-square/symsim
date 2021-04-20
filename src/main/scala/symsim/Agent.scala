@@ -4,6 +4,8 @@ import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import cats.kernel.BoundedEnumerable
 import cats.Monad
+import cats.syntax.monad._
+import cats.syntax.functor._
 
 
 /** TODO: A possible refactoring: separate Agents from finite agents, where the
@@ -12,11 +14,12 @@ import cats.Monad
   */
 trait Agent[State, FiniteState, Action, Reward, Scheduler[_]]:
 
+  import instances.schedulerIsMonad
 
   /** Execute one training step.  If symbolic, it may result in multiple
     * successors and rewards.
     */
-  def step (s: State) (a: Action): (State, Reward)
+  def step (s: State) (a: Action): Scheduler[(State, Reward)]
 
 
   /** True for final states (used for episode end detection) */
@@ -31,12 +34,11 @@ trait Agent[State, FiniteState, Action, Reward, Scheduler[_]]:
     */
   def discretize (s: State): FiniteState
 
-
   /** Return the reward assigned to state s when action a is given (the
     * reward estimation function)
     */
-  def reward (s: State) (a: Action): Reward = (step (s) (a))._2
-
+  def reward (s: State) (a: Action): Scheduler[Reward] =
+    for outcome <- step (s) (a) yield outcome._2
 
   /** Provide the initial state of the agent for the scheduling policy captured
     * by Scheduler[ ].  For instance, a `Randomized` scheduler can allow starting

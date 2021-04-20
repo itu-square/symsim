@@ -23,7 +23,7 @@ class Experiments
       agent = Car,
       alpha = 0.1,
       gamma = 0.1,
-      distraction = 0.05, // explore vs exploit ratio
+      epsilon = 0.05, // explore vs exploit ratio
       epochs = 5000,
       seed = 1000
     )

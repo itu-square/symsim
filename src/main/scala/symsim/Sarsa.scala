@@ -46,9 +46,8 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
   def learn1 (q: Q, s_t: State): Scheduler[(Q,State)] = for
 
     a_t <- chooseAction (q) (s_t)
-
-    (s_tt, r_tt) = agent.step (s_t) (a_t)
-
+    sa_tt <- agent.step (s_t) (a_t)
+    (s_tt, r_tt) = sa_tt
     a_tt = bestAction (q) (s_tt)
 
     // concerned that this is Q-learning not SARSA (p.844 in Russel & Norvig)

@@ -13,8 +13,8 @@ class ConcreteSarsaIsSarsaSpec extends SymSimSpec:
   ] (
     agent = MountainCar,
     alpha = 0.1,
-    gamma = 0.1,
-    distraction = 0.05,
+    gamma = 1.0,
+    epsilon = 0.05,
     epochs = 5000,
     seed = 1000
   )
