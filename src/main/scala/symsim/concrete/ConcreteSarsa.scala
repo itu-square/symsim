@@ -18,7 +18,7 @@ case class ConcreteSarsa [
 
 ) extends Sarsa[State, FiniteState, Action, Double, Randomized]:
 
-  import agent.instances.given
+  import agent.instances._
 
   // TODO: unclear if this is general (if it turns out to be the
   // same im symbolic SARSA we should promote this to the trait
@@ -31,9 +31,9 @@ case class ConcreteSarsa [
   /** Action selection policy based on argMax and randomization.  */
   def chooseAction (q: Q) (s: State): Randomized[Action] =
     for
-      distracted <- Randomized.coin (epsilon)
-      action <- if distracted
-        then Randomized.oneOf (agent.instances.enumAction.membersAscending: _*)
+      explore <- Randomized.coin (this.epsilon)
+      action <- if explore
+        then Randomized.oneOf (allActions: _*)
         else Randomized.const (bestAction (q) (s))
     yield action
 
@@ -42,13 +42,11 @@ case class ConcreteSarsa [
   /** Construct a zero initialized Q matrix */
   def initQ: Q =
     // Create the initial Q matrix (zero's everywhere)
-    val qa = BoundedEnumerable[Action]
-      .membersAscending
+    val qa = allActions
       .map { a => (a, agent.zeroReward) }
       .toMap
 
-    val q0 = BoundedEnumerable[FiniteState]
-      .membersAscending
+    val q0 = allFiniteStates
       .map { state => (state, qa) }
       .toMap
 
