@@ -42,15 +42,13 @@ class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_] ]
     * of FiniteState.
     */
   def initializeIsIntoFiniteState: Prop =
-    val ini = agent.initialize
-    forAll (ini.toGen) { (s: State) =>
+    forAll (agent.initialize.toGen) { (s: State) =>
       finiteStates.contains (agent.discretize (s)) }
 
 
   /** Law: Initial state is not final, regardless scheduler. */
   def initialStateIsNotFinal: Prop =
-    val ini = agent.initialize
-    forAll (ini.toGen) { (s: State) => ! agent.isFinal (s) }
+    forAll (agent.initialize.toGen) { (s: State) => ! agent.isFinal (s) }
 
 
   /** Law: An agent step from any state lands in a state that be discretized

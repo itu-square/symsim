@@ -12,18 +12,15 @@ class Experiments
 
   "test run" in {
 
-    // Import evidence that states and actions can be enumerated
-    import Maze._
-
     val sarsa = ConcreteSarsa[
       MazeState,
       MazeFiniteState,
       MazeAction
     ] (
       agent = Maze,
-      alpha = 1.0,
+      alpha = 0.2,
       gamma = 1.0,
-      epsilon = 0.05, // explore vs exploit ratio
+      epsilon = 0.0, // explore vs exploit ratio
       epochs = 100000,
       seed = 1000
     )
