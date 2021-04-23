@@ -13,7 +13,7 @@ class RandomizedSpec extends org.scalatest.freespec.AnyFreeSpec
   "Sanity checks for symsim.concrete.Randomized" - {
 
     "between Double observes the bounds" in check {
-      forAll { mn: (Double, Double) =>
+      forAll { (mn: (Double, Double)) =>
         val m = Math.min (mn._1, mn._2)
         val n = Math.max (mn._1, mn._2)
         val between = Randomized.between (m, n)
@@ -23,7 +23,7 @@ class RandomizedSpec extends org.scalatest.freespec.AnyFreeSpec
     }
 
     "between Int observes the bounds" in check {
-      forAll { mn: (Int, Int) =>
+      forAll { (mn: (Int, Int)) =>
         val m = Math.min (mn._1, mn._2)
         val n = Math.max (mn._1, mn._2)
         val between = Randomized.between (m, n)

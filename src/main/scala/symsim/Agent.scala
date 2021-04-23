@@ -102,7 +102,7 @@ trait AgentConstraints[State, FiniteState, Action, Reward, Scheduler[_]] {
     Arbitrary (Gen.oneOf (allFiniteStates))
 
   /** We can generate random actions for testing */
-  implicit lazy val arbitraryAction =
+  implicit lazy val arbitraryAction: Arbitrary[Action] =
     Arbitrary (Gen.oneOf (allActions))
 
   /** We can generate randome Reward values */

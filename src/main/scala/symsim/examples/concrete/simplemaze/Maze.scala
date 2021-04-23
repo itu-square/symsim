@@ -55,7 +55,7 @@ object Maze
 
     override def zeroReward: MazeReward = 0
 
-    lazy val instances = MazeInstances
+    val instances = MazeInstances
 }
 
 

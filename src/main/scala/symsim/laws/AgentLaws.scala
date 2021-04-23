@@ -34,7 +34,7 @@ class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_] ]
     * space that the agent uses for learning and for control decisions.
     */
   def discretizeIsIntoFiniteState: Prop =
-    forAll { s: State =>
+    forAll { (s: State) =>
       finiteStates.contains (agent.discretize (s)) }
 
 
@@ -43,7 +43,7 @@ class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_] ]
     */
   def initializeIsIntoFiniteState: Prop = {
     val ini = agent.initialize
-    forAll (ini.toGen) { s: State =>
+    forAll (ini.toGen) { (s: State) =>
       finiteStates.contains (agent.discretize (s)) }
   }
 
@@ -51,7 +51,7 @@ class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_] ]
   /** Law: Initial state is not final, regardless scheduler. */
   def initialStateIsNotFinal: Prop = {
     val ini = agent.initialize
-    forAll (ini.toGen) { s: State =>
+    forAll (ini.toGen) { (s: State) =>
       ! agent.isFinal (s) }
   }
 
@@ -60,8 +60,8 @@ class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_] ]
     * into FiniteState.
     */
   def stepIsIntoFiniteState: Prop =
-    forAll { s0: State =>
-      forAll { a: Action =>
+    forAll { (s0: State) =>
+      forAll { (a: Action) =>
         val (s1, r) = agent.step (s0) (a)
         val d1 = agent.discretize (s1)
         finiteStates.contains (d1)
