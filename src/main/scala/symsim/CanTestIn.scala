@@ -6,7 +6,7 @@ import org.scalacheck.Prop
 /** A simple type class that defines contexts (schedulers) in which we can test
  *  with scalacheck
  */
-trait CanTestIn[F[_]] {
+trait CanTestIn[F[_]]:
 
   /** Allows to test whether all scheduled Boolean values are true. You can use
     * this to convert the scheduled value 'x' using a predicate 'p' (for example
@@ -26,26 +26,17 @@ trait CanTestIn[F[_]] {
     */
   def toGen[A] (fa: F[A]): Gen[A]
 
-}
 
-object CanTestIn {
+
+object CanTestIn:
 
   /** Allow to use testIn[F] to access the implicit available instance of
     * CanTestIn for F.
     */
   def testIn[F[_]: CanTestIn] = implicitly[CanTestIn[F]]
 
-  implicit class CanTestInOpsBoolean[F[_]: CanTestIn] (fb: F[Boolean]) {
+  implicit class CanTestInOpsBoolean[F[_]: CanTestIn] (fb: F[Boolean]):
+    def toProp: Prop = testIn[F].toProp (fb)
 
-    def toProp: Prop =
-      testIn[F].toProp (fb)
-  }
-
-  implicit class CanTestInOps[F[_]: CanTestIn, A] (fa: F[A]) {
-
-    def toGen: Gen[A] =
-      testIn[F].toGen (fa)
-
-  }
-
-}
+  implicit class CanTestInOps[F[_]: CanTestIn, A] (fa: F[A]):
+    def toGen: Gen[A] = testIn[F].toGen (fa)
