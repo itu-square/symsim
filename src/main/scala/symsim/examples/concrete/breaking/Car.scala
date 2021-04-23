@@ -21,8 +21,8 @@ object Car
     }
 
     private def carReward (s: CarState) (a: CarAction): CarReward =
-      if (s.p >= 10.0) -10
-      else if (s.p < 10.0 && s.v == 0.0) 10.0 - s.p
+      if s.p >= 10.0 then -10
+      else if s.p < 10.0 && s.v == 0.0 then 10.0 - s.p
       else -1.0
 
     /** Granularity of the step in seconds */
@@ -40,13 +40,13 @@ object Car
       s1 -> carReward (s1) (a)
     }
 
-    def initialize: Randomized[CarState] = for {
+    def initialize: Randomized[CarState] = for
       v <- Randomized.between (0.0, 10.0)
       p <- Randomized.between (0.0, 15.0)
       s0 = CarState (v,p)
-      s <- if (isFinal (s0)) initialize
+      s <- if isFinal (s0) then initialize
            else Randomized.const (s0)
-    } yield s
+    yield s
 
     override def zeroReward: CarReward = 0.0
 
@@ -71,10 +71,10 @@ object CarInstances
     BoundedEnumerableFromList (-10, -5, -2.5, -0.5, -0.05, -0.01, -0.001)
 
   implicit lazy val enumState: BoundedEnumerable[CarFiniteState] = {
-    val ss = for {
+    val ss = for
       v <- Seq (0.0, 5.0, 10.0)
       p <- Seq (0.0, 5.0, 10.0, 15.0)
-    } yield CarState (v,p)
+    yield CarState (v,p)
     BoundedEnumerableFromList (ss: _*)
   }
 
@@ -84,10 +84,10 @@ object CarInstances
   implicit lazy val canTestInScheduler: CanTestIn[Randomized] =
     concrete.Randomized.canTestInRandomized
 
-  lazy val genCarState: Gen[CarState] = for {
+  lazy val genCarState: Gen[CarState] = for
     v <- Arbitrary.arbDouble.arbitrary if v > 0
     p <- Arbitrary.arbDouble.arbitrary if p > 0
-  } yield CarState (v, p)
+  yield CarState (v, p)
 
   implicit lazy val arbitraryState: Arbitrary[CarState] =
     Arbitrary (genCarState)

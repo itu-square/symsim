@@ -35,12 +35,12 @@ case class ConcreteSarsa [
 
   /** Action selection policy based on argMax and randomzation.  */
   def chooseAction (q: Q) (s: State): Randomized[Action] =
-    for {
+    for
       distracted <- Randomized.coin (distraction)
-      action <- if (distracted)
-                  Randomized.oneOf (agent.instances.enumAction.membersAscending)
+      action <- if distracted
+                then Randomized.oneOf (agent.instances.enumAction.membersAscending)
                 else Randomized.const (bestAction (q) (s))
-    } yield action
+    yield action
 
 
 

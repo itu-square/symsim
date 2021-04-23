@@ -69,10 +69,10 @@ class SarsaLaws[State,FiniteState, Action, Reward, Scheduler[_]] (
   /** Law: All values in Q matrix are zeroReward initially */
   def initQAllValuesZero: Prop = {
 
-    val props =  for {
+    val props = for
       vector <- sarsa.initQ.values
       cell   <- vector.values
-    } yield cell == sarsa.agent.zeroReward
+    yield cell == sarsa.agent.zeroReward
 
     props.forall (identity)
   }
