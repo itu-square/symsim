@@ -45,7 +45,7 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
     * @return the updated matrix Q, the successor state, and a
     * reward difference (the size of the update performed)
     */
-  def learn1 (q: Q, s_t: State): Scheduler[(Q,State)] = for {
+  def learn1 (q: Q, s_t: State): Scheduler[(Q,State)] = for
 
     a_t <- chooseAction (q) (s_t)
 
@@ -62,7 +62,7 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
 
     q1 = q + (ds_t -> (q (ds_t) + (a_t -> qval)))
 
-  } yield (q1, s_tt)
+  yield (q1, s_tt)
 
 
 
@@ -83,12 +83,10 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
   /** Execute a full  learning episode from initial  state (until the
     * final state of agent is reached).
     */
-  def learn (q: Q): Scheduler[Q] =
-
-    for {
-      s0 <- agent.initialize
-      result <- learn (q, s0)
-    } yield  result
+  def learn (q: Q): Scheduler[Q] = for
+    s0 <- agent.initialize
+    result <- learn (q, s0)
+  yield  result
 
 
   /** Construct a zero initialized Q matrix */
@@ -137,22 +135,20 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
     val as = agent.instances.allActions
     val genReward = agent.instances.arbitraryReward.arbitrary
 
-    val genActionReward: Gen[Map[Action,Reward]] =
-      for {
-        // TODO refactor, seek what is available for maps
-        rewards <- Gen.sequence[List[Reward],Reward]
-          { List.fill (as.size) (genReward) }
-        ars = as zip rewards
-      } yield Map (ars: _*)
+    val genActionReward: Gen[Map[Action,Reward]] = for
+      // TODO refactor, seek what is available for maps
+      rewards <- Gen.sequence[List[Reward],Reward]
+        { List.fill (as.size) (genReward) }
+      ars = as zip rewards
+    yield Map (ars: _*)
 
     val fs = agent.instances.allFiniteStates
-    val genStateActionRewards: Gen[Q] =
-      for  {
-        // TODO refactor, seek what is available for maps
-        mars <- Gen.sequence[List[Map[Action,Reward]], Map[Action,Reward]]
-          { List.fill (fs.size) (genActionReward) }
-        smars = fs zip mars
-      } yield Map (smars: _*)
+    val genStateActionRewards: Gen[Q] = for
+      // TODO refactor, seek what is available for maps
+      mars <- Gen.sequence[List[Map[Action,Reward]], Map[Action,Reward]]
+        { List.fill (fs.size) (genActionReward) }
+      smars = fs zip mars
+    yield Map (smars: _*)
 
     genStateActionRewards
   }

@@ -28,8 +28,7 @@ object MountainCar
     }
 
     private def carReward (s: CarState) (a: CarAction): CarReward =
-      if (s.p >= 0.5) 1
-      else -0.1
+      if s.p >= 0.5 then 1 else -0.1
 
     /** Granularity of the step in seconds */
     private val t: Double = 0.1
@@ -50,13 +49,12 @@ object MountainCar
 
     }
 
-    def initialize: Randomized[CarState] = for {
+    def initialize: Randomized[CarState] = for
       p <- Randomized.between (-1.2, 0.5)
       v <- Randomized.between (-1.5, 1.5)
       s0 = CarState (v,p)
-      s <- if (isFinal (s0)) initialize
-           else Randomized.const (s0)
-    } yield s
+      s <- if isFinal (s0) then initialize else Randomized.const (s0)
+    yield s
 
     override def zeroReward: CarReward = 0.0
 
@@ -81,10 +79,10 @@ object MountainCarInstances
     BoundedEnumerableFromList (-0.2, 0.0, 0.2)
 
   implicit lazy val enumState: BoundedEnumerable[CarFiniteState] = {
-    val ss = for {
-        p0 <- Seq (-1.2,-1.03,-0.86,-0.69,-0.52,-0.35,-0.18,-0.01,0.16,0.33,0.5)
-        v0 <- Seq (-1.5,-1.2,-0.9,-0.6,-0.3,0.0,0.3,0.6,0.9,1.2,1.5)
-    } yield CarState (v=v0,p=p0)
+    val ss = for
+      p0 <- Seq (-1.2, -1.03, -0.86, -0.69, -0.52, -0.35, -0.18, -0.01, 0.16, 0.33, 0.5)
+      v0 <- Seq (-1.5, -1.2, -0.9, -0.6, -0.3, 0.0, 0.3, 0.6, 0.9, 1.2, 1.5)
+    yield CarState (v=v0,p=p0)
     BoundedEnumerableFromList (ss: _*)
   }
 
@@ -94,10 +92,10 @@ object MountainCarInstances
   implicit lazy val canTestInScheduler: CanTestIn[Randomized] =
     concrete.Randomized.canTestInRandomized
 
-  lazy val genCarState: Gen[CarState] = for {
-    p <- Gen.choose(-1.2,0.5)
-    v <- Gen.choose(-1.5,1.5)
-  } yield CarState (v, p)
+  lazy val genCarState: Gen[CarState] = for
+    p <- Gen.choose (-1.2,0.5)
+    v <- Gen.choose (-1.5,1.5)
+  yield CarState (v, p)
 
   implicit lazy val arbitraryState: Arbitrary[CarState] =
     Arbitrary (genCarState)

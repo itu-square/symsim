@@ -12,9 +12,9 @@ object Maze
     // Maze is discrete
     def discretize (s: MazeState): MazeFiniteState =  s
 
-    private def mazeReward (s: MazeState) : MazeReward =
-      if (s == MazeState(x=4,y=3)) 10        //Good final state
-      else if (s == MazeState(x=4,y=2)) -10  // Bad final state
+    private def mazeReward (s: MazeState): MazeReward =
+      if s == MazeState(x=4,y=3) then 10          //Good final state
+      else if (s == MazeState(x=4,y=2)) then -10  // Bad final state
       else -1
 
     // TODO: this is now deterministic but eventually needs to be randomized
@@ -45,13 +45,14 @@ object Maze
     def stepRight(s: MazeState): MazeState = MazeState(x=s.x+1,y=s.y)
 
 
-    def initialize: Randomized[MazeState] = for {
+    def initialize: Randomized[MazeState] = for
       y <- Randomized.between (1, 3)
       x <- Randomized.between (1, 4)
       s0 = MazeState (x,y)
-      s <- if (isFinal (s0) || (s0 == MazeState(2,2))) initialize
+      s <- if isFinal (s0) || s0 == MazeState(2,2)
+           then initialize
            else Randomized.const (s0)
-    } yield s
+    yield s
 
     override def zeroReward: MazeReward = 0
 
@@ -76,10 +77,10 @@ object MazeInstances
     BoundedEnumerableFromList (Up, Down, Left, Right)
 
   implicit lazy val enumState: BoundedEnumerable[MazeFiniteState] = {
-    val ss = for {
-        y <- Seq (1, 2, 3)
-        x <- Seq (1, 2, 3, 4)
-    } yield MazeState (x,y)
+    val ss = for
+      y <- Seq (1, 2, 3)
+      x <- Seq (1, 2, 3, 4)
+    yield MazeState (x,y)
     BoundedEnumerableFromList (ss: _*)
   }
 
@@ -89,10 +90,10 @@ object MazeInstances
   implicit lazy val canTestInScheduler: CanTestIn[Randomized] =
     concrete.Randomized.canTestInRandomized
 
-  lazy val genMazeState: Gen[MazeState] = for {
-      y <- Gen.choose(1,3)
-      x <- Gen.choose(1,4) if (x != 2 && y != 2)
-  } yield MazeState (y=Math.abs (y), x=Math.abs (x))
+  lazy val genMazeState: Gen[MazeState] = for
+    y <- Gen.choose (1,3)
+    x <- Gen.choose (1,4) if (x != 2 && y != 2)
+  yield MazeState (y=Math.abs (y), x=Math.abs (x))
 
   implicit lazy val arbitraryState: Arbitrary[MazeState] =
     Arbitrary (genMazeState)
