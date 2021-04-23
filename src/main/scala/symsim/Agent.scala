@@ -5,7 +5,7 @@ package symsim
   * latter would mix in discretization, and finiteness constraints on
   * FiniteState, and Action, with the corresponding tests
   */
-trait Agent[State, FiniteState, Action, Reward, Scheduler[_]] {
+trait Agent[State, FiniteState, Action, Reward, Scheduler[_]]:
 
 
   /** Execute one training step.  If symbolic, it may result in multiple
@@ -56,13 +56,13 @@ trait Agent[State, FiniteState, Action, Reward, Scheduler[_]] {
     */
   val instances: AgentConstraints[State, FiniteState, Action, Reward, Scheduler]
 
-}
+
 
 
 /** Type evidence required to consider a generic instance of Agent to be
   * an agent for the rest of the framework
   */
-trait AgentConstraints[State, FiniteState, Action, Reward, Scheduler[_]] {
+trait AgentConstraints[State, FiniteState, Action, Reward, Scheduler[_]]:
 
   import org.scalacheck.Arbitrary
   import org.scalacheck.Gen
@@ -110,5 +110,3 @@ trait AgentConstraints[State, FiniteState, Action, Reward, Scheduler[_]] {
 
   /** Reward is an arithmetic type according to Arith */
   implicit def rewardArith: Arith[Reward]
-
-}
