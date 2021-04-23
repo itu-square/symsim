@@ -9,10 +9,10 @@ val catsVersion = "2.5.0"
 scalacOptions ++= Seq (
   "-deprecation",
   "-feature",
+  "-explain-types",
   "-Xfatal-warnings",
 )
 
-// Test/ testOptions += Tests.Argument (TestFrameworks.ScalaTest, "-h", "target/report")
  
 libraryDependencies ++= Seq (
   "org.scalacheck" %% "scalacheck" % "1.15.3" % Test,
@@ -27,3 +27,4 @@ libraryDependencies ++= Seq (
 )
 
 Test / testOptions += Tests.Argument("-oD")
+// Test / testOptions += Tests.Argument (TestFrameworks.ScalaTest, "-h", "target/report")
