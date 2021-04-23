@@ -43,7 +43,7 @@ object Randomized {
     cats.data.IndexedStateT.catsDataMonadForIndexedStateT
 
 
-  implicit val canTestInRandomized =
+  implicit val canTestInRandomized: symsim.CanTestIn[Randomized] =
     new symsim.CanTestIn[Randomized] {
 
       def toProp (rProp: Randomized[Boolean]) =

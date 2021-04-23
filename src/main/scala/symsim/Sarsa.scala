@@ -72,7 +72,7 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
     def learn (q: Q, s_t: State): Scheduler[Q] = {
       val initial = q -> s_t
       val f = (learn1 _).tupled
-      val p = { qs: (Q,State) => agent.isFinal (qs._2) }
+      val p = { (qs: (Q,State)) => agent.isFinal (qs._2) }
       Monad[Scheduler]
         .iterateUntilM[(Q,State)] (initial) (f) (p)
         .map { _._1 }
@@ -84,6 +84,7 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
       * final state of agent is reached).
       */
     def learn (q: Q): Scheduler[Q] =
+
       for {
         s0 <- agent.initialize
         result <- learn (q, s0)

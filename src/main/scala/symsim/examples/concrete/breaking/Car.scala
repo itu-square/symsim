@@ -50,7 +50,7 @@ object Car
 
     override def zeroReward: CarReward = 0.0
 
-    lazy val instances = CarInstances
+    val instances = CarInstances
 }
 
 

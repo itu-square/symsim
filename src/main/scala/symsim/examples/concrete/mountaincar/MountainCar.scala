@@ -60,7 +60,7 @@ object MountainCar
 
     override def zeroReward: CarReward = 0.0
 
-    lazy val instances = MountainCarInstances
+    val instances = MountainCarInstances
 }
 
 

@@ -14,7 +14,8 @@ class BoundedEnumerableFromListSpec extends SymSimSpec {
       BoundedEnumerableFromList (true, false)
 
     val l = Seq (1.0, 2.0, 42.0, 0.42)
-    implicit val arbDouble = Arbitrary[Double] { Gen.oneOf (l) }
+    implicit val arbDouble: Arbitrary[Double] =
+      Arbitrary[Double] { Gen.oneOf (l) }
     implicit val evDouble: BoundedEnumerable[Double] =
       BoundedEnumerableFromList (l: _*)
 

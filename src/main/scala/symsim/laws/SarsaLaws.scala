@@ -58,43 +58,43 @@ class SarsaLaws[State,FiniteState, Action, Reward, Scheduler[_]] (
   // TODO  "this is for RL: eventually we arrive at final (episodic agent)" ->
   //      Prop.falsified,
 
-    /** Law: Q matrix has a action-reward map for each finite state */
-    def initQDefinedForAllFiniteStates: Prop =
-        isStateTotal (sarsa.initQ)
+  /** Law: Q matrix has a action-reward map for each finite state */
+  def initQDefinedForAllFiniteStates: Prop =
+      isStateTotal (sarsa.initQ)
 
-    /** Check that the initialization of Q matrix is correct */
-    def initQDefinedForAllActions: Prop =
-      isActionTotal (sarsa.initQ)
+  /** Check that the initialization of Q matrix is correct */
+  def initQDefinedForAllActions: Prop =
+    isActionTotal (sarsa.initQ)
 
-    /** Law: All values in Q matrix are zeroReward initially */
-    def initQAllValuesZero: Prop = {
+  /** Law: All values in Q matrix are zeroReward initially */
+  def initQAllValuesZero: Prop = {
 
-      val props =  for {
-        vector <- sarsa.initQ.values
-        cell   <- vector.values
-      } yield cell == sarsa.agent.zeroReward
+    val props =  for {
+      vector <- sarsa.initQ.values
+      cell   <- vector.values
+    } yield cell == sarsa.agent.zeroReward
 
-      props.forall (identity)
-    }
+    props.forall (identity)
+  }
 
-    def generatedQMatricesAreTotalWRTStateSpace: Prop =
-      forAll (sarsa.genQ) { q: sarsa.Q =>
-        isStateTotal (q) }
+  def generatedQMatricesAreTotalWRTStateSpace: Prop =
+    forAll (sarsa.genQ) { (q: sarsa.Q) =>
+      isStateTotal (q) }
 
-    def generatedQMatricesAreTotalWRTActionSpace: Prop =
-      forAll (sarsa.genQ) { q: sarsa.Q =>
-        isActionTotal (q) }
+  def generatedQMatricesAreTotalWRTActionSpace: Prop =
+    forAll (sarsa.genQ) { (q: sarsa.Q) =>
+      isActionTotal (q) }
 
 
-    /** Law: chooseAction gives one of the enumerable actions */
-    def chooseActionGivesEnumerableAction: Prop =
-      forAll (sarsa.genQ) { q: sarsa.Q =>
-        forAll { s: State =>
-          val sa: Scheduler[Action] = sarsa.chooseAction (q) (s)
-          forAll (sa.toGen) { a =>
-            sarsa.agent.instances.allActions.contains (a)
-          }
+  /** Law: chooseAction gives one of the enumerable actions */
+  def chooseActionGivesEnumerableAction: Prop =
+    forAll (sarsa.genQ) { (q: sarsa.Q) =>
+      forAll { (s: State) =>
+        val sa: Scheduler[Action] = sarsa.chooseAction (q) (s)
+        forAll (sa.toGen) { a =>
+          sarsa.agent.instances.allActions.contains (a)
         }
       }
+    }
 
 }
