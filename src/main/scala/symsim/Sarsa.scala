@@ -3,13 +3,13 @@ package symsim
 import cats.Monad
 import cats.MonoidK
 import cats.data.Kleisli
+import cats.syntax.monad._
 import cats.syntax.functor._
 import cats.syntax.flatMap._
 import cats.syntax.foldable._
 import cats.instances.lazyList._
 
-import Arith.arithOps
-import Arith.doubleOps
+import symsim.Arith._
 import cats.kernel.BoundedEnumerable
 import org.scalacheck.Gen
 import org.typelevel.paiges.Doc
@@ -26,7 +26,7 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
 
   val agent: Agent[State, FiniteState, Action, Reward, Scheduler]
 
-  import agent.instances._
+  import agent.instances.given
 
   def alpha: Double
   def gamma: Double
@@ -55,7 +55,7 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
     ds_t = agent.discretize (s_t)
     ds_tt = agent.discretize (s_tt)
     old_entry = q (ds_t) (a_t)
-    correction = r_tt + gamma * q (ds_tt) (a_tt) - old_entry
+    correction = r_tt + gamma * (q (ds_tt) (a_tt)) - old_entry
     qval = old_entry + alpha * correction
 
     q1 = q + (ds_t -> (q (ds_t) + (a_t -> qval)))
@@ -71,7 +71,7 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
     val initial = q -> s_t
     val f = (learn1 _).tupled
     val p = { (qs: (Q,State)) => agent.isFinal (qs._2) }
-    Monad[Scheduler]
+    summon[Monad[Scheduler]]
       .iterateUntilM[(Q,State)] (initial) (f) (p)
       .map { _._1 }
 

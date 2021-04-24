@@ -133,4 +133,4 @@ object MazeInstances
 
   implicit lazy val arbitraryReward = Arbitrary (Gen.double)
 
-  implicit lazy val rewardArith: Arith[MazeReward] = Arith.arithDouble
+  implicit lazy val rewardArith: Arith[MazeReward] = Arith.given_Arith_Double

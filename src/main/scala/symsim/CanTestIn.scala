@@ -27,7 +27,6 @@ trait CanTestIn[F[_]]:
   def toGen[A] (fa: F[A]): Gen[A]
 
 
-
 object CanTestIn:
 
   /** Allow to use testIn[F] to access the implicit available instance of
@@ -35,8 +34,8 @@ object CanTestIn:
     */
   def testIn[F[_]: CanTestIn] = implicitly[CanTestIn[F]]
 
-  implicit class CanTestInOpsBoolean[F[_]: CanTestIn] (fb: F[Boolean]):
+  extension [F[_]: CanTestIn] (fb: F[Boolean])
     def toProp: Prop = testIn[F].toProp (fb)
 
-  implicit class CanTestInOps[F[_]: CanTestIn, A] (fa: F[A]):
+  extension [F[_]: CanTestIn, A] (fa: F[A])
     def toGen: Gen[A] = testIn[F].toGen (fa)

@@ -12,6 +12,7 @@ import org.scalacheck.util.Pretty
 import org.scalacheck.util.Pretty._
 
 import symsim.CanTestIn._
+import symsim.Arith._
 
 /**
  * Laws that have to be obeyed by any refinement of symsim.SARSA
@@ -27,7 +28,7 @@ import symsim.CanTestIn._
 class SarsaLaws[State,FiniteState, Action, Reward, Scheduler[_]] (
   val sarsa: Sarsa[State, FiniteState, Action, Reward, Scheduler]):
 
-  import sarsa.agent.instances._
+  import sarsa.agent.instances.given
 
   def isStateTotal (q: sarsa.Q): Boolean =
     q.keySet == sarsa.agent.instances.allFiniteStates.toSet
