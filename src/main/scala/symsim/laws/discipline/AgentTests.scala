@@ -4,11 +4,10 @@ package laws.discipline
 import cats.Eq
 import cats.kernel.instances.boolean._
 import cats.laws.discipline._
+
 import org.scalacheck.Arbitrary
 import org.scalacheck.Prop
 import org.scalacheck.Prop.forAll
-
-import scala.language.implicitConversions
 
 import symsim.concrete.Randomized
 

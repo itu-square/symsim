@@ -1,8 +1,13 @@
 package symsim
 package examples.concrete.simplemaze
 
-import symsim.concrete.Randomized
+import cats.{Eq, Monad}
+import cats.kernel.BoundedEnumerable
 
+import org.scalacheck.Gen
+import org.scalacheck.Arbitrary
+
+import symsim.concrete.Randomized
 
 /**
  * Russell, Norvig, Fig 17.1, p. 646
@@ -89,48 +94,31 @@ object Maze
 object MazeInstances
   extends AgentConstraints[MazeState, MazeFiniteState, MazeAction, MazeReward, Randomized]:
 
-  import cats.{Eq, Monad}
-  import cats.kernel.BoundedEnumerable
-
-  import org.scalacheck.Gen
-  import org.scalacheck.Arbitrary
-  import org.scalacheck.Arbitrary.arbitrary
-
-
-  implicit lazy val enumAction: BoundedEnumerable[MazeAction] =
+  given enumAction: BoundedEnumerable[MazeAction] =
     BoundedEnumerableFromList (Up, Down, Left, Right)
 
-
-  implicit lazy val enumState: BoundedEnumerable[MazeFiniteState] =
+  given enumState: BoundedEnumerable[MazeFiniteState] =
     val ss = for
       y <- Seq (1, 2, 3)
       x <- Seq (1, 2, 3, 4)
     yield MazeState (x,y)
     BoundedEnumerableFromList (ss: _*)
 
-
-  implicit lazy val schedulerIsMonad: Monad[Randomized] =
+  given schedulerIsMonad: Monad[Randomized] =
     concrete.Randomized.randomizedIsMonad
 
-
-  implicit lazy val canTestInScheduler: CanTestIn[Randomized] =
+  given canTestInScheduler: CanTestIn[Randomized] =
     concrete.Randomized.canTestInRandomized
-
 
   lazy val genMazeState: Gen[MazeState] = for
     y <- Gen.choose (1,3)
     x <- Gen.choose (1,4) if (x != 2 && y != 2)
   yield MazeState (y=Math.abs (y), x=Math.abs (x))
 
+  given arbitraryState: Arbitrary[MazeState] = Arbitrary (genMazeState)
 
-  implicit lazy val arbitraryState: Arbitrary[MazeState] =
-    Arbitrary (genMazeState)
+  given eqMazeState: Eq[MazeState] = Eq.fromUniversalEquals
 
+  given arbitraryReward: Arbitrary[MazeReward] = Arbitrary (Gen.double)
 
-  implicit lazy val eqMazeState: Eq[MazeState] =
-    Eq.fromUniversalEquals
-
-
-  implicit lazy val arbitraryReward = Arbitrary (Gen.double)
-
-  implicit lazy val rewardArith: Arith[MazeReward] = Arith.given_Arith_Double
+  given rewardArith: Arith[MazeReward] = Arith.given_Arith_Double

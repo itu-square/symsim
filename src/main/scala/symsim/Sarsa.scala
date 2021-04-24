@@ -94,11 +94,11 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
    * Execute 'n' full learning episodes (until the final state of agent is
    * reached), starting with the matrix q
    */
-  def learnN (n: Int, q: Q) (implicit ar: Arith[Reward]): Scheduler[Q] =
+  def learnN (n: Int, q: Q) (using ar: Arith[Reward]): Scheduler[Q] =
     // The endomonoid for Kleisli[Scheduler,QS,QS], apparently not automatic
     type EndoKleisli[A] = Kleisli[Scheduler,A,A]
     def endoKleisli[A] (f: A => Scheduler[A]) = Kleisli[Scheduler,A,A] (f)
-    implicit val monoid: MonoidK[EndoKleisli] = Kleisli.endoMonoidK[Scheduler]
+    given MonoidK[EndoKleisli] = Kleisli.endoMonoidK[Scheduler]
 
     val l: Q => Scheduler[Q] = learn _
 
@@ -118,7 +118,7 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
     * this be using the bestAction method? Or, why is the best action method
     * abstract? Or is qToPolicy too concrete to be here?
     */
-  def qToPolicy (q: Q) (implicit order: Ordering[Reward]): Policy =
+  def qToPolicy (q: Q) (using Ordering[Reward]): Policy =
     def best (m: Map[Action,Reward]): Action =
       m.map { _.swap } (m.values.max)
     q.view.mapValues (best).to (Map)

@@ -7,17 +7,13 @@ import org.scalacheck.Arbitrary
 
 class BoundedEnumerableFromListSpec extends SymSimSpec:
 
-    implicit val evUnit: BoundedEnumerable[Unit] =
-      BoundedEnumerableFromList (())
+    given BoundedEnumerable[Unit] = BoundedEnumerableFromList (())
 
-    implicit val evBoolean: BoundedEnumerable[Boolean] =
-      BoundedEnumerableFromList (true, false)
+    given BoundedEnumerable[Boolean] = BoundedEnumerableFromList (true, false)
 
     val l = Seq (1.0, 2.0, 42.0, 0.42)
-    implicit val arbDouble: Arbitrary[Double] =
-      Arbitrary[Double] { Gen.oneOf (l) }
-    implicit val evDouble: BoundedEnumerable[Double] =
-      BoundedEnumerableFromList (l: _*)
+    given Arbitrary[Double] = Arbitrary[Double] (Gen.oneOf (l))
+    given BoundedEnumerable[Double] = BoundedEnumerableFromList (l: _*)
 
     checkAll ("BoundedEnumerableFromList[Unit]",
       BoundedEnumerableTests[Unit].boundedEnumerable)

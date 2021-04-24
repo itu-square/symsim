@@ -1,6 +1,13 @@
 package symsim
 package examples.concrete.mountaincar
 
+
+import cats.{Eq, Monad}
+import cats.kernel.BoundedEnumerable
+
+import org.scalacheck.Gen
+import org.scalacheck.Arbitrary
+
 import symsim.concrete.Randomized
 
 /**
@@ -79,17 +86,10 @@ object MountainCar
 object MountainCarInstances
   extends AgentConstraints[CarState, CarFiniteState, CarAction, CarReward, Randomized]:
 
-  import cats.{Eq, Monad}
-  import cats.kernel.BoundedEnumerable
-
-  import org.scalacheck.Gen
-  import org.scalacheck.Arbitrary
-  import org.scalacheck.Arbitrary.arbitrary
-
-  implicit lazy val enumAction: BoundedEnumerable[CarAction] =
+  given enumAction: BoundedEnumerable[CarAction] =
     BoundedEnumerableFromList (-0.2, 0.0, 0.2)
 
-  implicit lazy val enumState: BoundedEnumerable[CarFiniteState] =
+  given enumState: BoundedEnumerable[CarFiniteState] =
     val ss = for
       p0 <- Seq (-1.2, -1.03, -0.86, -0.69, -0.52, -0.35, -0.18, -0.01, 0.16, 0.33, 0.5)
       v0 <- Seq (-1.5, -1.2, -0.9, -0.6, -0.3, 0.0, 0.3, 0.6, 0.9, 1.2, 1.5)
@@ -97,10 +97,10 @@ object MountainCarInstances
     BoundedEnumerableFromList (ss: _*)
 
 
-  implicit lazy val schedulerIsMonad: Monad[Randomized] =
+  given schedulerIsMonad: Monad[Randomized] =
     concrete.Randomized.randomizedIsMonad
 
-  implicit lazy val canTestInScheduler: CanTestIn[Randomized] =
+  given canTestInScheduler: CanTestIn[Randomized] =
     concrete.Randomized.canTestInRandomized
 
   lazy val genCarState: Gen[CarState] = for
@@ -108,12 +108,10 @@ object MountainCarInstances
     v <- Gen.choose (-1.5,1.5)
   yield CarState (v, p)
 
-  implicit lazy val arbitraryState: Arbitrary[CarState] =
-    Arbitrary (genCarState)
+  given arbitraryState: Arbitrary[CarState] = Arbitrary (genCarState)
 
-  implicit lazy val eqCarState: Eq[CarState] =
-    Eq.fromUniversalEquals
+  given eqCarState: Eq[CarState] = Eq.fromUniversalEquals
 
-  implicit lazy val arbitraryReward = Arbitrary (Gen.double)
+  given arbitraryReward: Arbitrary[CarReward] = Arbitrary (Gen.double)
 
-  implicit lazy val rewardArith: Arith[CarReward] = Arith.given_Arith_Double
+  given rewardArith: Arith[CarReward] = Arith.given_Arith_Double
