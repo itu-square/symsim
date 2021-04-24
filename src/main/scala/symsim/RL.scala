@@ -22,5 +22,5 @@ trait RL[FiniteState, Action]:
   def pp_policy (policy: Policy): Doc =
     val rows = policy
       .toIterable
-      .map { case (k,v) => (k.toString, Doc.str (v)) }
+      .map ( _.toString -> Doc.str (_) )
     Doc.tabulate ('.', "...", rows)
