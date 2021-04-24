@@ -8,7 +8,7 @@ import symsim.concrete.Randomized.canTestInRandomized
 
 /** Sanity tests for Randomized as a Scheduler */
 class RandomizedSpec extends org.scalatest.freespec.AnyFreeSpec
-  with org.scalatestplus.scalacheck.Checkers {
+  with org.scalatestplus.scalacheck.Checkers:
 
   "Sanity checks for symsim.concrete.Randomized" - {
 
@@ -33,5 +33,3 @@ class RandomizedSpec extends org.scalatest.freespec.AnyFreeSpec
     }
 
   }
-
-}

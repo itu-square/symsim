@@ -1,7 +1,7 @@
 package symsim
 package examples.concrete.simplemaze
 
-class MazeIsAgentSpec extends SymSimSpec {
+class MazeIsAgentSpec extends SymSimSpec:
 
   checkAll( "concrete.simplemaze.Maze is an Agent",
 
@@ -14,5 +14,3 @@ class MazeIsAgentSpec extends SymSimSpec {
     ].agent (Maze)
 
   )
-
-}

@@ -7,7 +7,7 @@ class Experiments
   extends org.scalatest.freespec.AnyFreeSpec
   with org.scalatest.matchers.should.Matchers
   with org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-  with org.scalatest.prop.TableDrivenPropertyChecks {
+  with org.scalatest.prop.TableDrivenPropertyChecks:
 
   "test run" ignore {
 
@@ -30,5 +30,3 @@ class Experiments
     val policy = sarsa.run
 
   }
-
-}

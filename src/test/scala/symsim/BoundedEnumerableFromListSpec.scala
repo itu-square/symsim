@@ -5,7 +5,7 @@ import cats.kernel.laws.discipline.BoundedEnumerableTests
 import org.scalacheck.Gen
 import org.scalacheck.Arbitrary
 
-class BoundedEnumerableFromListSpec extends SymSimSpec {
+class BoundedEnumerableFromListSpec extends SymSimSpec:
 
     implicit val evUnit: BoundedEnumerable[Unit] =
       BoundedEnumerableFromList (())
@@ -27,5 +27,3 @@ class BoundedEnumerableFromListSpec extends SymSimSpec {
 
     checkAll ("BoundedEnumerableFromList[4 x Double]",
       BoundedEnumerableTests[Double].boundedEnumerable)
-
-}

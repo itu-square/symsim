@@ -1,7 +1,7 @@
 package symsim
 package examples.concrete.breaking
 
-class CarIsAgentSpec extends SymSimSpec {
+class CarIsAgentSpec extends SymSimSpec:
 
   checkAll( "concrete.breaking.Car is an Agent",
 
@@ -14,5 +14,3 @@ class CarIsAgentSpec extends SymSimSpec {
     ].agent (Car)
 
   )
-
-}
