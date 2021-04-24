@@ -6,6 +6,11 @@ import org.scalacheck.Gen
 import org.scalacheck.Arbitrary.arbitrary
 
 
+/** A purely functional wrapping of scala.util.Random */
+type Randomized[A] = cats.data.State[scala.util.Random,A]
+
+type Probability = Double
+
 /** A purely functional wrapping of scala.util.Random. Delegations. */
 object Randomized:
 

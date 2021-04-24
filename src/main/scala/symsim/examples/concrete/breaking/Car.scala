@@ -3,6 +3,22 @@ package examples.concrete.breaking
 
 import symsim.concrete.Randomized
 
+/**
+ * We map the car states to
+ *
+ *   { (0,5], (5,10], (10,15], (15,infty) } X { [0,5), [5,10), (10, infty) }.
+ *
+ * We represent these states by the left point of the interval, so we can use
+ * the same type to represent the finite state space.
+ */
+
+case class CarState (v: Double, p: Double):
+  override def toString: String = s"[v=$v, p=$p]"
+
+type CarFiniteState = CarState
+type CarAction = Double
+type CarReward = Double
+
 object Car
   extends Agent[CarState, CarFiniteState, CarAction, CarReward, Randomized]:
 
