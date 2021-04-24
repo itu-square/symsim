@@ -29,10 +29,10 @@ trait CanTestIn[F[_]]:
 
 object CanTestIn:
 
-  /** Allow to use testIn[F] to access the implicit available instance of
+  /** Allow to use testIn[F] to access the given instance of
     * CanTestIn for F.
     */
-  def testIn[F[_]: CanTestIn] = implicitly[CanTestIn[F]]
+  def testIn[F[_]: CanTestIn] = summon[CanTestIn[F]]
 
   extension [F[_]: CanTestIn] (fb: F[Boolean])
     def toProp: Prop = testIn[F].toProp (fb)
