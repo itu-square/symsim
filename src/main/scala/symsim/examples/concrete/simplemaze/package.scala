@@ -1,6 +1,6 @@
 package symsim.examples.concrete
 
-package object simplemaze {
+package object simplemaze:
 
   /**
    * Russell, Norvig, Fig 17.1, p. 646
@@ -12,9 +12,9 @@ package object simplemaze {
    *
    */
 
-  case class MazeState (x: Int, y: Int){
+  case class MazeState (x: Int, y: Int):
     override def toString: String = s"[x=$x, y=$y]"
-  }
+
   type MazeFiniteState = MazeState
   type MazeReward = Double
 
@@ -23,5 +23,3 @@ package object simplemaze {
   case object Right extends MazeAction
   case object Up extends MazeAction
   case object Down extends MazeAction
-
-}

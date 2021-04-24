@@ -3,14 +3,15 @@ package examples.concrete.breaking
 
 import symsim.concrete.Randomized
 
-
 object Car
-  extends Agent[CarState, CarFiniteState, CarAction, CarReward, Randomized] {
+  extends Agent[CarState, CarFiniteState, CarAction, CarReward, Randomized]:
+
 
     def isFinal (s: CarState): Boolean =
       s.v == 0.0 || Math.abs (s.p) >= 1000.0
 
-    def discretize (s: CarState): CarFiniteState =  {
+
+    def discretize (s: CarState): CarFiniteState =
       require (s.v >= 0, s"s.v = ${s.v} is not non-negative")
       require (s.p >= 0, s"s.p = ${s.p} is not non-negative")
 
@@ -18,19 +19,20 @@ object Car
       val dv = (s.v/5.0).floor * 5.0
 
       CarState (dv min 10.0, dp min 15.0)
-    }
+
 
     private def carReward (s: CarState) (a: CarAction): CarReward =
       if s.p >= 10.0 then -10
       else if s.p < 10.0 && s.v == 0.0 then 10.0 - s.p
       else -1.0
 
+
     /** Granularity of the step in seconds */
     private val t: Double = 2.0
 
-    // TODO: this is now deterministic but eventually needs to be randomized
-    def step (s: CarState) (a: CarAction): (CarState, CarReward) = {
 
+    // TODO: this is now deterministic but eventually needs to be randomized
+    def step (s: CarState) (a: CarAction): (CarState, CarReward) =
       // Stop moving when velecity is zero, breaking is not moving backwards
       val t1 = Math.min (- s.v / a, t)
 
@@ -38,7 +40,7 @@ object Car
       val v1 = Math.max (s.v + a*t1, 0.0)
       val s1 = CarState (p1, v1)
       s1 -> carReward (s1) (a)
-    }
+
 
     def initialize: Randomized[CarState] = for
       v <- Randomized.between (0.0, 10.0)
@@ -48,17 +50,18 @@ object Car
            else Randomized.const (s0)
     yield s
 
+
     override def zeroReward: CarReward = 0.0
 
+
     val instances = CarInstances
-}
 
 
 /** Here is a proof that our types actually deliver on everything that an Agent
   * needs to be able to do to work in the framework.
   */
 object CarInstances
-  extends AgentConstraints[CarState, CarFiniteState, CarAction, CarReward, Randomized] {
+  extends AgentConstraints[CarState, CarFiniteState, CarAction, CarReward, Randomized]:
 
   import cats.{Eq, Monad}
   import cats.kernel.BoundedEnumerable
@@ -67,22 +70,26 @@ object CarInstances
   import org.scalacheck.Arbitrary
   import org.scalacheck.Arbitrary.arbitrary
 
+
   implicit lazy val enumAction: BoundedEnumerable[CarAction] =
     BoundedEnumerableFromList (-10, -5, -2.5, -0.5, -0.05, -0.01, -0.001)
 
-  implicit lazy val enumState: BoundedEnumerable[CarFiniteState] = {
+
+  implicit lazy val enumState: BoundedEnumerable[CarFiniteState] =
     val ss = for
       v <- Seq (0.0, 5.0, 10.0)
       p <- Seq (0.0, 5.0, 10.0, 15.0)
     yield CarState (v,p)
     BoundedEnumerableFromList (ss: _*)
-  }
+
 
   implicit lazy val schedulerIsMonad: Monad[Randomized] =
     concrete.Randomized.randomizedIsMonad
 
+
   implicit lazy val canTestInScheduler: CanTestIn[Randomized] =
     concrete.Randomized.canTestInRandomized
+
 
   lazy val genCarState: Gen[CarState] = for
     v <- Arbitrary.arbDouble.arbitrary if v > 0
@@ -92,12 +99,14 @@ object CarInstances
   implicit lazy val arbitraryState: Arbitrary[CarState] =
     Arbitrary (genCarState)
 
+
   implicit lazy val eqCarState: Eq[CarState] =
     Eq.fromUniversalEquals
+
 
   implicit lazy val arbitraryReward =
     Arbitrary (Gen.double)
 
+
   implicit lazy val rewardArith: Arith[CarReward] =
     Arith.arithDouble
-}

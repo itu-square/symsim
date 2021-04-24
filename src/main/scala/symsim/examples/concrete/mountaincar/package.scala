@@ -1,6 +1,6 @@
 package symsim.examples.concrete
 
-package object mountaincar {
+package object mountaincar:
 
   /**
    * We map the car states to
@@ -15,5 +15,3 @@ package object mountaincar {
   type CarFiniteState = CarState
   type CarAction = Double
   type CarReward = Double
-
-}

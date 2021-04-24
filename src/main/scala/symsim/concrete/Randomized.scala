@@ -1,23 +1,22 @@
 package symsim.concrete
 
-/** A purely functional wrapping of scala.util.Random. Delegations. */
-object Randomized {
+import cats.data.State
+import org.scalacheck.Prop
+import org.scalacheck.Gen
+import org.scalacheck.Arbitrary.arbitrary
 
-  import cats.data.State
-  import org.scalacheck.Prop
-  import org.scalacheck.Gen
-  import org.scalacheck.Arbitrary.arbitrary
+
+/** A purely functional wrapping of scala.util.Random. Delegations. */
+object Randomized:
 
   /** Create a generator that always produces a. Used to create deterministic
     * values when a scheduler/randomized type is expected. TODO: this could
     * likely be moved to a super class for all schedulers.
     */
-  def const[A] (a: A): Randomized[A] =
-    State { r => (r, a) }
+  def const[A] (a: A): Randomized[A] = State { r => (r, a) }
 
 
-  def prob: Randomized[Probability] =
-    State { r => (r, r.nextDouble ()) }
+  def prob: Randomized[Probability] = State { r => (r, r.nextDouble ()) }
 
 
   def between (minInclusive: Int, maxExclusive: Int): Randomized[Int] =
@@ -53,8 +52,3 @@ object Randomized {
         a = ra.runA (r).value
       yield a
     }
-
-}
-
-
-

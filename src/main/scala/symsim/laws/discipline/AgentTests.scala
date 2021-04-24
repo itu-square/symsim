@@ -18,7 +18,7 @@ import symsim.concrete.Randomized
   * agents.
   */
 class AgentTests[State, FiniteState, Action, Reward, Scheduler[_]]
-  extends org.typelevel.discipline.Laws {
+  extends org.typelevel.discipline.Laws:
 
   def laws (a: Agent[State, FiniteState, Action, Reward, Scheduler]) =
     new symsim.laws.AgentLaws (a)
@@ -40,5 +40,3 @@ class AgentTests[State, FiniteState, Action, Reward, Scheduler[_]]
       "discretize (step (s) (a)._1) ∈ FiniteState" ->
         laws (a).stepIsIntoFiniteState,
     )
-
-}

@@ -20,15 +20,13 @@ import org.typelevel.paiges.Doc
 // a State Monad, so that the agent does not try obviously invalid actions in
 // some state.  This could lead to a performance improvement.
 trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
-  extends RL[FiniteState, Action] {
-
-  type A = Agent[State, FiniteState, Action, Reward, Scheduler]
-
-  val agent: A
-
-  import agent.instances._
+  extends RL[FiniteState, Action]:
 
   type Q = Map[FiniteState, Map[Action, Reward]]
+
+  val agent: Agent[State, FiniteState, Action, Reward, Scheduler]
+
+  import agent.instances._
 
   def alpha: Double
   def gamma: Double
@@ -69,14 +67,13 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
   /** Execute a full learning episode (until the final state of agent is
     * reached).
     */
-  def learn (q: Q, s_t: State): Scheduler[Q] = {
+  def learn (q: Q, s_t: State): Scheduler[Q] =
     val initial = q -> s_t
     val f = (learn1 _).tupled
     val p = { (qs: (Q,State)) => agent.isFinal (qs._2) }
     Monad[Scheduler]
       .iterateUntilM[(Q,State)] (initial) (f) (p)
       .map { _._1 }
-  }
 
 
 
@@ -97,8 +94,7 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
    * Execute 'n' full learning episodes (until the final state of agent is
    * reached), starting with the matrix q
    */
-  def learnN (n: Int, q: Q) (implicit ar: Arith[Reward]): Scheduler[Q] = {
-
+  def learnN (n: Int, q: Q) (implicit ar: Arith[Reward]): Scheduler[Q] =
     // The endomonoid for Kleisli[Scheduler,QS,QS], apparently not automatic
     type EndoKleisli[A] = Kleisli[Scheduler,A,A]
     def endoKleisli[A] (f: A => Scheduler[A]) = Kleisli[Scheduler,A,A] (f)
@@ -116,25 +112,22 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
 
     q1
 
-  }
 
 
-
-  /** Convert the matrix Q after training into a Policy map */
-  def qToPolicy (q: Q) (implicit order: Ordering[Reward]): Policy = {
-
+  /** Convert the matrix Q after training into a Policy map. TODO: should not
+    * this be using the bestAction method? Or, why is the best action method
+    * abstract? Or is qToPolicy too concrete to be here?
+    */
+  def qToPolicy (q: Q) (implicit order: Ordering[Reward]): Policy =
     def best (m: Map[Action,Reward]): Action =
       m.map { _.swap } (m.values.max)
-
     q.view.mapValues (best).to (Map)
-  }
+
 
   /** Generate total Q matrices for testing. */
-  val genQ: Gen[Q] = {
-
+  val genQ: Gen[Q] =
     val as = agent.instances.allActions
     val genReward = agent.instances.arbitraryReward.arbitrary
-
     val genActionReward: Gen[Map[Action,Reward]] = for
       // TODO refactor, seek what is available for maps
       rewards <- Gen.sequence[List[Reward],Reward]
@@ -151,9 +144,10 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
     yield Map (smars: _*)
 
     genStateActionRewards
-  }
 
-  def pp_Q (q: Q): Doc = {
+
+
+  def pp_Q (q: Q): Doc =
     def fmt (ar: Map[Action, Reward]): Doc =
       Doc.tabulate (' ', " ",
         ar.toList
@@ -163,10 +157,6 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
             k -> v
           }
       )
-    val rows = q
-      .toIterable
+    val rows = q.toIterable
       .map { case (s,ar) => (s.toString, fmt (ar).flatten) }
     Doc.tabulate (' ', "... ", rows)
-  }
-
-}

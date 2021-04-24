@@ -16,20 +16,17 @@ case class ConcreteSarsa [
   val epochs: Int,
   val seed: Long
 
-) extends Sarsa[State, FiniteState, Action, Double, Randomized] {
-
+) extends Sarsa[State, FiniteState, Action, Double, Randomized]:
 
   import agent.instances._
-
 
   // TODO: it is a bit unclear if this is general (if it turns out to be the
   // same im symbolic SARSA we should promote this to the trait
 
-  def bestAction (q: Q) (s: State): Action = {
+  def bestAction (q: Q) (s: State): Action =
     val qs = q (agent.discretize (s)) map { _.swap }
     val M = qs.keys.max
     qs (M)
-  }
 
 
 
@@ -45,7 +42,7 @@ case class ConcreteSarsa [
 
 
   /** Construct a zero initialized Q matrix */
-  def initQ: Q = {
+  def initQ: Q =
     // Create the initial Q matrix (zero's everywhere)
     val qa = BoundedEnumerable[Action]
       .membersAscending
@@ -58,7 +55,6 @@ case class ConcreteSarsa [
       .toMap
 
     q0
-  }
 
 
 
@@ -70,5 +66,3 @@ case class ConcreteSarsa [
       .value
 
   override def run: Policy = qToPolicy (this.runQ)
-
-}

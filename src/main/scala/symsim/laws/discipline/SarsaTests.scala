@@ -8,10 +8,7 @@ import org.scalacheck.Prop.forAll
 
 class SarsaTests[State, FiniteState, Action, Reward, Scheduler[_]]
   (s: Sarsa[State, FiniteState, Action, Reward, Scheduler])
-    extends org.typelevel.discipline.Laws
-{
-
-  type S = Sarsa[State, FiniteState, Action, Reward, Scheduler]
+    extends org.typelevel.discipline.Laws:
 
   val laws = new symsim.laws.SarsaLaws (s)
 
@@ -36,4 +33,3 @@ class SarsaTests[State, FiniteState, Action, Reward, Scheduler[_]]
       "chooseAction (q) (s) ∈ Action for all q and s" ->
         laws.chooseActionGivesEnumerableAction,
     )
-}

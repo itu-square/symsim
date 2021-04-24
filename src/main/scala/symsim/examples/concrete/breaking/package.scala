@@ -1,6 +1,6 @@
 package symsim.examples.concrete
 
-package object breaking {
+package object breaking:
 
   /**
    * We map the car states to
@@ -11,13 +11,9 @@ package object breaking {
    * the same type to represent the finite state space.
    */
 
-  case class CarState (v: Double, p: Double) {
-
+  case class CarState (v: Double, p: Double):
     override def toString: String = s"[v=$v, p=$p]"
 
-  }
   type CarFiniteState = CarState
   type CarAction = Double
   type CarReward = Double
-
-}
