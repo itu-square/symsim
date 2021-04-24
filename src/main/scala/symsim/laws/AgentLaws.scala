@@ -26,7 +26,7 @@ import symsim.CanTestIn._
 class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_] ]
   (val agent: Agent[State, FiniteState, Action, Reward, Scheduler]):
 
-  import agent.instances._
+  import agent.instances.given
 
   val finiteStates = enumState.membersAscending
 

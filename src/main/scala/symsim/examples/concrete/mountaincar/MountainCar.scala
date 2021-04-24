@@ -114,8 +114,6 @@ object MountainCarInstances
   implicit lazy val eqCarState: Eq[CarState] =
     Eq.fromUniversalEquals
 
-  implicit lazy val arbitraryReward =
-    Arbitrary (Gen.double)
+  implicit lazy val arbitraryReward = Arbitrary (Gen.double)
 
-  implicit lazy val rewardArith: Arith[CarReward] =
-    Arith.arithDouble
+  implicit lazy val rewardArith: Arith[CarReward] = Arith.given_Arith_Double

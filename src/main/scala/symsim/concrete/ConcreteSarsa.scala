@@ -18,7 +18,7 @@ case class ConcreteSarsa [
 
 ) extends Sarsa[State, FiniteState, Action, Double, Randomized]:
 
-  import agent.instances._
+  import agent.instances.given
 
   // TODO: it is a bit unclear if this is general (if it turns out to be the
   // same im symbolic SARSA we should promote this to the trait
