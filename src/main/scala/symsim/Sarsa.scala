@@ -151,12 +151,11 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
     def fmt (ar: Map[Action, Reward]): Doc =
       Doc.tabulate (' ', " ",
         ar.toList
-          .map { case (a,r) =>
+          .map { (a,r) =>
             val k = a.toString
             val v = Doc.text (r.toString.take (7).padTo (7, ' ')) + Doc.text (" |")
             k -> v
           }
       )
-    val rows = q.toIterable
-      .map { case (s,ar) => (s.toString, fmt (ar).flatten) }
+    val rows = q.toIterable map { _.toString -> fmt (_).flatten }
     Doc.tabulate (' ', "... ", rows)
