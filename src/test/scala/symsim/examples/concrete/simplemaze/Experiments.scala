@@ -8,7 +8,7 @@ class Experiments
   extends org.scalatest.freespec.AnyFreeSpec
   with org.scalatest.matchers.should.Matchers
   with org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-  with org.scalatest.prop.TableDrivenPropertyChecks {
+  with org.scalatest.prop.TableDrivenPropertyChecks:
 
   "test run" in {
 
@@ -36,5 +36,3 @@ class Experiments
     info (q_output.render (80))
 
   }
-
-}
