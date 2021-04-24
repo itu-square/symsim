@@ -30,8 +30,7 @@ trait Agent[State, FiniteState, Action, Reward, Scheduler[_]]:
   /** Return the reward assigned to state s when action a is given (the
     * reward estimation function)
     */
-  def reward (s: State) (a: Action): Reward =
-    (step (s) (a))._2
+  def reward (s: State) (a: Action): Reward = (step (s) (a))._2
 
 
   /** Provide the initial state of the agent for the scheduling policy captured

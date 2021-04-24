@@ -3,12 +3,11 @@ package symsim
 import cats.kernel.BoundedEnumerable
 import org.typelevel.paiges.Doc
 
-trait RL[FiniteState, Action] {
+trait RL[FiniteState, Action]:
 
   type Policy = Map[FiniteState,Action]
 
-  /** This is the actual reinforcement learning algortihm call. */
-
+  /** The actual reinforcement learning algortihm call. */
   def run: Policy
 
   /**
@@ -20,11 +19,8 @@ trait RL[FiniteState, Action] {
     *
     * TODO: should go away from here, if Policy becomes a type on its own
     */
-  def pp_policy (policy: Policy): Doc = {
+  def pp_policy (policy: Policy): Doc =
     val rows = policy
       .toIterable
       .map { case (k,v) => (k.toString, Doc.str (v)) }
     Doc.tabulate ('.', "...", rows)
-  }
-
-}
