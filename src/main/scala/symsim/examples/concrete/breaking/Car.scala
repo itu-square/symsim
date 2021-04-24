@@ -69,7 +69,6 @@ object Car
 
     override def zeroReward: CarReward = 0.0
 
-
     val instances = CarInstances
 
 
@@ -86,39 +85,31 @@ object CarInstances
   import org.scalacheck.Arbitrary
   import org.scalacheck.Arbitrary.arbitrary
 
-
-  implicit lazy val enumAction: BoundedEnumerable[CarAction] =
+  given enumAction: BoundedEnumerable[CarAction] =
     BoundedEnumerableFromList (-10, -5, -2.5, -0.5, -0.05, -0.01, -0.001)
 
-
-  implicit lazy val enumState: BoundedEnumerable[CarFiniteState] =
+  given enumState: BoundedEnumerable[CarFiniteState] =
     val ss = for
       v <- Seq (0.0, 5.0, 10.0)
       p <- Seq (0.0, 5.0, 10.0, 15.0)
     yield CarState (v,p)
     BoundedEnumerableFromList (ss: _*)
 
-
-  implicit lazy val schedulerIsMonad: Monad[Randomized] =
+  given schedulerIsMonad: Monad[Randomized] =
     concrete.Randomized.randomizedIsMonad
 
-
-  implicit lazy val canTestInScheduler: CanTestIn[Randomized] =
+  given canTestInScheduler: CanTestIn[Randomized] =
     concrete.Randomized.canTestInRandomized
-
 
   lazy val genCarState: Gen[CarState] = for
     v <- Arbitrary.arbDouble.arbitrary if v > 0
     p <- Arbitrary.arbDouble.arbitrary if p > 0
   yield CarState (v, p)
 
-  implicit lazy val arbitraryState: Arbitrary[CarState] =
-    Arbitrary (genCarState)
+  given arbitraryState: Arbitrary[CarState] = Arbitrary (genCarState)
 
+  given eqCarState: Eq[CarState] = Eq.fromUniversalEquals
 
-  implicit lazy val eqCarState: Eq[CarState] =
-    Eq.fromUniversalEquals
+  given arbitraryReward: Arbitrary[CarReward] = Arbitrary (Gen.double)
 
-  implicit lazy val arbitraryReward = Arbitrary (Gen.double)
-
-  implicit lazy val rewardArith: Arith[CarReward] = Arith.arith[Double]
+  given rewardArith: Arith[CarReward] = Arith.arith[Double]

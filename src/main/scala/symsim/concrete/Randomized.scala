@@ -41,11 +41,11 @@ object Randomized:
 
 
   // TODO: Car seems to have instances in breaking, perhaps we should move these
-  implicit def randomizedIsMonad: cats.Monad[Randomized] =
+  given randomizedIsMonad: cats.Monad[Randomized] =
     cats.data.IndexedStateT.catsDataMonadForIndexedStateT
 
 
-  implicit val canTestInRandomized: symsim.CanTestIn[Randomized] =
+  given canTestInRandomized: symsim.CanTestIn[Randomized] =
     new symsim.CanTestIn[Randomized] {
 
       def toProp (rProp: Randomized[Boolean]) =
