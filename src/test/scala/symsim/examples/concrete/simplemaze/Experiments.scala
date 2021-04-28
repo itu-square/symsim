@@ -21,7 +21,7 @@ class Experiments
       alpha = 0.2,
       gamma = 1.0,
       epsilon = 0.0, // explore vs exploit ratio
-      epochs = 100000,
+      epochs = 5000,
       seed = 1000
     )
 

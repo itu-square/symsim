@@ -20,7 +20,14 @@ trait RL[FiniteState, Action]:
     * TODO: should go away from here, if Policy becomes a type on its own
     */
   def pp_policy (policy: Policy): Doc =
-    val rows = policy
-      .toIterable
-      .map { _.toString -> Doc.str (_) }
-    Doc.tabulate ('.', "...", rows)
+    if policy.isEmpty then Doc.empty
+    else
+      val w1 = policy.keys.map { _.toString.length }.max
+      val w2 = policy.values.map { _.toString.length }.max
+      val horizontal = Doc.tabulate ('.', "-+-",
+        List ("+" + "-" * (1 + w1) -> Doc.str ("-" * (1 + w2) + "+")))
+      val rows = policy
+        .toList
+        .map { (s,r) => ("| " + s.toString.padTo (w1, ' '),  Doc.str (r.toString.padTo (w2, ' ')) + Doc.str (" |")) }
+        .sortBy { _._1 }
+      horizontal / Doc.tabulate ('.', " | ", rows) / horizontal

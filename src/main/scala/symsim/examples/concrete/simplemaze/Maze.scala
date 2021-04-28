@@ -20,7 +20,7 @@ import symsim.concrete.Randomized
  */
 
 case class MazeState (x: Int, y: Int):
-   override def toString: String = s"[x=$x, y=$y]"
+   override def toString: String = s"($x,$y)"
 
 type MazeFiniteState = MazeState
 type MazeReward = Double
