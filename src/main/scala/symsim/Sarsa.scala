@@ -7,16 +7,14 @@ import cats.syntax.monad._
 import cats.syntax.functor._
 import cats.syntax.flatMap._
 import cats.syntax.foldable._
+import cats.syntax.option._
 import cats.instances.lazyList._
 
 import symsim.Arith._
 import cats.kernel.BoundedEnumerable
 import org.scalacheck.Gen
 import org.typelevel.paiges.Doc
-import org.typelevel.paiges.Document
-import org.typelevel.paiges.Document._
-import org.typelevel.paiges.Style
-// TODO: cleanup imports from paiges
+
 
 // TODO: right now the Action type is a dead type, and all algorithms are just
 // sampling across all values (as the action shall be enumarable).  Instead of
@@ -147,33 +145,22 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
 
 
 
-  import scala.collection.StringOps
-
-  /** We assume that all values define the same set of actions valuations.
-    */
+  /** We assume that all values define the same set of actions valuations.  */
   def pp_Q (q: Q): Doc =
-    def header (w1: Int) (ar: Map[Action, Reward]): (String,Doc) =
-      val actions = ar.toList.map { _._1.toString }.sorted
-      val w = actions.map { _.length }.max.max (7)
-      val line =  actions.map { a => a.padTo (w, ' ') } mkString " | "
-      "| " + StringOps(" ") * w1 -> Doc.text (line + " |").style (Style.Ansi.Attr.Bold)
-
-    def fmt (w: Int) (ar: Map[Action, Reward]): Doc =
-      Doc.intercalate (Doc.text (" | "),
-        ar.toList
-          .sortBy { _._1.toString }
-          .map { _._2.toString. take (7).padTo (7, '0') }
-          .map { Doc.text _ }
-      ) + Doc.text (" |")
-
-    if q.isEmpty then Doc.empty
-    else
-      val w1 = q.keys.map { _.toString.length }.max
-      val headline = header (w1) (q.head._2)
-      val w = headline._1.length
-      val separator =  "|-" + StringOps ("-") * w1 ->
-        Doc.text (StringOps ("-") * ((w+3) * agent.instances.allActions.length - 2) + "|")
-      val rows = q.toList
-                  .map { "| " + _.toString -> fmt (w) (_) }
-                  .sortBy { _._1 }
-      Doc.tabulate (' ', " | ", separator ::headline ::separator ::(rows :+ separator))
+    val headings = "" ::q
+      .values
+      .head
+      .keys
+      .map (_.toString)
+      .toList
+      .sorted
+    def fmt (s: FiniteState, m: Map[Action,Reward]): List[String] =
+      s.toString ::m
+        .toList
+        .sortBy (_._1.toString)
+        .map { _._2.toString.take (7).padTo (7,'0') }
+    val rows = q
+      .toList
+      .sortBy (_._1.toString)
+      .map (fmt)
+    symsim.tabulate (' ', " | ", headings ::rows, "-".some, "-+-".some)
