@@ -5,9 +5,10 @@ import org.scalacheck.Prop
 import org.scalacheck.Gen
 import org.scalacheck.Arbitrary.arbitrary
 
+import scala.jdk.StreamConverters._
 
 /** A purely functional wrapping of scala.util.Random */
-type Randomized[A] = cats.data.State[scala.util.Random,A]
+type Randomized[A] = LazyList[A]
 
 type Probability = Double
 
@@ -18,18 +19,21 @@ object Randomized:
     * values when a scheduler/randomized type is expected. TODO: this could
     * likely be moved to a super class for all schedulers.
     */
-  def const[A] (a: A): Randomized[A] = State { r => (r, a) }
+  def const[A] (a: A): Randomized[A] = LazyList.continually (a)
 
 
-  def prob: Randomized[Probability] = State { r => (r, r.nextDouble ()) }
+  def prob: Randomized[Probability] =
+    java.security.SecureRandom ().doubles.toScala(LazyList)
 
 
   def between (minInclusive: Int, maxExclusive: Int): Randomized[Int] =
-    State { r => (r, r.between (minInclusive, maxExclusive)) }
+    java.security.SecureRandom ()
+      .ints (minInclusive, maxExclusive).toScala (LazyList)
 
 
   def between (minInclusive: Double, maxExclusive: Double): Randomized[Double] =
-    State { r => (r, r.between (minInclusive, maxExclusive)) }
+    java.security.SecureRandom ()
+      .doubles (minInclusive, maxExclusive).toScala (LazyList)
 
 
   /** Toss a coing biased towards true with probabilty 'bias' */
@@ -43,7 +47,7 @@ object Randomized:
 
   // TODO: Car seems to have instances in breaking, perhaps we should move these
   given randomizedIsMonad: cats.Monad[Randomized] =
-    cats.data.IndexedStateT.catsDataMonadForIndexedStateT
+    cats.instances.lazyList.catsStdInstancesForLazyList
 
 
   given canTestInRandomized: symsim.CanTestIn[Randomized] =
@@ -52,9 +56,9 @@ object Randomized:
       def toProp (rProp: Randomized[Boolean]) =
           Prop.forAllNoShrink (toGen (rProp)) (identity[Boolean])
 
-      def toGen[A] (ra: Randomized[A]): Gen[A] = for
-        n <- arbitrary[Long]
-        r = new scala.util.Random (n)
-        a = ra.runA (r).value
-      yield a
+      def toGen[A] (ra: Randomized[A]): Gen[A] =
+        require (ra.nonEmpty)
+        Gen.resultOf[Int,A] (n => ra (n % 1000))
+          (org.scalacheck.Arbitrary (Gen.chooseNum(0, Int.MaxValue)))
+
     }

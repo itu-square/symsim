@@ -9,7 +9,6 @@ val catsVersion = "2.5.0"
 scalacOptions ++= Seq (
   "-deprecation",
   "-feature",
-  "-explain-types",
   "-Xfatal-warnings",
 )
 
