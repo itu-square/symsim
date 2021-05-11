@@ -13,7 +13,7 @@ scalacOptions ++= Seq (
   "-Xfatal-warnings",
 )
 
- 
+
 libraryDependencies ++= Seq (
   "org.scalacheck" %% "scalacheck" % "1.15.3" % Test,
   "org.scalatest" %% "scalatest-freespec" % scalatestVersion % Test,
