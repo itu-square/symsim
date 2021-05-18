@@ -24,7 +24,6 @@ class Experiments
       gamma = 0.1,
       epsilon = 0.05, // explore vs exploit ration.
       epochs = 5000,
-      seed = 1000
     )
 
     val policy = sarsa.run

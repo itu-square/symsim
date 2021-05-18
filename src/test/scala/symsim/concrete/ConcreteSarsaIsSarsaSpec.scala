@@ -16,7 +16,6 @@ class ConcreteSarsaIsSarsaSpec extends SymSimSpec:
     gamma = 1.0,
     epsilon = 0.05,
     epochs = 5000,
-    seed = 1000
   )
 
   checkAll ("concrete.ConcreteSarsa is Sarsa",

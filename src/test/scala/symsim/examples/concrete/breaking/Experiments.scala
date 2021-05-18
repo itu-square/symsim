@@ -25,7 +25,6 @@ class Experiments
       gamma = 0.1,
       epsilon = 0.05, // explore vs exploit ratio
       epochs = 5000,
-      seed = 1000
     )
 
     val q = sarsa.runQ

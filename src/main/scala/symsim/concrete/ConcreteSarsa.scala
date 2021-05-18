@@ -14,7 +14,6 @@ case class ConcreteSarsa [
   val gamma: Double,
   val epsilon: Probability,
   val epochs: Int,
-  val seed: Long
 
 ) extends Sarsa[State, FiniteState, Action, Double, Randomized]:
 

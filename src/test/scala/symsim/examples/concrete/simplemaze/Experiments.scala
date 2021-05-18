@@ -18,11 +18,10 @@ class Experiments
       MazeAction
     ] (
       agent = Maze,
-      alpha = 0.2,
+      alpha = 0.1,
       gamma = 1.0,
       epsilon = 0.0, // explore vs exploit ratio
-      epochs = 5000,
-      seed = 1000
+      epochs = 15000,
     )
 
     val q = sarsa.runQ
