@@ -24,7 +24,7 @@ class UnitAgentExperiments
       alpha = 0.1,
       gamma = 0.1,
       epsilon = 0.05, // explore vs exploit ratio
-      epochs = 15000,
+      epochs = 10000,
     )
 
     val q = sarsa.runQ
