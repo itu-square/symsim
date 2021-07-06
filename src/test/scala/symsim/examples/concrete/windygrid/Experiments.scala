@@ -4,7 +4,7 @@ package examples.concrete.windygrid
 import symsim.concrete.ConcreteSarsa
 import examples.concrete.windygrid.GridAction._
 
-class Experiments
+class WindyGridExperiments
   extends org.scalatest.freespec.AnyFreeSpec
   with org.scalatest.matchers.should.Matchers
   with org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
@@ -24,7 +24,7 @@ class Experiments
       alpha = 0.1,
       gamma = 0.1,
       epsilon = 0.1, // explore vs exploit ration.
-      epochs = 5000
+      epochs = 100000
     )
 
     val q = sarsa.runQ

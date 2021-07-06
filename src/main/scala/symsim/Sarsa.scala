@@ -68,9 +68,9 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
   def learn (q: Q, s_t: State): Scheduler[Q] =
     val initial = q -> s_t
     val f = (learn1 _).tupled
-    val p = { (qs: (Q,State)) => agent.isFinal (qs._2) }
+    def p (q: Q, s: State): Boolean = agent.isFinal (s)
     summon[Monad[Scheduler]]
-      .iterateUntilM[(Q,State)] (initial) (f) (p)
+      .iterateUntilM[(Q,State)] (initial) (f) (p.tupled)
       .map { _._1 }
 
 
@@ -78,38 +78,25 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
   /** Execute a full  learning episode from initial  state (until the
     * final state of agent is reached).
     */
-  def learn (q: Q): Scheduler[Q] = for
-    s0 <- agent.initialize
-    result <- learn (q, s0)
-  yield  result
+  def learn (q: =>Q): Scheduler[Q] =
+    agent
+      .initialize
+      .flatMap { s0 => learn (q, s0) }
 
 
   /** Construct a zero initialized Q matrix */
   def initQ: Q
 
-
-  /**
-   * Execute 'n' full learning episodes (until the final state of agent is
-   * reached), starting with the matrix q
-   */
-  def learnN (n: Int, q: Q) (using ar: Arith[Reward]): Scheduler[Q] =
-    // The endomonoid for Kleisli[Scheduler,QS,QS], apparently not automatic
-    type EndoKleisli[A] = Kleisli[Scheduler,A,A]
-    def endoKleisli[A] (f: A => Scheduler[A]) = Kleisli[Scheduler,A,A] (f)
-    given MonoidK[EndoKleisli] = Kleisli.endoMonoidK[Scheduler]
-
-    val l: Q => Scheduler[Q] = learn _
-
-    val q1 = LazyList
-      // Prepare 'epoch'-many learning steps
-      .fill (n) (l)
-      // Wrap each in Kleisli[Q => Randomized[Q]} and compose them in the monoid
-      .foldMapK[EndoKleisli, Q] (endoKleisli[Q])
-      // Got a single Kleisli[Q => Randomized[Q]], run it from initial conditions
-      .run (q)
-
-    q1
-
+  /** Execute 'n' full learning episodes (until the final state of agent is
+    * reached), starting with the matrix q
+    */
+  final def learnN (n: Int, q: Q) (using ar: Arith[Reward]): Scheduler[Q] =
+     def f (q: Q, n: Int): Scheduler[(Q,Int)] =
+       learn (q) map { q1 => q1 -> (n-1) }
+     def p (q: Q, n: Int): Boolean = n > 0
+     summon[Monad[Scheduler]]
+        .iterateWhileM[(Q,Int)] ((q, n)) (f.tupled) (p.tupled)
+        .map { _._1 }
 
 
   /** Convert the matrix Q after training into a Policy map. TODO: should not
