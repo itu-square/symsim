@@ -25,5 +25,6 @@ libraryDependencies ++= Seq (
   "org.typelevel" %% "paiges-core" % "0.4.1"
 )
 
+Test / parallelExecution := false
 Test / testOptions += Tests.Argument("-oD")
 // Test / testOptions += Tests.Argument (TestFrameworks.ScalaTest, "-h", "target/report")

@@ -45,7 +45,6 @@ object Randomized:
     for i <- between (0, choices.size) yield choices (i)
 
 
-  // TODO: Car seems to have instances in breaking, perhaps we should move these
   given randomizedIsMonad: cats.Monad[Randomized] =
     cats.instances.lazyList.catsStdInstancesForLazyList
 

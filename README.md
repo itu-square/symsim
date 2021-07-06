@@ -1,5 +1,16 @@
 ![Scala CI](https://github.com/itu-square/symsim/workflows/Scala%20CI/badge.svg)
 
+## Requirements
+
+The implementation is quite memory hungry right now, so we recommend
+the following sbt setup to increase the available heap:
+
+   ```sh
+   export SBT_OPTS="-Xmx2G -XX:+UseG1GC -Xss2M"
+   ```
+Place this in your `.bashrc` or execute in the current shell, just
+before starting `sbt`.
+
 ## Add a new agent (A new example)
 
 1. `Git clone` the repo or `git pull` to have the fresh version
@@ -9,7 +20,7 @@
    git checkout -b tic-tac-toe
    ```
 3. Create a new package in `src/main/scala/symsim/examples/concrete/`. The existing one is called `breaking`, let's call the new one `tictactoe`
-   
+
    ```sh
    mkdir -pv src/main/scala/symsim/examples/concrete/tictactoe
    ```
@@ -24,7 +35,7 @@
    `TicState` - to represent the state of the game
    `TicFiniteState` - this might be just a renaming because the Tic Tac Toe state space is finite
    `TicAction` - possible moves
-   
+
 5. Create the file with the implementation of the TicTacToe Agent.  You might want to copy:
    ```
    cp -iv src/main/scala/symsim/examples/concrete/breaking/Car.scala src/main/scala/symsim/examples/concrete/tictactoe/Tic.scala
@@ -41,4 +52,4 @@
    ...>compile
    ```
 
-9. TODO: describe how to run and test it 
+9. TODO: describe how to run and test it
