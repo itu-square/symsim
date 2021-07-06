@@ -6,7 +6,7 @@ The implementation is quite memory hungry right now, so we recommend
 the following sbt setup to increase the available heap:
 
    ```sh
-   export SBT_OPTS="-Xmx2G -XX:+UseG1GC -Xss2M"
+   export SBT_OPTS="-Xmx3G -XX:+UseG1GC -Xss2M"
    ```
 Place this in your `.bashrc` or execute in the current shell, just
 before starting `sbt`.
