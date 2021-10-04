@@ -12,5 +12,15 @@ class CarIsAgentSpec extends SymSimSpec:
       CarReward,
       concrete.Randomized
     ].agent (Car)
+  )
 
+  checkAll( "concrete.breaking.Car is Episodic",
+
+    new laws.discipline.EpisodicTests[
+      CarState,
+      CarFiniteState,
+      CarAction,
+      CarReward,
+      concrete.Randomized
+    ].agent (Car)
   )
