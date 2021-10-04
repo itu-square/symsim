@@ -20,8 +20,10 @@ type CarAction = Double
 type CarReward = Double
 
 object Car
-  extends Agent[CarState, CarFiniteState, CarAction, CarReward, Randomized]:
+  extends Agent[CarState, CarFiniteState, CarAction, CarReward, Randomized]
+  with Episodic:
 
+    val TimeHorizon: Int = 100
 
     def isFinal (s: CarState): Boolean =
       s.v == 0.0 || Math.abs (s.p) >= 1000.0
