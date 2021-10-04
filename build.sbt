@@ -1,9 +1,9 @@
 name := "symsim"
 
-ThisBuild / scalaVersion := "3.0.0-RC2"
+ThisBuild / scalaVersion := "3.0.1"
 
-val scalatestVersion = "3.2.7"
-val catsVersion = "2.5.0"
+val scalatestVersion = "3.2.10"
+val catsVersion = "2.6.1"
 
 
 scalacOptions ++= Seq (
@@ -21,8 +21,8 @@ libraryDependencies ++= Seq (
   "org.scalatestplus" %% "scalacheck-1-15" % (scalatestVersion+".0") % Test,
   "org.typelevel" %% "cats-core" % catsVersion,
   "org.typelevel" %% "cats-laws" % catsVersion,
-  "org.typelevel" %% "discipline-scalatest" % "2.1.3",
-  "org.typelevel" %% "paiges-core" % "0.4.1"
+  "org.typelevel" %% "discipline-scalatest" % "2.1.5",
+  "org.typelevel" %% "paiges-core" % "0.4.2"
 )
 
 Test / parallelExecution := false
