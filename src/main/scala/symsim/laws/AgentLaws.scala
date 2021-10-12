@@ -35,7 +35,8 @@ class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_] ]
     * space that the agent uses for learning and for control decisions.
     */
   def discretizeIsIntoFiniteState: Prop =
-    forAll { (s: State) => finiteStates.contains (agent.discretize (s)) }
+    forAll { (s: State) =>
+      finiteStates.contains (agent.discretize (s)) }
 
 
   /** Law: Every initialization ends up being discritized to an enumerable value
@@ -57,10 +58,11 @@ class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_] ]
   def stepIsIntoFiniteState: Prop =
     forAll { (s0: State) =>
       forAll { (a: Action) =>
-        (for
+        val prop = for
             s1r <- agent.step (s0) (a)
             (s1,r) = s1r
             d1 = agent.discretize (s1)
-        yield finiteStates contains d1).toProp
+        yield finiteStates contains d1
+        prop.toProp
       }
     }
