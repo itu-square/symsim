@@ -20,7 +20,7 @@ class ConcreteSarsaSpec
       alpha = 0.1,
       gamma = 0.1,
       epsilon = 0.2, // explore vs exploit ratio
-      epochs = 150000,
+      episodes = 150000,
    )
 
    val C = 555555
@@ -52,5 +52,5 @@ class ConcreteSarsaSpec
    }
 
    "runQ is tail recursive (regression)"  in {
-      sarsa.learnN (sarsa.epochs, sarsa.initQ).head
+      sarsa.learnN (sarsa.episodes, sarsa.initQ).head
    }

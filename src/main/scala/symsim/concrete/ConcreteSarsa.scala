@@ -13,7 +13,7 @@ case class ConcreteSarsa [
   val alpha: Double,
   val gamma: Double,
   val epsilon: Probability,
-  val epochs: Int,
+  val episodes: Int,
 
 ) extends Sarsa[State, FiniteState, Action, Double, Randomized]:
 
@@ -53,6 +53,6 @@ case class ConcreteSarsa [
 
 
 
-  def runQ: Q = learnN (epochs, initQ).head
+  def runQ: Q = learnN (episodes, initQ).head
 
   override def run: Policy = qToPolicy (this.runQ)
