@@ -5,6 +5,7 @@ import CanTestIn._
 
 import org.scalacheck.Prop.{forAll, propBoolean}
 import symsim.concrete.Randomized.canTestInRandomized
+import scala.util.Try
 
 /** Sanity tests for Randomized as a Scheduler */
 class RandomizedSpec extends org.scalatest.freespec.AnyFreeSpec
@@ -29,6 +30,10 @@ class RandomizedSpec extends org.scalatest.freespec.AnyFreeSpec
         m != n ==>
           forAll (Randomized.between (m, n).toGen) { x => m <= x && x < n }
       }
+    }
+
+    "Randomized.const is finite (a regression)" in {
+      assert (Try { Randomized.const(1).size }.isSuccess)
     }
 
   }
