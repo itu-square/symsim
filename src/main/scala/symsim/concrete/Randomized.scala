@@ -34,7 +34,9 @@ object Randomized:
    def between (minInclusive: Int, maxExclusive: Int): Randomized[Int] =
       LazyList.unfold[Int,Unit] (()) { _ =>
          val r = SecureRandom ()
-            .nextInt (maxExclusive - minInclusive) + minInclusive
+            .ints (minInclusive, maxExclusive)
+            .findAny
+            .getAsInt
          Some (r -> ())
       }
 
