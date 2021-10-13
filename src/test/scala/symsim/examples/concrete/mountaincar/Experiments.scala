@@ -23,7 +23,7 @@ class MountainCarExperiments
       alpha = 0.1,
       gamma = 0.1,
       epsilon = 0.05, // explore vs exploit ration.
-      epochs = 100000,
+      episodes = 100000,
     )
 
     val policy = sarsa.run

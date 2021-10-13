@@ -24,7 +24,7 @@ class WindyGridExperiments
       alpha = 0.1,
       gamma = 0.1,
       epsilon = 0.1, // explore vs exploit ration.
-      epochs = 100000
+      episodes = 100000
     )
 
     val q = sarsa.runQ
