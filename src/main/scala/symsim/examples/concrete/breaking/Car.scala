@@ -23,7 +23,7 @@ object Car
   extends Agent[CarState, CarFiniteState, CarAction, CarReward, Randomized]
   with Episodic:
 
-    val TimeHorizon: Int = 900
+    val TimeHorizon: Int = 2000
 
     def isFinal (s: CarState): Boolean =
       s.v == 0.0 || Math.abs (s.p) >= 1000.0
@@ -71,6 +71,8 @@ object Car
 
     val instances = CarInstances
 
+end Car
+
 
 /** Here is a proof that our types actually deliver on everything that an Agent
   * needs to be able to do to work in the framework.
@@ -78,7 +80,7 @@ object Car
 object CarInstances
   extends AgentConstraints[CarState, CarFiniteState, CarAction, CarReward, Randomized]:
 
-  import cats.{Eq, Monad}
+  import cats.{Eq, Monad, Foldable}
   import cats.kernel.BoundedEnumerable
 
   import org.scalacheck.Gen
@@ -98,12 +100,15 @@ object CarInstances
   given schedulerIsMonad: Monad[Randomized] =
     concrete.Randomized.randomizedIsMonad
 
+  given schedulerIsFoldable: Foldable[Randomized] =
+    concrete.Randomized.randomizedIsFoldable
+
   given canTestInScheduler: CanTestIn[Randomized] =
     concrete.Randomized.canTestInRandomized
 
   lazy val genCarState: Gen[CarState] = for
-    v <- Arbitrary.arbDouble.arbitrary if v > 0
-    p <- Arbitrary.arbDouble.arbitrary if p > 0
+     v <- Gen.choose (0.0, Double.MaxValue)
+     p <- Gen.choose (0.0, Double.MaxValue)
   yield CarState (v, p)
 
   given arbitraryState: Arbitrary[CarState] = Arbitrary (genCarState)
@@ -113,3 +118,5 @@ object CarInstances
   given arbitraryReward: Arbitrary[CarReward] = Arbitrary (Gen.double)
 
   given rewardArith: Arith[CarReward] = Arith.arith[Double]
+
+end CarInstances
