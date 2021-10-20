@@ -1,9 +1,7 @@
 package symsim.concrete
 
 import cats.data.State
-import org.scalacheck.Prop
-import org.scalacheck.Gen
-import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.{Gen, Prop}
 
 import scala.jdk.StreamConverters._
 import scala.util.Try
@@ -11,68 +9,65 @@ import scala.util.Try
 import java.security.SecureRandom
 
 /** A purely functional wrapping of scala.util.Random */
-type Randomized[A] = LazyList[A]
+type Randomized[+A] = LazyList[A]
 
 type Probability = Double
 
-/** A purely functional wrapping of scala.util.Random. Delegations.
-  * The implementations use LazyList unfold rather than conversions from
-  * Java streams as this seems much more memory efficient.
+/** A purely functional wrapping of java.security.SecureRandom.  Presents
+  * generators as possibly finite streams (a source that dries out), which can
+  * be extended to continue producing infinitely with repeat (infinite).
+  * There is some lack of referential transparency in this switch (repeat).
+  *
+  * Randomized should be a non-branching scheduler.  For the infrastructure to
+  * work, all our schedulers need to be finitely branching.
   **/
 object Randomized:
 
    /** Create a generator that always a. Used to create deterministic
      * values when a scheduler/randomized type is expected.
      */
-   def const[A] (a: A): Randomized[A] = LazyList (a)
+   def const[A] (a: =>A): Randomized[A] =
+     LazyList (a)
 
    def prob: Randomized[Probability] =
-      LazyList.unfold[Double,Unit] (()) { _ =>
-         Some (SecureRandom ().nextDouble -> ()) }
+      LazyList (SecureRandom ().nextDouble)
 
 
    def between (minInclusive: Int, maxExclusive: Int): Randomized[Int] =
-      LazyList.unfold[Int,Unit] (()) { _ =>
-         val r = SecureRandom ()
-            .ints (minInclusive, maxExclusive)
-            .findAny
-            .getAsInt
-         Some (r -> ())
-      }
+      LazyList (SecureRandom ()
+         .ints (minInclusive, maxExclusive)
+         .findAny
+         .getAsInt)
 
 
    def between (minInclusive: Double, maxExclusive: Double): Randomized[Double] =
-      LazyList.unfold[Double,Unit] (()) { _ =>
-         val r = SecureRandom ()
-            .doubles (minInclusive, maxExclusive)
-            .findAny
-            .getAsDouble
-         Some (r -> ())
-      }
-
+      LazyList (SecureRandom ()
+         .doubles (minInclusive, maxExclusive)
+         .findAny
+         .getAsDouble)
 
    /** Toss a coing biased towards true with probabilty 'bias' */
    def coin (bias: Probability): Randomized[Boolean] =
-      LazyList.unfold[Boolean,Unit] (()) { _ =>
-         val r = SecureRandom ().nextDouble <= bias
-         Some (r -> ()) }
+      LazyList (SecureRandom ().nextDouble <= bias)
 
    def oneOf[A] (choices: A*): Randomized[A] =
-      for i <- between (0, choices.size) yield choices (i)
+      between (0, choices.size)
+         .map { i => choices (i) }
 
+   def repeat[A] (ra: =>Randomized[A]): Randomized[A] =
+      LazyList.continually (ra).flatten
 
    given randomizedIsMonad: cats.Monad[Randomized] =
       cats.instances.lazyList.catsStdInstancesForLazyList
 
+   given randomizedIsFoldable: cats.Foldable[Randomized] =
+      cats.instances.lazyList.catsStdInstancesForLazyList
 
    given canTestInRandomized: symsim.CanTestIn[Randomized] =
       new symsim.CanTestIn[Randomized] {
 
          def toProp (rProp: Randomized[Boolean]) =
             Prop.forAllNoShrink (toGen (rProp)) (identity[Boolean])
-
-         private def rand_prefix[A] (ra: Randomized[A]): Int => A =
-            (i: Int) => Try { ra (i) } getOrElse { rand_prefix (ra) (i/2) }
 
          // This is a nasty hack that costs as a lot on memory in tests (but
          // probably not in experiments).  Unfortunately, I do not see an easy way
@@ -81,7 +76,8 @@ object Randomized:
          // state to objects?
          def toGen[A] (ra: Randomized[A]): Gen[A] =
             require (ra.nonEmpty)
-            Gen.resultOf[Int,A] (this.rand_prefix (ra))
-               (org.scalacheck.Arbitrary (Gen.chooseNum (0, 1000)))
+            val stream = repeat (ra)
+            Gen.choose(0, 1000)
+               .map { i => stream (i) }
 
       }
