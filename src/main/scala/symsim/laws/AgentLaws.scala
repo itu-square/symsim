@@ -3,12 +3,10 @@ package laws
 
 import cats.Monad
 import cats.syntax.functor._
-import cats.syntax.flatMap._
-import cats.kernel.laws._
+import cats.syntax.monad._
 
-import org.scalacheck.Prop
+import org.scalacheck.{Arbitrary, Prop}
 import org.scalacheck.Prop.forAll
-import org.scalacheck.Arbitrary
 
 import symsim.concrete._
 import symsim.CanTestIn._
@@ -49,20 +47,21 @@ class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_] ]
 
   /** Law: Initial state is not final, regardless scheduler. */
   def initialStateIsNotFinal: Prop =
-    forAll (agent.initialize.toGen) { (s: State) => ! agent.isFinal (s) }
+    forAll (agent.initialize.toGen) { (s: State) =>
+       !agent.isFinal (s) }
 
 
   /** Law: An agent step from any state lands in a state that be discretized
     * into FiniteState.
     */
   def stepIsIntoFiniteState: Prop =
-    forAll { (s0: State) =>
-      forAll { (a: Action) =>
-        val prop = for
-            s1r <- agent.step (s0) (a)
-            (s1,r) = s1r
-            d1 = agent.discretize (s1)
-        yield finiteStates contains d1
-        prop.toProp
-      }
-    }
+     forAll { (s0: State) =>
+       forAll { (a: Action) =>
+          val prop = for
+             s1r <- agent.step (s0) (a)
+             (s1, r) = s1r
+             d1 = agent.discretize (s1)
+          yield finiteStates contains d1
+          prop.toProp
+       }
+     }
