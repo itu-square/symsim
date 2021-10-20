@@ -1,17 +1,12 @@
 package symsim
 
-import cats.Monad
-import cats.MonoidK
-import cats.data.Kleisli
-import cats.syntax.monad._
-import cats.syntax.functor._
+import cats.{Foldable, Monad}
 import cats.syntax.flatMap._
 import cats.syntax.foldable._
+import cats.syntax.functor._
 import cats.syntax.option._
-import cats.instances.lazyList._
 
 import symsim.Arith._
-import cats.kernel.BoundedEnumerable
 import org.scalacheck.Gen
 import org.typelevel.paiges.Doc
 
@@ -45,7 +40,7 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
     * @return the updated matrix Q, the successor state, and a
     * reward difference (the size of the update performed)
     */
-  def learn1 (q: Q, s_t: State): Scheduler[(Q,State)] = for
+  def learningEpoch (q: Q, s_t: State): Scheduler[(Q, State)] = for
     a_t <- chooseAction (q) (s_t)
     sa_tt <- agent.step (s_t) (a_t)
     (s_tt, r_tt) = sa_tt
@@ -65,39 +60,28 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
   /** Execute a full learning episode (until the final state of agent is
     * reached).
     */
-  def learn (q: Q, s_t: State): Scheduler[Q] =
-    val initial = q -> s_t
-    val f = (learn1 _).tupled
-    def p (q: Q, s: State): Boolean = agent.isFinal (s)
-    summon[Monad[Scheduler]]
-      .iterateUntilM[(Q,State)] (initial) (f) (p.tupled)
-      .map { _._1 }
-
-
-
-  /** Execute a full  learning episode from initial  state (until the
-    * final state of agent is reached).
-    */
-  def learn (q: =>Q): Scheduler[Q] =
-    agent
-      .initialize
-      .flatMap { s0 => learn (q, s0) }
+  def learningEpisode (q: Q, s_t: State): Scheduler[Q] =
+     def p (q: Q, s: State): Boolean =
+        agent.isFinal (s)
+     Monad[Scheduler]
+        .iterateUntilM[(Q, State)] (q -> s_t) (learningEpoch) (p)
+        .map { _._1 }
 
 
   /** Construct a zero initialized Q matrix */
   def initQ: Q
 
-  /** Execute 'n' full learning episodes (until the final state of agent is
-    * reached), starting with the matrix q
-    */
-  final def learnN (n: Int, q: Q) (using ar: Arith[Reward]): Scheduler[Q] =
-     def f (q: Q, n: Int): Scheduler[(Q,Int)] =
-       learn (q) map { q1 => q1 -> (n-1) }
-     def p (q: Q, n: Int): Boolean = n > 0
-     summon[Monad[Scheduler]]
-        .iterateWhileM[(Q,Int)] ((q, n)) (f.tupled) (p.tupled)
-        .map { _._1 }
 
+  /** Executes as many full learning episodes (until the final state of agent is
+    * reached) as the given state scheduler generates.  For this method to work
+    * the scheduler needs to be foldable, and we use foldRight with Eval, to
+    * make the evaluation lazy. We force the evaluation when we
+    * are done to return the value.  However, to my best understanding, if the
+    * Scheduler is lazy then the evaluation is not really doing more than just
+    * formulating the thunk of that scheduler.
+    */
+   final def learnN (q: Q, ss: => Scheduler[State]): Scheduler[Q] =
+     ss.foldM[Scheduler,Q] (q) (learningEpisode)
 
   /** Convert the matrix Q after training into a Policy map. TODO: should not
     * this be using the bestAction method? Or, why is the best action method
@@ -111,43 +95,45 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
 
   /** Generate total Q matrices for testing. */
   val genQ: Gen[Q] =
-    val as = agent.instances.allActions
-    val genReward = agent.instances.arbitraryReward.arbitrary
-    val genActionReward: Gen[Map[Action,Reward]] = for
-      // TODO refactor, seek what is available for maps
-      rewards <- Gen.sequence[List[Reward],Reward]
-        { List.fill (as.size) (genReward) }
-      ars = as zip rewards
-    yield Map (ars: _*)
+     val as = agent.instances.allActions
+     val genReward = agent.instances.arbitraryReward.arbitrary
+     val genActionReward: Gen[Map[Action,Reward]] = for
+       // TODO refactor, seek what is available for maps
+       rewards <- Gen.sequence[List[Reward], Reward]
+         { List.fill (as.size) (genReward) }
+       ars = as zip rewards
+     yield Map (ars: _*)
 
-    val fs = agent.instances.allFiniteStates
-    val genStateActionRewards: Gen[Q] = for
-      // TODO refactor, seek what is available for maps
-      mars <- Gen.sequence[List[Map[Action,Reward]], Map[Action,Reward]]
-        { List.fill (fs.size) (genActionReward) }
-      smars = fs zip mars
-    yield Map (smars: _*)
+     val fs = agent.instances.allFiniteStates
+     val genStateActionRewards: Gen[Q] = for
+       // TODO refactor, seek what is available for maps
+       mars <- Gen.sequence[List[Map[Action,Reward]], Map[Action,Reward]]
+         { List.fill (fs.size) (genActionReward) }
+       smars = fs zip mars
+     yield Map (smars: _*)
 
-    genStateActionRewards
+     genStateActionRewards
 
 
 
   /** We assume that all values define the same set of actions valuations.  */
   def pp_Q (q: Q): Doc =
-    val headings = "" ::q
-      .values
-      .head
-      .keys
-      .map (_.toString)
-      .toList
-      .sorted
-    def fmt (s: FiniteState, m: Map[Action,Reward]): List[String] =
-      s.toString ::m
-        .toList
-        .sortBy (_._1.toString)
-        .map { _._2.toString.take (7).padTo (7,'0') }
-    val rows = q
-      .toList
-      .sortBy (_._1.toString)
-      .map (fmt)
-    symsim.tabulate (' ', " | ", headings ::rows, "-".some, "-+-".some)
+     val headings = "" ::q
+       .values
+       .head
+       .keys
+       .map (_.toString)
+       .toList
+       .sorted
+     def fmt (s: FiniteState, m: Map[Action,Reward]): List[String] =
+       s.toString ::m
+         .toList
+         .sortBy (_._1.toString)
+         .map { _._2.toString.take (7).padTo (7,'0') }
+     val rows = q
+       .toList
+       .sortBy (_._1.toString)
+       .map (fmt)
+     symsim.tabulate (' ', " | ", headings ::rows, "-".some, "-+-".some)
+
+end Sarsa

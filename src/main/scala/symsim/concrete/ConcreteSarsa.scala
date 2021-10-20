@@ -3,18 +3,12 @@ package concrete
 
 import cats.kernel.BoundedEnumerable
 
-case class ConcreteSarsa [
-  State,
-  FiniteState,
-  Action
-] (
-
-  val agent: Agent[State, FiniteState, Action, Double, Randomized],
-  val alpha: Double,
-  val gamma: Double,
-  val epsilon: Probability,
-  val episodes: Int,
-
+case class ConcreteSarsa[State, FiniteState, Action] (
+   val agent: Agent[State, FiniteState, Action, Double, Randomized],
+   val alpha: Double,
+   val gamma: Double,
+   val epsilon: Probability,
+   val episodes: Int,
 ) extends Sarsa[State, FiniteState, Action, Double, Randomized]:
 
   import agent.instances._
@@ -52,7 +46,11 @@ case class ConcreteSarsa [
     q0
 
 
+  def runQ: Q =
+     val initials = Randomized.repeat (agent.initialize).take (episodes)
+     learnN (initQ, initials).head
 
-  def runQ: Q = learnN (episodes, initQ).head
+  override def run: Policy =
+     qToPolicy (this.runQ)
 
-  override def run: Policy = qToPolicy (this.runQ)
+end ConcreteSarsa
