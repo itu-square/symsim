@@ -1,13 +1,10 @@
 package symsim
 package concrete
 
-import cats.{Eq, Monad}
+import cats.{Eq, Foldable, Monad}
 import cats.kernel.BoundedEnumerable
 
-import org.scalacheck.Gen
-import org.scalacheck.Arbitrary
-
-import symsim.concrete.Randomized
+import org.scalacheck.{Arbitrary, Gen}
 
 type UnitState = Unit
 type UnitAction = Unit
@@ -18,7 +15,7 @@ object UnitAgent
       override def isFinal (s: UnitState): Boolean = true
       override def discretize (s: UnitState): UnitState =  s
       override def step (s: UnitState) (a: UnitAction): Randomized[(UnitState, UnitReward)] =
-        Randomized.const (() -> 0.0)
+        Randomized.const (() -> 0.1)
       override def initialize: Randomized[UnitState] = Randomized.const (())
       override def zeroReward: UnitReward = 0.0
       override val instances = UnitInstances
@@ -31,10 +28,9 @@ object UnitInstances
    extends AgentConstraints[UnitState, UnitState, UnitAction, UnitReward, Randomized]:
    given enumAction: BoundedEnumerable[UnitAction] = BoundedEnumerableFromList (())
    given enumState: BoundedEnumerable[UnitState] = BoundedEnumerableFromList (())
-   given schedulerIsMonad: Monad[Randomized] =
-      concrete.Randomized.randomizedIsMonad
-   given canTestInScheduler: CanTestIn[Randomized] =
-      concrete.Randomized.canTestInRandomized
+   given schedulerIsMonad: Monad[Randomized] = Randomized.randomizedIsMonad
+   given schedulerIsFoldable: Foldable[Randomized] = Randomized.randomizedIsFoldable
+   given canTestInScheduler: CanTestIn[Randomized] = Randomized.canTestInRandomized
    lazy val genUnitState: Gen[UnitState] = Gen.const (())
    given arbitraryState: Arbitrary[UnitState] = Arbitrary (genUnitState)
    given eqUnitState: Eq[UnitState] = Eq.fromUniversalEquals

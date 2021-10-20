@@ -1,9 +1,6 @@
 package symsim
 package concrete
 
-import symsim.concrete.ConcreteSarsa
-import cats.Monad
-
 class ConcreteSarsaSpec
   extends org.scalatest.freespec.AnyFreeSpec
   with org.scalatest.matchers.should.Matchers:
@@ -11,11 +8,7 @@ class ConcreteSarsaSpec
    // Import evidence that states and actions can be enumerated
    import UnitAgent._
 
-   val sarsa = ConcreteSarsa[
-      UnitState,
-      UnitState,
-      UnitAction
-   ] (
+   val sarsa = ConcreteSarsa (
       agent = UnitAgent,
       alpha = 0.1,
       gamma = 0.1,
@@ -25,32 +18,36 @@ class ConcreteSarsaSpec
 
    val C = 555555
 
-   "This should stack overflow (checking the stack size)" in {
-      def h (n: Int): Int = if n == 0 then 1 else h(n-1) + 1
+   "This should stack overflow (checking the stack size C)" in {
+      def h (n: Int): Int = if n == 0 then 1 else h (n-1) + 1
       assertThrows[java.lang.StackOverflowError] { h (C) }
    }
 
-   "This shouldn't overflow stack (ItereateUntilM with learn1 is tailrec, each episode tailrec)"  in {
-      var c = C
-      val p = { (qs: (sarsa.Q,UnitState)) => c = c - 1; c == 0  }
-      val initial = sarsa.initQ -> ()
-      val f = (sarsa.learn1 _).tupled
-      summon[Monad[Randomized]]
-        .iterateUntilM[(sarsa.Q,UnitState)] (initial) (f) (p)
-        .map { _._1 }
-        .head
+   "learnN shouldn't overflow stack (learnN is tailrec, each episode tailrec)" in {
+       val initials: Randomized[UnitState] = Randomized.repeat (UnitAgent.initialize)
+       val result: Randomized[sarsa.Q] = sarsa.learnN (sarsa.initQ, initials.take (C))
+       try result.size == 1
+       catch case e =>
+          fail (s"Forcing result of learning overflows (${e.toString})")
    }
 
 
-   "initQ terminates (regression)"  in {
+   "initQ terminates, no stack overflow (regression)"  in {
       sarsa.initQ
    }
 
-   "learn is tail recursive (regression)"  in {
-      sarsa.learn (sarsa.initQ).head
-      // this test does not really prove the tail recursiveness
+   "learn is tail recursive, no stack overflow (regression)"  in {
+      val result = sarsa.learningEpisode (sarsa.initQ, ())
+      result.head
+      // this test does not really prove the tail recursiveness,
+      // but at least checks for crash
+      // also with the immediate final state 'learn' is not really tested here
    }
 
-   "runQ is tail recursive (regression)"  in {
-      sarsa.learnN (sarsa.episodes, sarsa.initQ).head
+   "runQ is tail recursive, no stack overflow (regression)"  in {
+      try sarsa.runQ
+      catch case e =>
+         fail (s"sarsa.runQ overflows stack (${e.toString})")
    }
+
+end ConcreteSarsaSpec
