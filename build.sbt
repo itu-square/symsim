@@ -10,6 +10,7 @@ scalacOptions ++= Seq (
   "-deprecation",
   "-feature",
   "-Xfatal-warnings",
+  "-Yindent-colons",
 )
 
 
