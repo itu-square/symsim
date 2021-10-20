@@ -1,11 +1,10 @@
 package symsim
 package examples.concrete.simplemaze
 
-import cats.{Eq, Monad}
+import cats.{Eq, Foldable, Monad}
 import cats.kernel.BoundedEnumerable
 
-import org.scalacheck.Gen
-import org.scalacheck.Arbitrary
+import org.scalacheck.{Arbitrary, Gen}
 
 import symsim.concrete.Randomized
 
@@ -18,9 +17,9 @@ import symsim.concrete.Randomized
  *     (1,1), (2,1), (3,1), (4,1) } .
  *
  */
-
 case class MazeState (x: Int, y: Int):
    override def toString: String = s"($x,$y)"
+
 
 type MazeFiniteState = MazeState
 type MazeReward = Double
@@ -74,12 +73,13 @@ object Maze
          yield (newState, mazeReward (newState))
 
       def initialize: Randomized[MazeState] =
-         Randomized.oneOf (instances.allFiniteStates.filter { s => !isFinal (s) }:_*)
+         Randomized.oneOf (instances.allFiniteStates.filter { !isFinal (_) }:_*)
 
       override def zeroReward: MazeReward = 0
 
       val instances = MazeInstances
 
+end Maze
 
 
 /** Here is a proof that our types actually deliver on everything that an Agent
@@ -100,15 +100,15 @@ object MazeInstances
       yield result
       BoundedEnumerableFromList (ss: _*)
 
-   given schedulerIsMonad: Monad[Randomized] =
-      concrete.Randomized.randomizedIsMonad
+   given schedulerIsMonad: Monad[Randomized] = Randomized.randomizedIsMonad
 
-   given canTestInScheduler: CanTestIn[Randomized] =
-      concrete.Randomized.canTestInRandomized
+   given schedulerIsFoldable: Foldable[Randomized] = Randomized.randomizedIsFoldable
+
+   given canTestInScheduler: CanTestIn[Randomized] = Randomized.canTestInRandomized
 
    lazy val genMazeState: Gen[MazeState] = for
-      y <- Gen.choose (1,3)
-      x <- Gen.choose (1,4)
+      y <- Gen.choose (1, 3)
+      x <- Gen.choose (1, 4)
       if (x != 2 && y != 2)
    yield MazeState (x = x.abs, y = y.abs)
 
@@ -119,3 +119,5 @@ object MazeInstances
    given arbitraryReward: Arbitrary[MazeReward] = Arbitrary (Gen.double)
 
    given rewardArith: Arith[MazeReward] = Arith.given_Arith_Double
+
+end MazeInstances
