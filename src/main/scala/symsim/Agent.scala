@@ -1,12 +1,10 @@
 package symsim
 
-import org.scalacheck.Arbitrary
-import org.scalacheck.Gen
-import cats.kernel.BoundedEnumerable
-import cats.Monad
-import cats.syntax.monad._
-import cats.syntax.functor._
+import org.scalacheck.{Arbitrary, Gen}
 
+import cats.{Foldable, Monad}
+import cats.syntax.functor._
+import cats.kernel.BoundedEnumerable
 
 /** TODO: A possible refactoring: separate Agents from finite agents, where the
   * latter would mix in discretization, and finiteness constraints on
@@ -14,7 +12,12 @@ import cats.syntax.functor._
   */
 trait Agent[State, FiniteState, Action, Reward, Scheduler[_]]:
 
-  import instances.schedulerIsMonad
+  import instances.given
+
+  /** The evidence required to consider a generic instance of Agent to be
+    * an agent for the rest of the framework
+    */
+  val instances: AgentConstraints[State, FiniteState, Action, Reward, Scheduler]
 
   /** Execute one training step.  If symbolic, it may result in multiple
     * successors and rewards.
@@ -38,7 +41,8 @@ trait Agent[State, FiniteState, Action, Reward, Scheduler[_]]:
     * reward estimation function)
     */
   def reward (s: State) (a: Action): Scheduler[Reward] =
-    for outcome <- step (s) (a) yield outcome._2
+    for outcome <- step (s) (a)
+    yield outcome._2
 
   /** Provide the initial state of the agent for the scheduling policy captured
     * by Scheduler[ ].  For instance, a `Randomized` scheduler can allow starting
@@ -59,10 +63,6 @@ trait Agent[State, FiniteState, Action, Reward, Scheduler[_]]:
   // instances (perhaps it is a property in Arith)
 
 
-  /** Type evidence required to consider a generic instance of Agent to be
-    * an agent for the rest of the framework
-    */
-  val instances: AgentConstraints[State, FiniteState, Action, Reward, Scheduler]
 
 
 
@@ -92,9 +92,18 @@ trait AgentConstraints[State, FiniteState, Action, Reward, Scheduler[_]]:
   lazy val allFiniteStates: List[FiniteState] =
     enumState.membersAscending.toList
 
-  /** We need to know that a scheduler is a monad */
+  /** We need to be able to flatten branching created by some
+   *  interpreters/schedulers.
+    */
   given schedulerIsMonad: Monad[Scheduler]
 
+  /** We need to be able to iterate over a schedule (fold) to sequence and merge
+   *  schedule elements.
+    */
+  given schedulerIsFoldable: Foldable[Scheduler]
+
+  /** We need to be able to run tests on scheduled values.
+    */
   given canTestInScheduler: CanTestIn[Scheduler]
 
   /** We can generate random states for testing */
