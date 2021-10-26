@@ -4,7 +4,7 @@ package examples.concrete.simplemaze
 class Experiments
    extends org.scalatest.freespec.AnyFreeSpec:
 
-   "SimpleMaze test run" in {
+   "SimpleMaze test run" ignore {
 
       val sarsa = symsim.concrete.ConcreteSarsa (
         agent = Maze,
