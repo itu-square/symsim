@@ -25,7 +25,7 @@ class RandomizedSpec extends org.scalatest.freespec.AnyFreeSpec
       forAll  (positions) {p=>
         forAll{(a: Double) =>
           val s1 = Car.step(CarState(0.0,p))(a).head._1
-          true ==> s1.p >= p
+          s1.p >= p
       }
      }
     }
