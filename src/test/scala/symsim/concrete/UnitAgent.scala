@@ -35,4 +35,4 @@ object UnitInstances
    given arbitraryState: Arbitrary[UnitState] = Arbitrary (genUnitState)
    given eqUnitState: Eq[UnitState] = Eq.fromUniversalEquals
    given arbitraryReward: Arbitrary[UnitReward] = Arbitrary (Gen.double)
-   given rewardArith: Arith[UnitReward] = Arith.given_Arith_Double
+   given rewardArith: Arith[UnitReward] = Arith.arithDouble

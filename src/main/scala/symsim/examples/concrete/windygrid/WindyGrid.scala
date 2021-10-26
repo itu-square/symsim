@@ -113,6 +113,6 @@ object WindyGridInstances
 
   given arbitraryReward: Arbitrary[GridReward] = Arbitrary (Gen.double)
 
-  given rewardArith: Arith[GridReward] = Arith.given_Arith_Double
+  given rewardArith: Arith[GridReward] = Arith.arithDouble
 
 end WindyGridInstances

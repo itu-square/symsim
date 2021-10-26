@@ -117,6 +117,6 @@ object CarInstances
 
   given arbitraryReward: Arbitrary[CarReward] = Arbitrary (Gen.double)
 
-  given rewardArith: Arith[CarReward] = Arith.arith[Double]
+  given rewardArith: Arith[CarReward] = Arith.arithDouble
 
 end CarInstances

@@ -116,7 +116,7 @@ object MountainCarInstances
 
   given arbitraryReward: Arbitrary[CarReward] = Arbitrary (Gen.double)
 
-  given rewardArith: Arith[CarReward] = Arith.given_Arith_Double
+  given rewardArith: Arith[CarReward] = Arith.arithDouble
 
 
 end MountainCarInstances
