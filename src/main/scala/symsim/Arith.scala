@@ -36,7 +36,7 @@ object Arith:
   /* Instances for standard types */
   // TODO: instances should eventually be moved to symsim.instances
 
-  given Arith[Double] = new Arith[Double]:
+  given arithDouble: Arith[Double] = new Arith[Double]:
     def times (x: Double, y: Double): Double = x * y
     def plus (x: Double, y: Double): Double = x + y
     def minus (x: Double, y: Double): Double = x - y

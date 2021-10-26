@@ -9,7 +9,7 @@ class MountainCarExperiments
   with org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
   with org.scalatest.prop.TableDrivenPropertyChecks:
 
-  "test run" ignore {
+  "test run" in {
 
     // Import evidence that states and actions can be enumerated
     import MountainCar._

@@ -118,6 +118,6 @@ object MazeInstances
 
    given arbitraryReward: Arbitrary[MazeReward] = Arbitrary (Gen.double)
 
-   given rewardArith: Arith[MazeReward] = Arith.given_Arith_Double
+   given rewardArith: Arith[MazeReward] = Arith.arithDouble
 
 end MazeInstances
