@@ -25,7 +25,7 @@ class ConcreteSarsaSpec
 
    "learnN shouldn't overflow stack (learnN is tailrec, each episode tailrec)" in {
        val initials: Randomized[UnitState] = Randomized.repeat (UnitAgent.initialize)
-       val result: Randomized[sarsa.Q] = sarsa.learnN (sarsa.initQ, initials.take (C))
+       val result: Randomized[sarsa.Q] = sarsa.learn (sarsa.initQ, initials.take (C))
        try result.size == 1
        catch case e =>
           fail (s"Forcing result of learning overflows (${e.toString})")
