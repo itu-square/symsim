@@ -51,11 +51,11 @@ object Car
     // TODO: this is now deterministic but eventually needs to be randomized
     def step (s: CarState) (a: CarAction): Randomized[(CarState, CarReward)] =
       // Stop moving when velecity is zero, breaking is not moving backwards
-      val t1 = Math.min (- s.v / a, t)
+      val t1 = Math.min (- s.v / a, t) // TODO: check for a == 0, include 0 as an action
       val p1 = Math.min (s.p + s.v*t1 + 0.5*a*t1*t1, 10.0)
       val v1 = Math.max (s.v + a*t1, 0.0)
-      val s1 = CarState (p1, v1)
-      Randomized.const (s1 -> carReward (s1) (a))
+      val s1 = CarState (v = v1, p = p1)
+      Randomized.const (s1, carReward (s1) (a))
 
 
     def initialize: Randomized[CarState] = for
