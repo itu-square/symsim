@@ -48,7 +48,8 @@ case class ConcreteSarsa[State, FiniteState, Action] (
 
   def runQ: Q =
      val initials = Randomized.repeat (agent.initialize).take (episodes)
-     learnN (initQ, initials).head
+     val schedule = learn (this.initQ, initials)
+     schedule.head
 
   override def run: Policy =
      qToPolicy (this.runQ)

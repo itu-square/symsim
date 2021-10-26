@@ -80,7 +80,7 @@ trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
     * Scheduler is lazy then the evaluation is not really doing more than just
     * formulating the thunk of that scheduler.
     */
-   final def learnN (q: Q, ss: => Scheduler[State]): Scheduler[Q] =
+   final def learn (q: Q, ss: => Scheduler[State]): Scheduler[Q] =
      ss.foldM[Scheduler,Q] (q) (learningEpisode)
 
   /** Convert the matrix Q after training into a Policy map. TODO: should not
