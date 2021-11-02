@@ -28,9 +28,9 @@ import symsim.concrete.Randomized
  *
  * Optimal policy (Russell, Norvig, Fig 17.2, p. 648):
 *
- *   { Right, Right, Right, Terminal,
+ *     Right, Right, Right, Terminal,
  *     Up,           Up,    Terminal,
- *     Up,    Left,  Left,  Left } .
+ *     Up,    Left,  Left,  Left 
  *
  */
  
