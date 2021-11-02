@@ -16,10 +16,26 @@ import symsim.concrete.Randomized
  *     (1,2),        (3,2), (4,2),
  *     (1,1), (2,1), (3,1), (4,1) } .
  *
+ * Each action achieves the intended effect with probability 0.8;
+ * the rest of the time the action moves the agent at right angles
+ * of the intended direction
+ *
+ * If the agent bumps into a wall, it stays in the same square
+ *
+ * Reward: -0.04 for all states except the terminal states
+ * (which have rewards +1 and -1). The reward for a path is
+ * the sum of the rewards for its ststaes
+ *
+ * Optimal policy (Russell, Norvig, Fig 17.2, p. 648):
+*
+ *   { Right, Right, Right, Terminal,
+ *     Up,           Up,    Terminal,
+ *     Up,    Left,  Left,  Left } .
+ *
  */
+ 
 case class MazeState (x: Int, y: Int):
    override def toString: String = s"($x,$y)"
-
 
 type MazeFiniteState = MazeState
 type MazeReward = Double
