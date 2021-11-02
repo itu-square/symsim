@@ -11,7 +11,7 @@ class Experiments
         alpha = 0.1,
         gamma = 1.0,
         epsilon = 0.05,
-        episodes = 250000,
+        episodes = 10000,
       )
 
       val q = sarsa.runQ

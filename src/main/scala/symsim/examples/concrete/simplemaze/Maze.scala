@@ -57,9 +57,9 @@ object Maze
       def discretize (s: MazeState): MazeFiniteState =  s
 
       private def mazeReward (s: MazeState): MazeReward = s match
-        case MazeState (4, 3) => 10.0   // Good final state
-        case MazeState (4, 2) => -10.0  // Bad final state
-        case MazeState (_, _) => -1.0
+        case MazeState (4, 3) => 1.0   // Good final state
+        case MazeState (4, 2) => -1.0  // Bad final state
+        case MazeState (_, _) => -0.04
 
 
       def distort (a: MazeAction): Randomized[MazeAction] = a match
