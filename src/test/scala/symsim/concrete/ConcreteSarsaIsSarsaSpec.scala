@@ -2,7 +2,7 @@ package symsim
 package concrete
 
 import symsim.examples.concrete.mountaincar.MountainCar
-import symsim.laws.discipline.SarsaTests
+import symsim.laws.SarsaLaws
 
 class ConcreteSarsaIsSarsaSpec
    extends SymSimSpec:
@@ -15,4 +15,4 @@ class ConcreteSarsaIsSarsaSpec
      episodes = 500,
    )
 
-   checkAll ("concrete.ConcreteSarsa is Sarsa", new SarsaTests (csarsa).sarsa)
+   checkAll ("concrete.ConcreteSarsa is Sarsa", SarsaLaws (csarsa).laws)

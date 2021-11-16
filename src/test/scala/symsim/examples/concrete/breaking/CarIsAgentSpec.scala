@@ -1,8 +1,9 @@
 package symsim
 package examples.concrete.breaking
 
-import laws.discipline.{AgentTests, EpisodicTests}
+import laws.AgentLaws
+import laws.EpisodicLaws
 
 class CarIsAgentSpec extends SymSimSpec:
-   checkAll ("concrete.breaking.Car is an Agent", new AgentTests ().agent (Car))
-   checkAll ("concrete.breaking.Car is Episodic", new EpisodicTests ().agent (Car))
+   checkAll ("concrete.breaking.Car is an Agent", AgentLaws (Car).laws)
+   checkAll ("concrete.breaking.Car is Episodic", EpisodicLaws (Car).laws)
