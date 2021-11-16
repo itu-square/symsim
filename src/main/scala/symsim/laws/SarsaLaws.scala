@@ -1,18 +1,18 @@
 package symsim
 package laws
 
-import cats.kernel.laws._
-import cats.kernel.laws.discipline._
+import cats.kernel.laws.*
+import cats.kernel.laws.discipline.*
 import cats.kernel.BoundedEnumerable
 
-import org.scalacheck.Arbitrary._
+import org.scalacheck.Arbitrary.*
 import org.scalacheck.Prop
 import org.scalacheck.Prop.forAll
 import org.scalacheck.util.Pretty
-import org.scalacheck.util.Pretty._
+import org.scalacheck.util.Pretty.*
 
-import symsim.CanTestIn._
-import symsim.Arith._
+import symsim.CanTestIn.*
+import symsim.Arith.*
 
 /**
  * Laws that have to be obeyed by any refinement of symsim.SARSA
@@ -25,71 +25,49 @@ import symsim.Arith._
  *
  * Same comment in AgentLaws.scala
  */
-class SarsaLaws[State,FiniteState, Action, Reward, Scheduler[_]] (
-  val sarsa: Sarsa[State, FiniteState, Action, Reward, Scheduler]):
+case class SarsaLaws[State, FiniteState, Action, Reward, Scheduler[_]]
+   (sarsa: Sarsa[State, FiniteState, Action, Reward, Scheduler])
+   extends org.typelevel.discipline.Laws:
 
-  import sarsa.agent.instances.given
+   import sarsa.agent.instances.given
 
-  def isStateTotal (q: sarsa.Q): Boolean =
-    q.keySet == sarsa.agent.instances.allFiniteStates.toSet
+   def isStateTotal (q: sarsa.Q): Boolean =
+     q.keySet == sarsa.agent.instances.allFiniteStates.toSet
 
+   def isActionTotal (q: sarsa.Q): Boolean =
+     q.values.forall { _.keySet == sarsa.agent.instances.allActions.toSet }
 
-  def isActionTotal (q: sarsa.Q): Boolean =
-    q.values.forall { _.keySet == sarsa.agent.instances.allActions.toSet }
+   val laws: RuleSet = new SimpleRuleSet (
+      "sarsa",
 
+      /* Law: Q matrix has a action-reward map for each finite state */
+      "initQ defined for all FiniteStates" -> isStateTotal (sarsa.initQ),
 
-  // TODO: If learn1 starts with a positive values, then we end with positive
-  // values
+      /* Law: Check that the initialization of Q matrix is correct */
+      "initQ defined for all Actions for each source state" ->
+      isActionTotal (sarsa.initQ),
 
-  // TODO: If learn1 produces a larger (pointwise matrix) than Q
+      /* Law: All values in Q matrix are zeroReward initially */
+      "initQ contains only zeroRewards" -> {
+         val props = for
+           vector <- sarsa.initQ.values
+           cell   <- vector.values
+         yield cell == sarsa.agent.zeroReward
+         props.forall (identity)
+      },
 
-  // TODO: domain of Q is invariant in learn1
+      "generated Q matrices are total for finite state space" ->
+      forAll (sarsa.genQ) { (q: sarsa.Q) => isStateTotal (q) },
 
-  // TODO: learnN (1) is the same as learn
+      "generated Q matrices are total for action state space" ->
+      forAll (sarsa.genQ) { (q: sarsa.Q) => isActionTotal (q) },
 
-  // TODO: best_action return actions that can be
-  // discretized to FiniteState elem (or are in Action elem)
-
-  // TODO qToPolicy preserves that state and action domains of Q
-
-  // TODO initQ creates a matrix of the right size that is total and
-  // initialized to zeroes
-
-  // TODO  "this is for RL: eventually we arrive at final (episodic agent)" ->
-  //      Prop.falsified,
-  //
-  // TODO the utility of all actions in the terminal state should be zero
-
-  /** Law: Q matrix has a action-reward map for each finite state */
-  def initQDefinedForAllFiniteStates: Prop = isStateTotal (sarsa.initQ)
-
-
-  /** Check that the initialization of Q matrix is correct */
-  def initQDefinedForAllActions: Prop = isActionTotal (sarsa.initQ)
-
-
-  /** Law: All values in Q matrix are zeroReward initially */
-  def initQAllValuesZero: Prop =
-    val props = for
-      vector <- sarsa.initQ.values
-      cell   <- vector.values
-    yield cell == sarsa.agent.zeroReward
-    props.forall (identity)
-
-
-  def generatedQMatricesAreTotalWRTStateSpace: Prop =
-    forAll (sarsa.genQ) { (q: sarsa.Q) => isStateTotal (q) }
-
-
-  def generatedQMatricesAreTotalWRTActionSpace: Prop =
-    forAll (sarsa.genQ) { (q: sarsa.Q) => isActionTotal (q) }
-
-
-  /** Law: chooseAction gives one of the enumerable actions */
-  def chooseActionGivesEnumerableAction: Prop =
-    forAll (sarsa.genQ) { (q: sarsa.Q) =>
-      forAll { (s: State) =>
-        val sa: Scheduler[Action] = sarsa.chooseAction (q) (s)
-        forAll (sa.toGen) { a =>
-          sarsa.agent.instances.allActions.contains (a)
-    } } }
+      /* Law: chooseAction gives one of the enumerable actions */
+      "chooseAction (q) (s) ∈ Action for all q and s" ->
+      forAll (sarsa.genQ) { (q: sarsa.Q) =>
+        forAll { (s: State) =>
+          val sa: Scheduler[Action] = sarsa.chooseAction (q) (s)
+          forAll (sa.toGen) { a =>
+            sarsa.agent.instances.allActions.contains (a)
+      } } },
+    )
