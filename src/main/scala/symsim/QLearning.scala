@@ -5,7 +5,7 @@ import cats.syntax.functor.*
 
 import symsim.Arith.*
 
-trait Sarsa[State, FiniteState, Action, Reward, Scheduler[_]]
+trait QLearning[State, FiniteState, Action, Reward, Scheduler[_]]
    extends ExactRL[State, FiniteState, Action, Reward, Scheduler]:
 
    import agent.instances.given
