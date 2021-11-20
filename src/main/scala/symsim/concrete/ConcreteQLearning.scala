@@ -1,11 +1,11 @@
 package symsim
 package concrete
 
-case class ConcreteSarsa[State, FiniteState, Action] (
+case class ConcreteQLearning[State, FiniteState, Action] (
    val agent: Agent[State, FiniteState, Action, Double, Randomized],
    val alpha: Double,
    val gamma: Double,
    val epsilon: Probability,
    val episodes: Int,
-) extends Sarsa[State, FiniteState, Action, Double, Randomized]
+) extends QLearning[State, FiniteState, Action, Double, Randomized]
    with ConcreteExactRL[State, FiniteState, Action]
