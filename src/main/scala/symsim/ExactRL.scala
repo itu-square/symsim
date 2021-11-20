@@ -2,6 +2,7 @@ package symsim
 
 import cats.Monad
 import cats.syntax.functor.*
+import cats.syntax.flatMap.*
 import cats.syntax.foldable.*
 import cats.syntax.option.*
 
@@ -30,18 +31,25 @@ trait ExactRL[State, FiniteState, Action, Reward, Scheduler[_]]
      * @param s_t current state
      * @return the updated matrix Q, the successor state, and a
      * reward difference (the size of the update performed)
+     *
+     * To acommodate Q-Learning and SARSA in a single design, we receive
+     * the action a_t to the iteration, and we also produce the action a_t
+     * for the next iteration.  This allows SARSA to pass over the 'lookahead'
+     * to the next iteration and stay properly on policy.  In Q-Learning this
+     * introduces a small presentation complication, not more.
      */
-   def learningEpoch (q: Q, s_t: State): Scheduler[(Q, State)]
+   def learningEpoch (q: Q, s_t: State, a_t: Action): Scheduler[(Q, State, Action)]
 
    /** Execute a full learning episode (until the final state of agent is
      * reached).
      */
    def learningEpisode (q: Q, s_t: State): Scheduler[Q] =
-      def p (q: Q, s: State): Boolean =
+      def p (q: Q, s: State, a: Action): Boolean =
          agent.isFinal (s)
-      Monad[Scheduler]
-         .iterateUntilM[(Q, State)] (q -> s_t) (learningEpoch) (p)
-         .map { _._1 }
+      for
+         a <- chooseAction (q) (s_t)
+         fin <- Monad[Scheduler].iterateUntilM (q, s_t, a) (learningEpoch) (p)
+      yield fin._1
 
    /** Construct a zero initialized Q matrix */
    def initQ: Q

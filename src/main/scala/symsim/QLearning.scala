@@ -17,18 +17,20 @@ trait QLearning[State, FiniteState, Action, Reward, Scheduler[_]]
      * @return the updated matrix Q, the successor state, and a
      * reward difference (the size of the update performed)
      */
-   override def learningEpoch (q: Q, s_t: State): Scheduler[(Q, State)] = for
-      a_t <- chooseAction (q) (s_t)
-      sa_tt <- agent.step (s_t) (a_t)
-      (s_tt, r_tt) = sa_tt
-      a_tt = bestAction (q) (s_tt)
+   override def learningEpoch (q: Q, s_t: State, a_t: Action)
+      : Scheduler[(Q, State, Action)] =
+      for
+         sa_tt <- agent.step (s_t) (a_t)
+         (s_tt, r_tt) = sa_tt
+         // Q-learning is off-policy (p.844 in Russel & Norvig)
+         a_tt = bestAction (q) (s_tt)
 
-      // this is Q-learning not SARSA (p.844 in Russel & Norvig)
-      ds_t = agent.discretize (s_t)
-      ds_tt = agent.discretize (s_tt)
-      old_entry = q (ds_t) (a_t)
-      correction = r_tt + gamma * q (ds_tt) (a_tt) - old_entry
-      qval = old_entry + alpha * correction
+         ds_t = agent.discretize (s_t)
+         ds_tt = agent.discretize (s_tt)
+         old_entry = q (ds_t) (a_t)
+         correction = r_tt + gamma * q (ds_tt) (a_tt) - old_entry
+         qval = old_entry + alpha * correction
 
-      q1 = q + (ds_t -> (q (ds_t) + (a_t -> qval)))
-   yield (q1, s_tt)
+         q1 = q + (ds_t -> (q (ds_t) + (a_t -> qval)))
+         a_tt1 <- chooseAction (q) (s_tt)
+      yield (q1, s_tt, a_tt1)
