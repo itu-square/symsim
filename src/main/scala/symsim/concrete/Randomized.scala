@@ -8,15 +8,18 @@ import scala.util.Try
 
 import java.security.SecureRandom
 
-/** A purely functional wrapping of scala.util.Random */
+/** A purely functional wrapping of java.security.SecureRandom (not really pure,
+ *  but hides things sufficiently for now).
+  */
 type Randomized[+A] = LazyList[A]
 
 type Probability = Double
 
 /** A purely functional wrapping of java.security.SecureRandom.  Presents
-  * generators as possibly finite streams (a source that dries out), which can
-  * be extended to continue producing infinitely with repeat (infinite).
-  * There is some lack of referential transparency in this switch (repeat).
+ *  generators as possibly finite streams (a source that dries out), which can
+ *  be extended to continue producing infinitely with repeat (infinite).  There
+ *  is some loss of referential transparency in this switch to infinity
+ *  (repeat).
   *
   * Randomized should be a non-branching scheduler.  For the infrastructure to
   * work, all our schedulers need to be finitely branching.
@@ -45,6 +48,9 @@ object Randomized:
          .doubles (minInclusive, maxExclusive)
          .findAny
          .getAsDouble)
+
+   def gaussian (mean: Double = 0.0, stddev: Double = 1.0): Randomized[Double] =
+     LazyList (SecureRandom ().nextGaussian * stddev + mean)
 
    /** Toss a coing biased towards true with probabilty 'bias' */
    def coin (bias: Probability): Randomized[Boolean] =

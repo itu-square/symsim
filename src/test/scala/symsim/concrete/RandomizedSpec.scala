@@ -3,7 +3,8 @@ package concrete
 
 import scala.util.Try
 
-import org.scalacheck.Prop.{forAll, propBoolean}
+import org.scalacheck.Prop.{forAll, forAllNoShrink, propBoolean}
+import org.scalacheck.Gen
 
 import symsim.concrete.Randomized.canTestInRandomized
 import symsim.CanTestIn._
@@ -12,7 +13,7 @@ import symsim.CanTestIn._
 class RandomizedSpec extends org.scalatest.freespec.AnyFreeSpec
    with org.scalatestplus.scalacheck.Checkers:
 
-   val C = 555555
+   val C = 5000
 
    "Sanity checks for symsim.concrete.Randomized" - {
 
@@ -103,6 +104,21 @@ class RandomizedSpec extends org.scalatest.freespec.AnyFreeSpec
              Randomized.repeat (Randomized.between(1,100)).take (10).toList ==
              Randomized.repeat (Randomized.between(1,100)).take (10).toList
           )
+      }
+
+      "Randomized.gaussian (m, d) has stddev 'd' and mean 'm'" in check {
+
+         val n = 5000
+         val epsilon = 0.05
+
+         forAllNoShrink (Gen.choose (-100.0, +100.0), Gen.choose(0.001,+3.0)) {
+            (m: Double, d: Double) =>
+               val sample = Randomized.repeat (Randomized.gaussian (mean = m, stddev = d)).take (n)
+               val mean = sample.sum / n
+               val variance = sample.map { x => (x-mean)*(x-mean) }.sum / n
+               ("Mean"   |: Math.abs (mean/m - 1.0) <= epsilon) &&
+               ("StdDev" |: Math.abs (Math.sqrt (variance)/d - 1.0) <= epsilon)
+         }
       }
 
    }
