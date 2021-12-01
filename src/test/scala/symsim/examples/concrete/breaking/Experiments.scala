@@ -1,7 +1,7 @@
 package symsim
 package examples.concrete.breaking
 
-class BreakingExperiments
+class Experiments
    extends ExperimentSpec[CarState,CarFiniteState,CarAction]:
 
    // Import evidence that states and actions can be enumerated
