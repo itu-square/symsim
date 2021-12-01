@@ -30,13 +30,11 @@ import symsim.concrete.Randomized
 *
  *     Right, Right, Right, Terminal,
  *     Up,           Up,    Terminal,
- *     Up,    Left,  Left,  Left 
+ *     Up,    Left,  Left,  Left
  *
  */
- 
-case class MazeState (x: Int, y: Int):
-   override def toString: String = s"($x,$y)"
 
+type MazeState = (Int,Int)
 type MazeFiniteState = MazeState
 type MazeReward = Double
 
@@ -51,15 +49,15 @@ object Maze
    extends Agent[MazeState, MazeFiniteState, MazeAction, MazeReward, Randomized]:
 
       def isFinal (s: MazeState): Boolean =
-         s == MazeState (4, 3) || s == MazeState (4, 2)
+         s == (4, 3) || s == (4, 2)
 
       // Maze is discrete
       def discretize (s: MazeState): MazeFiniteState =  s
 
       private def mazeReward (s: MazeState): MazeReward = s match
-        case MazeState (4, 3) => 1.0   // Good final state
-        case MazeState (4, 2) => -1.0  // Bad final state
-        case MazeState (_, _) => -0.04
+        case (4, 3) => 1.0   // Good final state
+        case (4, 2) => -1.0  // Bad final state
+        case (_, _) => -0.04
 
 
       def distort (a: MazeAction): Randomized[MazeAction] = a match
@@ -70,14 +68,14 @@ object Maze
       def successor (s: MazeState) (a: MazeAction): MazeState =
          require (valid (s))
          val result = a match
-            case Up => s.copy (y = s.y+1)
-            case Down => s.copy (y = s.y-1)
-            case Left => s.copy (x = s.x-1)
-            case Right => s.copy (x = s.x+1)
+            case Up    => (s._1, s._2+1)
+            case Down  => (s._1, s._2-1)
+            case Left  => (s._1-1, s._2)
+            case Right => (s._1+1, s._2)
          if valid (result) then result else s
 
       def valid (s: MazeState): Boolean =
-         s.x >= 1 && s.x <= 4 && s.y >= 1 && s.y <= 3 && s != MazeState (2, 2)
+         s._1 >= 1 && s._1 <= 4 && s._2 >= 1 && s._2 <= 3 && s != (2, 2)
 
       val attention = 0.8
 
@@ -111,7 +109,7 @@ object MazeInstances
       val ss = for
          y <- List (1, 2, 3)
          x <- List (1, 2, 3, 4)
-         result = MazeState (x, y)
+         result = (x, y)
          if Maze.valid (result)
       yield result
       BoundedEnumerableFromList (ss: _*)
@@ -126,7 +124,7 @@ object MazeInstances
       y <- Gen.choose (1, 3)
       x <- Gen.choose (1, 4)
       if (x != 2 && y != 2)
-   yield MazeState (x = x.abs, y = y.abs)
+   yield (x.abs, y.abs)
 
    given arbitraryState: Arbitrary[MazeState] = Arbitrary (genMazeState)
 
