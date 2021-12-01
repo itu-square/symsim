@@ -26,7 +26,10 @@ type CarReward = Double
 
 
 object MountainCar
-  extends Agent[CarState, CarFiniteState, CarAction, CarReward, Randomized]:
+  extends Agent[CarState, CarFiniteState, CarAction, CarReward, Randomized]
+  with Episodic:
+
+  val TimeHorizon: Int = 3000000
 
   def roundAt (p: Int) (n: Double): Double =
      val s = Math.pow (10, p)
@@ -78,7 +81,6 @@ object MountainCar
 
   val instances = MountainCarInstances
 
-
 end MountainCar
 
 
@@ -86,37 +88,36 @@ end MountainCar
   * needs to be able to do to work in the framework.
   */
 object MountainCarInstances
-  extends AgentConstraints[CarState, CarFiniteState, CarAction, CarReward, Randomized]:
+   extends AgentConstraints[CarState, CarFiniteState, CarAction, CarReward, Randomized]:
 
-  given enumAction: BoundedEnumerable[CarAction] =
-     BoundedEnumerableFromList (-0.2, 0.0, 0.2)
+   given enumAction: BoundedEnumerable[CarAction] =
+      BoundedEnumerableFromList (-0.2, 0.0, 0.2)
 
-  given enumState: BoundedEnumerable[CarFiniteState] =
-     val ss = for
-        p0 <- Seq (-1.2, -1.03, -0.86, -0.69, -0.52, -0.35, -0.18, -0.01, 0.16, 0.33, 0.5)
-        v0 <- Seq (-1.5, -1.2, -0.9, -0.6, -0.3, 0.0, 0.3, 0.6, 0.9, 1.2, 1.5)
-     yield CarState (v = v0, p = p0)
-     BoundedEnumerableFromList (ss: _*)
+   given enumState: BoundedEnumerable[CarFiniteState] =
+      val ss = for
+         p0 <- Seq (-1.2, -1.03, -0.86, -0.69, -0.52, -0.35, -0.18, -0.01, 0.16, 0.33, 0.5)
+         v0 <- Seq (-1.5, -1.2, -0.9, -0.6, -0.3, 0.0, 0.3, 0.6, 0.9, 1.2, 1.5)
+      yield CarState (v = v0, p = p0)
+      BoundedEnumerableFromList (ss: _*)
 
 
-  given schedulerIsMonad: Monad[Randomized] = Randomized.randomizedIsMonad
+   given schedulerIsMonad: Monad[Randomized] = Randomized.randomizedIsMonad
 
-  given schedulerIsFoldable: Foldable[Randomized] = Randomized.randomizedIsFoldable
+   given schedulerIsFoldable: Foldable[Randomized] = Randomized.randomizedIsFoldable
 
-  given canTestInScheduler: CanTestIn[Randomized] = Randomized.canTestInRandomized
+   given canTestInScheduler: CanTestIn[Randomized] = Randomized.canTestInRandomized
 
-  lazy val genCarState: Gen[CarState] = for
-     p <- Gen.choose (-1.2, 0.5)
-     v <- Gen.choose (-1.5, 1.5)
-  yield CarState (v, p)
+   lazy val genCarState: Gen[CarState] = for
+      p <- Gen.choose (-1.2, 0.5)
+      v <- Gen.choose (-1.5, 1.5)
+   yield CarState (v, p)
 
-  given arbitraryState: Arbitrary[CarState] = Arbitrary (genCarState)
+   given arbitraryState: Arbitrary[CarState] = Arbitrary (genCarState)
 
-  given eqCarState: Eq[CarState] = Eq.fromUniversalEquals
+   given eqCarState: Eq[CarState] = Eq.fromUniversalEquals
 
-  given arbitraryReward: Arbitrary[CarReward] = Arbitrary (Gen.double)
+   given arbitraryReward: Arbitrary[CarReward] = Arbitrary (Gen.double)
 
-  given rewardArith: Arith[CarReward] = Arith.arithDouble
-
+   given rewardArith: Arith[CarReward] = Arith.arithDouble
 
 end MountainCarInstances
