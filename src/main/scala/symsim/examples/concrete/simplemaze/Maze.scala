@@ -46,7 +46,10 @@ case object Down extends MazeAction
 
 
 object Maze
-   extends Agent[MazeState, MazeFiniteState, MazeAction, MazeReward, Randomized]:
+   extends Agent[MazeState, MazeFiniteState, MazeAction, MazeReward, Randomized]
+   with Episodic:
+
+      val TimeHorizon: Int = 2000
 
       def isFinal (s: MazeState): Boolean =
          s == (4, 3) || s == (4, 2)
