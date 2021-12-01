@@ -1,30 +1,21 @@
 package symsim
 package concrete
 
-import symsim.concrete.ConcreteSarsa
-import org.typelevel.paiges.Doc
-
 class UnitAgentExperiments
   extends org.scalatest.freespec.AnyFreeSpec
-  with org.scalatest.matchers.should.Matchers
-  with org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-  with org.scalatest.prop.TableDrivenPropertyChecks:
+  with org.scalatest.matchers.should.Matchers:
 
   "test run (should not crash)" in {
 
     // Import evidence that states and actions can be enumerated
     import UnitAgent._
 
-    val sarsa = ConcreteSarsa[
-      UnitState,
-      UnitState,
-      UnitAction
-    ] (
+    val sarsa = symsim.concrete.ConcreteSarsa (
       agent = UnitAgent,
       alpha = 0.1,
       gamma = 0.1,
       epsilon = 0.05, // explore vs exploit ratio
-      episodes = 15000,
+      episodes = 500,
     )
 
     val q = sarsa.runQ
@@ -34,4 +25,5 @@ class UnitAgentExperiments
     val q_output = sarsa.pp_Q (q).hang (4)
     info (q_output.render (80))
 
+    policy should be (List (() -> ()).toMap)
   }
