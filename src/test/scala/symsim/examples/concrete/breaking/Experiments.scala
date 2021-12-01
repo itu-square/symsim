@@ -1,25 +1,15 @@
 package symsim
 package examples.concrete.breaking
 
-import symsim.concrete.ConcreteSarsa
-import org.typelevel.paiges.Doc
-
 class BreakingExperiments
-  extends org.scalatest.freespec.AnyFreeSpec
-  with org.scalatest.matchers.should.Matchers
-  with org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-  with org.scalatest.prop.TableDrivenPropertyChecks:
+  extends org.scalatest.freespec.AnyFreeSpec:
 
-  "test run" in {
+  "Breaking Car experiment" in {
 
     // Import evidence that states and actions can be enumerated
     import Car._
 
-    val sarsa = ConcreteSarsa[
-      CarState,
-      CarFiniteState,
-      CarAction
-    ] (
+    val sarsa = symsim.concrete.ConcreteSarsa (
       agent = Car,
       alpha = 0.1,
       gamma = 0.1,
