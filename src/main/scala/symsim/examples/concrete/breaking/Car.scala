@@ -41,8 +41,7 @@ object Car
 
     private def carReward (s: CarState) (a: CarAction): CarReward =
       if s.p >= 10.0 then -10
-      else if s.p < 10.0 && s.v == 0.0 then 10.0 - s.p
-      else -1.0
+      else a
 
 
     /** Granularity of the step in seconds */
