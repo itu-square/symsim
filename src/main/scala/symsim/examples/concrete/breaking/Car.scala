@@ -40,7 +40,7 @@ object Car
 
 
     private def carReward (s: CarState) (a: CarAction): CarReward =
-      if s.p >= 10.0 then -10
+      if s.p >= 10.0 then -100
       else a
 
 
