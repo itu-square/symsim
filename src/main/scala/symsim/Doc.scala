@@ -27,7 +27,7 @@ def tabulate[A] (pad: Char, sep: String, rows: List[List[A]],
     joint <- sepJoint
   yield Doc.intercalate(
     Doc.str (joint),
-    widths.map { w => Doc.str (dash.repeat (w)) }
+    widths.map { w => Doc.str (String.join("", java.util.Collections.nCopies(w, dash))) }
   ) + Doc.line
 
   val headings = Doc.intercalate (
