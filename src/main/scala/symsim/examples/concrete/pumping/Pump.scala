@@ -96,10 +96,10 @@ object Pump
 
 
     def getDemand (t: Int): Randomized [Double] =
-      if t < 5 then Randomized.between (10.0, 30.0)
-      if t < 12 then Randomized.between (30.0, 50.0)
-      if t < 22 then Randomized.between (40.0, 90.0)
-      else Randomized.between (20.0, 40.0)
+      if t < 5 then Randomized.between (5.0, 15.0)
+      if t < 12 then Randomized.between (15.0, 45.0)
+      if t < 22 then Randomized.between (20.0, 38.0)
+      else Randomized.between (5.0, 20.0)
 
 
     def initialize: Randomized[PumpState] = for
