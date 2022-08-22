@@ -47,7 +47,7 @@ with a bunch of simple examples.
    ```
    Adjust the name of the package object from breaking to `tictactoe`. Then change the four types (both names and definitions) to whatever makes sense for TicTacToe. For instances create
    `TicState` - to represent the state of the game
-   `TicFiniteState` - this might be just a renaming because the Tic Tac Toe state space is finite
+   `TicObservableState` - this might be just a renaming because the Tic Tac Toe state space is finite
    `TicAction` - possible moves
 
 5. Implement the TicTacToe agent.

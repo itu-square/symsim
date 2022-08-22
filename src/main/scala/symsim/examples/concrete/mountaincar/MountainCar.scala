@@ -20,13 +20,13 @@ import symsim.concrete.Randomized
  */
 
 case class CarState (v: Double, p: Double)
-type CarFiniteState = CarState
+type CarObservableState = CarState
 type CarAction = Double
 type CarReward = Double
 
 
 object MountainCar
-  extends Agent[CarState, CarFiniteState, CarAction, CarReward, Randomized]
+  extends Agent[CarState, CarObservableState, CarAction, CarReward, Randomized]
   with Episodic:
 
   val TimeHorizon: Int = 3000000
@@ -40,7 +40,7 @@ object MountainCar
      s.p >= 0.5
 
 
-  def discretize (s: CarState): CarFiniteState =
+  def discretize (s: CarState): CarObservableState =
      require (s.p >= -1.2, s"s.p = ${s.p} is not within the boundaries")
      require (s.p <= 0.5, s"s.p = ${s.p} is not within the boundaries")
      require (s.v >= -1.5, s"s.v = ${s.v} is not within the boundaries")
@@ -88,12 +88,12 @@ end MountainCar
   * needs to be able to do to work in the framework.
   */
 object MountainCarInstances
-   extends AgentConstraints[CarState, CarFiniteState, CarAction, CarReward, Randomized]:
+   extends AgentConstraints[CarState, CarObservableState, CarAction, CarReward, Randomized]:
 
    given enumAction: BoundedEnumerable[CarAction] =
       BoundedEnumerableFromList (-0.2, 0.0, 0.2)
 
-   given enumState: BoundedEnumerable[CarFiniteState] =
+   given enumState: BoundedEnumerable[CarObservableState] =
       val ss = for
          p0 <- Seq (-1.2, -1.03, -0.86, -0.69, -0.52, -0.35, -0.18, -0.01, 0.16, 0.33, 0.5)
          v0 <- Seq (-1.5, -1.2, -0.9, -0.6, -0.3, 0.0, 0.3, 0.6, 0.9, 1.2, 1.5)

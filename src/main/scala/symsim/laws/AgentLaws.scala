@@ -15,8 +15,8 @@ import symsim.CanTestIn.*
   * useful when our agents get more structure, and we get a taxonomy of
   * agents.
   */
-case class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_]]
-   (agent: Agent[State, FiniteState, Action, Reward, Scheduler])
+case class AgentLaws[State, ObservableState, Action, Reward, Scheduler[_]]
+   (agent: Agent[State, ObservableState, Action, Reward, Scheduler])
    extends org.typelevel.discipline.Laws:
 
    import agent.instances.given
@@ -30,14 +30,14 @@ case class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_]]
         * be discretized and represented in the enumerable finite state
         * space that the agent uses for learning and for control decisions.
         */
-      "discretize (s) ∈ FiniteState" ->
+      "discretize (s) ∈ ObservableState" ->
       forAll { (s: State) =>
          finiteStates.contains (agent.discretize (s)) },
 
       /** Law: Every initialization ends up being discritized to
-       *  an enumerable value of FiniteState.
+       *  an enumerable value of ObservableState.
        */
-      "discretize (initialize) ∈ FiniteState" ->
+      "discretize (initialize) ∈ ObservableState" ->
       forAll (agent.initialize.toGen) { (s: State) =>
          finiteStates.contains (agent.discretize (s)) },
 
@@ -47,9 +47,9 @@ case class AgentLaws[State, FiniteState, Action, Reward, Scheduler[_]]
          !agent.isFinal (s) },
 
       /** Law: An agent step from any state lands in a state
-        * that be discretized into FiniteState.
+        * that be discretized into ObservableState.
         */
-      "discretize (step (s) (a)._1) ∈ FiniteState" ->
+      "discretize (step (s) (a)._1) ∈ ObservableState" ->
       forAll { (s0: State) =>
          forAll { (a: Action) =>
             val prop = for

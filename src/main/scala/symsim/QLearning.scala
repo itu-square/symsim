@@ -5,8 +5,8 @@ import cats.syntax.functor.*
 
 import symsim.Arith.*
 
-trait QLearning[State, FiniteState, Action, Reward, Scheduler[_]]
-   extends ExactRL[State, FiniteState, Action, Reward, Scheduler]:
+trait QLearning[State, ObservableState, Action, Reward, Scheduler[_]]
+   extends ExactRL[State, ObservableState, Action, Reward, Scheduler]:
 
    import agent.instances.given
 

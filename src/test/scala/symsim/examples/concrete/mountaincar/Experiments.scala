@@ -2,7 +2,7 @@ package symsim
 package examples.concrete.mountaincar
 
 class Experiments
-   extends ExperimentSpec[CarState,CarFiniteState,CarAction]:
+   extends ExperimentSpec[CarState, CarObservableState, CarAction]:
 
    // Import evidence that states and actions can be enumerated
    import MountainCar._

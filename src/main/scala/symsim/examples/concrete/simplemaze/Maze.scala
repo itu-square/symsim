@@ -35,7 +35,7 @@ import symsim.concrete.Randomized
  */
 
 type MazeState = (Int,Int)
-type MazeFiniteState = MazeState
+type MazeObservableState = MazeState
 type MazeReward = Double
 
 sealed trait MazeAction
@@ -46,7 +46,7 @@ case object Down extends MazeAction
 
 
 object Maze
-   extends Agent[MazeState, MazeFiniteState, MazeAction, MazeReward, Randomized]
+   extends Agent[MazeState, MazeObservableState, MazeAction, MazeReward, Randomized]
    with Episodic:
 
       val TimeHorizon: Int = 2000
@@ -55,7 +55,7 @@ object Maze
          s == (4, 3) || s == (4, 2)
 
       // Maze is discrete
-      def discretize (s: MazeState): MazeFiniteState =  s
+      def discretize (s: MazeState): MazeObservableState =  s
 
       private def mazeReward (s: MazeState): MazeReward = s match
         case (4, 3) => 1.0   // Good final state
@@ -90,7 +90,7 @@ object Maze
          yield (newState, mazeReward (newState))
 
       def initialize: Randomized[MazeState] =
-         Randomized.oneOf (instances.allFiniteStates.filter { !isFinal (_) }:_*)
+         Randomized.oneOf (instances.allObservableStates.filter { !isFinal (_) }:_*)
 
       override def zeroReward: MazeReward = 0
 
@@ -103,12 +103,12 @@ end Maze
   * needs to be able to do to work in the framework.
   */
 object MazeInstances
-   extends AgentConstraints[MazeState, MazeFiniteState, MazeAction, MazeReward, Randomized]:
+   extends AgentConstraints[MazeState, MazeObservableState, MazeAction, MazeReward, Randomized]:
 
    given enumAction: BoundedEnumerable[MazeAction] =
       BoundedEnumerableFromList (Up, Down, Left, Right)
 
-   given enumState: BoundedEnumerable[MazeFiniteState] =
+   given enumState: BoundedEnumerable[MazeObservableState] =
       val ss = for
          y <- List (1, 2, 3)
          x <- List (1, 2, 3, 4)

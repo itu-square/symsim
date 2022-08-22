@@ -25,13 +25,13 @@ import symsim.concrete.Randomized
  */
 
 type BanditState = Boolean
-type BanditFiniteState = BanditState
+type BanditObservableState = BanditState
 type BanditReward = Double
 type BanditAction = Int
 
 
 class Bandit (banditReward: List [Randomized[BanditReward]])
-  extends Agent[BanditState, BanditFiniteState, BanditAction, BanditReward, Randomized]
+  extends Agent[BanditState, BanditObservableState, BanditAction, BanditReward, Randomized]
   with Episodic:
 
   val TimeHorizon: Int = 3
@@ -41,7 +41,7 @@ class Bandit (banditReward: List [Randomized[BanditReward]])
       s == true
 
     // Bandit is discrete
-    def discretize (s: BanditState): BanditFiniteState =  s
+    def discretize (s: BanditState): BanditObservableState =  s
     
     def successor (s: BanditState) (a: BanditAction): BanditState =
          true
@@ -53,7 +53,7 @@ class Bandit (banditReward: List [Randomized[BanditReward]])
       yield (newState, r)
 
     def initialize: Randomized[BanditState] =
-      Randomized.oneOf (instances.allFiniteStates.filter { !isFinal (_) }:_*)
+      Randomized.oneOf (instances.allObservableStates.filter { !isFinal (_) }:_*)
 
     override def zeroReward: BanditReward = 0
 
@@ -65,11 +65,11 @@ end Bandit
  * needs to be able to do to work in the framework.
  */
 class BanditInstances (banditReward : List [Randomized[BanditReward]])
-  extends AgentConstraints[BanditState, BanditFiniteState, BanditAction, BanditReward, Randomized]:
+  extends AgentConstraints[BanditState, BanditObservableState, BanditAction, BanditReward, Randomized]:
 
     given enumAction: BoundedEnumerable[BanditAction] = BoundedEnumerableFromList (List.range(0, banditReward.size)*)
 
-    given enumState: BoundedEnumerable[BanditFiniteState] =
+    given enumState: BoundedEnumerable[BanditObservableState] =
     	BoundedEnumerableFromList (false, true)
 
     given schedulerIsMonad: Monad[Randomized] = Randomized.randomizedIsMonad
