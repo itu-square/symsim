@@ -4,9 +4,9 @@ import cats.kernel.BoundedEnumerable
 import cats.syntax.option._
 import org.typelevel.paiges.Doc
 
-trait RL[FiniteState, Action]:
+trait RL[ObservableState, Action]:
 
-  type Policy = Map[FiniteState,Action]
+  type Policy = Map[ObservableState,Action]
 
   /** The actual reinforcement learning algortihm call. */
   def run: Policy

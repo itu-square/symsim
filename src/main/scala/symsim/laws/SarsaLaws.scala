@@ -25,14 +25,14 @@ import symsim.Arith.*
  *
  * Same comment in AgentLaws.scala
  */
-case class SarsaLaws[State, FiniteState, Action, Reward, Scheduler[_]]
-   (sarsa: Sarsa[State, FiniteState, Action, Reward, Scheduler])
+case class SarsaLaws[State, ObservableState, Action, Reward, Scheduler[_]]
+   (sarsa: Sarsa[State, ObservableState, Action, Reward, Scheduler])
    extends org.typelevel.discipline.Laws:
 
    import sarsa.agent.instances.given
 
    def isStateTotal (q: sarsa.Q): Boolean =
-     q.keySet == sarsa.agent.instances.allFiniteStates.toSet
+     q.keySet == sarsa.agent.instances.allObservableStates.toSet
 
    def isActionTotal (q: sarsa.Q): Boolean =
      q.values.forall { _.keySet == sarsa.agent.instances.allActions.toSet }
@@ -41,7 +41,7 @@ case class SarsaLaws[State, FiniteState, Action, Reward, Scheduler[_]]
       "sarsa",
 
       /* Law: Q matrix has a action-reward map for each finite state */
-      "initQ defined for all FiniteStates" -> isStateTotal (sarsa.initQ),
+      "initQ defined for all ObservableStates" -> isStateTotal (sarsa.initQ),
 
       /* Law: Check that the initialization of Q matrix is correct */
       "initQ defined for all Actions for each source state" ->
