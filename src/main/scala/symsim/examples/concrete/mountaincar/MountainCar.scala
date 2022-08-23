@@ -32,30 +32,30 @@ object MountainCar
   val TimeHorizon: Int = 3000000
 
   def roundAt (p: Int) (n: Double): Double =
-     val s = Math.pow (10, p)
-     Math.round (n * s) / s
+    val s = Math.pow (10, p)
+    Math.round (n * s) / s
 
 
   def isFinal (s: CarState): Boolean =
-     s.p >= 0.5
+    s.p >= 0.5
 
 
   def discretize (s: CarState): CarObservableState =
-     require (s.p >= -1.2, s"s.p = ${s.p} is not within the boundaries")
-     require (s.p <= 0.5, s"s.p = ${s.p} is not within the boundaries")
-     require (s.v >= -1.5, s"s.v = ${s.v} is not within the boundaries")
-     require (s.v <= 1.5, s"s.v = ${s.v} is not within the boundaries")
-     val dp = roundAt (2) (-1.2 + (((s.p + 1.2) / 0.17).floor) * 0.17)
-     val dv = roundAt (2) (-1.5 + (((s.v + 1.5) / 0.30).floor) * 0.30)
-     CarState (v = dv.min (1.5).max (-1.5), p = dp.min (0.5).max (-1.2))
+    require (s.p >= -1.2, s"s.p = ${s.p} is not within the boundaries")
+    require (s.p <= 0.5, s"s.p = ${s.p} is not within the boundaries")
+    require (s.v >= -1.5, s"s.v = ${s.v} is not within the boundaries")
+    require (s.v <= 1.5, s"s.v = ${s.v} is not within the boundaries")
+    val dp = roundAt (2) (-1.2 + (((s.p + 1.2) / 0.17).floor) * 0.17)
+    val dv = roundAt (2) (-1.5 + (((s.v + 1.5) / 0.30).floor) * 0.30)
+    CarState (v = dv.min (1.5).max (-1.5), p = dp.min (0.5).max (-1.2))
 
 
   private def carReward (s: CarState) (a: CarAction): CarReward =
-    if s.p >= 0.5 then 1 else -0.1
+    if s.p >= 0.5 then 1.0 else -0.01
 
 
   /** Granularity of the step in seconds */
-  private val t: Double = 0.1
+  private val dt: Double = 0.1
   private val mass: Double = 0.2
   private val friction: Double = 0.3
   private val gravity:  Double = 9.8
@@ -63,17 +63,18 @@ object MountainCar
 
   // TODO: this is now deterministic but eventually needs to be randomized
   def step (s: CarState) (a: CarAction): Randomized[(CarState, CarReward)] =
-    val v = s.v + (gravity * mass * cos (3.0 * s.p) + a / mass - friction * s.v) * t
-    val v1 = v.max (-1.5).min (1.5)
-    val p1 = Math.max (-1.2, Math.min (s.p + (v1 * t), 0.5))
-    val s1 = CarState (v = v1, p = p1)
+    val v = s.v + (gravity * mass * cos (3.0 * s.p) + a / mass - friction * s.v) * dt
+    val p = s.p + (v * dt)
+    val (v1, p1) = if p < -1.2 then (-1.2, 0.0) else (v, p) 
+    val s1 = CarState (v = v1.max (-1.5).min (1.5), 
+                       p = p1.min (0.5))
     Randomized.const (s1 -> carReward (s1) (a))
 
 
   def initialize: Randomized[CarState] = for
-    p <- Randomized.between (-1.2, 0.5)
     v <- Randomized.between (-1.5, 1.5)
-    s0 = CarState (v, p)
+    p <- Randomized.between (-1.2, 0.5)
+    s0 = CarState (v = v, p = p)
     s <- if isFinal (s0) then initialize else Randomized.const (s0)
   yield s
 
@@ -88,36 +89,36 @@ end MountainCar
   * needs to be able to do to work in the framework.
   */
 object MountainCarInstances
-   extends AgentConstraints[CarState, CarObservableState, CarAction, CarReward, Randomized]:
+  extends AgentConstraints[CarState, CarObservableState, CarAction, CarReward, Randomized]:
 
-   given enumAction: BoundedEnumerable[CarAction] =
-      BoundedEnumerableFromList (-0.2, 0.0, 0.2)
+  given enumAction: BoundedEnumerable[CarAction] =
+    BoundedEnumerableFromList (-0.2, 0.0, 0.2)
 
-   given enumState: BoundedEnumerable[CarObservableState] =
-      val ss = for
-         p0 <- Seq (-1.2, -1.03, -0.86, -0.69, -0.52, -0.35, -0.18, -0.01, 0.16, 0.33, 0.5)
-         v0 <- Seq (-1.5, -1.2, -0.9, -0.6, -0.3, 0.0, 0.3, 0.6, 0.9, 1.2, 1.5)
-      yield CarState (v = v0, p = p0)
-      BoundedEnumerableFromList (ss: _*)
+  given enumState: BoundedEnumerable[CarObservableState] =
+    val ss = for
+      p0 <- Seq (-1.2, -1.03, -0.86, -0.69, -0.52, -0.35, -0.18, -0.01, 0.16, 0.33, 0.5)
+      v0 <- Seq (-1.5, -1.2, -0.9, -0.6, -0.3, 0.0, 0.3, 0.6, 0.9, 1.2, 1.5)
+    yield CarState (v = v0, p = p0)
+    BoundedEnumerableFromList (ss: _*)
 
 
-   given schedulerIsMonad: Monad[Randomized] = Randomized.randomizedIsMonad
+  given schedulerIsMonad: Monad[Randomized] = Randomized.randomizedIsMonad
 
-   given schedulerIsFoldable: Foldable[Randomized] = Randomized.randomizedIsFoldable
+  given schedulerIsFoldable: Foldable[Randomized] = Randomized.randomizedIsFoldable
 
-   given canTestInScheduler: CanTestIn[Randomized] = Randomized.canTestInRandomized
+  given canTestInScheduler: CanTestIn[Randomized] = Randomized.canTestInRandomized
 
-   lazy val genCarState: Gen[CarState] = for
-      p <- Gen.choose (-1.2, 0.5)
-      v <- Gen.choose (-1.5, 1.5)
-   yield CarState (v, p)
+  lazy val genCarState: Gen[CarState] = for
+    p <- Gen.choose (-1.2, 0.5)
+    v <- Gen.choose (-1.5, 1.5)
+  yield CarState (v, p)
 
-   given arbitraryState: Arbitrary[CarState] = Arbitrary (genCarState)
+  given arbitraryState: Arbitrary[CarState] = Arbitrary (genCarState)
 
-   given eqCarState: Eq[CarState] = Eq.fromUniversalEquals
+  given eqCarState: Eq[CarState] = Eq.fromUniversalEquals
 
-   given arbitraryReward: Arbitrary[CarReward] = Arbitrary (Gen.double)
+  given arbitraryReward: Arbitrary[CarReward] = Arbitrary (Gen.double)
 
-   given rewardArith: Arith[CarReward] = Arith.arithDouble
+  given rewardArith: Arith[CarReward] = Arith.arithDouble
 
 end MountainCarInstances
