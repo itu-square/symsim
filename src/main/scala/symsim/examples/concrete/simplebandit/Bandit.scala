@@ -25,60 +25,55 @@ import symsim.concrete.Randomized
  */
 
 type BanditState = Boolean
-type BanditObservableState = BanditState
 type BanditReward = Double
 type BanditAction = Int
 
 
 class Bandit (banditReward: List [Randomized[BanditReward]])
-  extends Agent[BanditState, BanditObservableState, BanditAction, BanditReward, Randomized]
+  extends Agent[BanditState, BanditState, BanditAction, BanditReward, Randomized]
   with Episodic:
 
   val TimeHorizon: Int = 3
 
-    // Bandit has only one final state
-    def isFinal (s: BanditState): Boolean =
-      s == true
+  // Bandit has only one final state
+  override def isFinal (s: BanditState): Boolean = s
 
-    // Bandit is discrete
-    def discretize (s: BanditState): BanditObservableState =  s
-    
-    def successor (s: BanditState) (a: BanditAction): BanditState =
-         true
+  // Bandit is discrete
+  override def discretize (s: BanditState): BanditState = s
+  
+  override def step (s: BanditState) (a: BanditAction): Randomized[(BanditState, BanditReward)] =
+    for r <- banditReward (a) yield (true, r)
 
-    def step (s: BanditState) (a: BanditAction): Randomized[(BanditState, BanditReward)] =
-      for
-        r <- banditReward (a)
-        newState = successor (s) (a)
-      yield (newState, r)
+  override def initialize: Randomized[BanditState] =
+    Randomized.const (false)
 
-    def initialize: Randomized[BanditState] =
-      Randomized.oneOf (instances.allObservableStates.filter { !isFinal (_) }:_*)
+  override def zeroReward: BanditReward = 0
 
-    override def zeroReward: BanditReward = 0
-
-    val instances = new BanditInstances(banditReward)
+  override val instances = BanditInstances (banditReward)
 
 end Bandit
 
 /** Here is a proof that our types actually deliver on everything that an Agent
  * needs to be able to do to work in the framework.
  */
-class BanditInstances (banditReward : List [Randomized[BanditReward]])
-  extends AgentConstraints[BanditState, BanditObservableState, BanditAction, BanditReward, Randomized]:
+class BanditInstances (banditReward: List [Randomized[BanditReward]])
+  extends AgentConstraints[BanditState, BanditState, BanditAction, BanditReward, Randomized]:
 
-    given enumAction: BoundedEnumerable[BanditAction] = BoundedEnumerableFromList (List.range(0, banditReward.size)*)
+    given enumAction: BoundedEnumerable[BanditAction] = 
+      BoundedEnumerableFromList (List.range(0, banditReward.size)*)
 
-    given enumState: BoundedEnumerable[BanditObservableState] =
+    given enumState: BoundedEnumerable[BanditState] =
     	BoundedEnumerableFromList (false, true)
 
     given schedulerIsMonad: Monad[Randomized] = Randomized.randomizedIsMonad
 
-    given schedulerIsFoldable: Foldable[Randomized] = Randomized.randomizedIsFoldable
+    given schedulerIsFoldable: Foldable[Randomized] = 
+      Randomized.randomizedIsFoldable
 
-    given canTestInScheduler: CanTestIn[Randomized] = Randomized.canTestInRandomized
+    given canTestInScheduler: CanTestIn[Randomized] = 
+      Randomized.canTestInRandomized
 
-    lazy val genBanditState: Gen[BanditState] = Gen.oneOf(false, true)
+    lazy val genBanditState: Gen[BanditState] = Gen.oneOf (false, true)
 
     given arbitraryState: Arbitrary[BanditState] = Arbitrary (genBanditState)
 
