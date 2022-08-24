@@ -24,7 +24,7 @@ trait CanTestIn[F[_]]:
     * may be falsely assuming that we are testing on random values, but we are
     * testing on scheduled values only.
     */
-  def toGen[A] (fa: F[A]): Gen[A]
+   def toGen[A] (fa: => F[A]): Gen[A]
 
 
 object CanTestIn:

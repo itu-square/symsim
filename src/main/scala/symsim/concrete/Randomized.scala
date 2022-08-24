@@ -26,8 +26,12 @@ type Probability = Double
   **/
 object Randomized:
 
-   /** Create a generator that always a. Used to create deterministic
-     * values when a scheduler/randomized type is expected.
+   def __FORCED[A] (ra: =>Randomized[A]): Randomized[A] = 
+   { print ("FORCED!\n"); ra }
+
+   /** Create a generator that produces a single 'a'. Used to create
+     * deterministic values when a scheduler/randomized type is
+     * expected.
      */
    def const[A] (a: =>A): Randomized[A] =
      LazyList (a)
@@ -36,6 +40,9 @@ object Randomized:
       LazyList (SecureRandom ().nextDouble)
 
 
+   /** Produce a single random number between the bounds, 
+     * right exclusive 
+     **/
    def between (minInclusive: Int, maxExclusive: Int): Randomized[Int] =
       LazyList (SecureRandom ()
          .ints (minInclusive, maxExclusive)
@@ -80,7 +87,7 @@ object Randomized:
          // to add a completely new generator for scalacheck that encapsulates
          // Randomized.  The Gen class appears to be sealed and pimping cannot add
          // state to objects?
-         def toGen[A] (ra: Randomized[A]): Gen[A] =
+         def toGen[A] (ra: => Randomized[A]): Gen[A] =
             require (ra.nonEmpty)
             val stream = repeat (ra)
             Gen.choose(0, 1000)
