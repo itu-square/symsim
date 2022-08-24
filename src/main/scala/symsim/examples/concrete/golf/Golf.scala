@@ -91,7 +91,7 @@ object Golf
          yield (newState, golfReward (s) (action))
 
       def initialize: Randomized[GolfState] =
-         Randomized.const(1)
+         Randomized.const (1)
 
       override def zeroReward: GolfReward = 0
 

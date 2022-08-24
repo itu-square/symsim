@@ -90,7 +90,11 @@ object Maze
          yield (newState, mazeReward (newState))
 
       def initialize: Randomized[MazeState] =
-         Randomized.oneOf (instances.allObservableStates.filter { !isFinal (_) }:_*)
+         Randomized.repeat { 
+           Randomized.oneOf ( 
+             instances.allObservableStates.filter { !isFinal (_) } : _*
+           )
+         }
 
       override def zeroReward: MazeReward = 0
 
