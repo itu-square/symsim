@@ -12,7 +12,7 @@ class Experiments
      alpha = 0.1,
      gamma = 0.1,
      epsilon = 0.05,
-     episodes = 3,
+     episodes = 80000,
    )
 
    s"MountainCar experiment with $sarsa" in {
