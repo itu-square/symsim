@@ -3,8 +3,8 @@ package concrete
 
 import cats.kernel.BoundedEnumerable
 
-trait ConcreteExactRL[State, FiniteState, Action]
-   extends ExactRL[State, FiniteState, Action, Double, Randomized]:
+trait ConcreteExactRL[State, ObservableState, Action]
+   extends ExactRL[State, ObservableState, Action, Double, Randomized]:
 
   import agent.instances.*
 
@@ -41,7 +41,7 @@ trait ConcreteExactRL[State, FiniteState, Action]
       .map { a => (a, agent.zeroReward) }
       .toMap
 
-    val q0 = allFiniteStates
+    val q0 = allObservableStates
       .map { state => (state, qa) }
       .toMap
 

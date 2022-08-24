@@ -9,14 +9,14 @@ import cats.syntax.option.*
 import org.scalacheck.Gen
 import org.typelevel.paiges.Doc
 
-trait ExactRL[State, FiniteState, Action, Reward, Scheduler[_]]
-   extends RL[FiniteState, Action]:
+trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
+   extends RL[ObservableState, Action]:
 
    import agent.instances.given
 
-   type Q = Map[FiniteState, Map[Action, Reward]]
+   type Q = Map[ObservableState, Map[Action, Reward]]
 
-   val agent: Agent[State, FiniteState, Action, Reward, Scheduler]
+   val agent: Agent[State, ObservableState, Action, Reward, Scheduler]
 
    def alpha: Double
    def gamma: Double
@@ -86,7 +86,7 @@ trait ExactRL[State, FiniteState, Action, Reward, Scheduler[_]]
         ars = as zip rewards
       yield Map (ars: _*)
 
-      val fs = agent.instances.allFiniteStates
+      val fs = agent.instances.allObservableStates
       val genStateActionRewards: Gen[Q] = for
         // TODO refactor, seek what is available for maps
         mars <- Gen.sequence[List[Map[Action,Reward]], Map[Action,Reward]]
@@ -107,7 +107,7 @@ trait ExactRL[State, FiniteState, Action, Reward, Scheduler[_]]
          .map (_.toString)
          .toList
          .sorted
-      def fmt (s: FiniteState, m: Map[Action,Reward]): List[String] =
+      def fmt (s: ObservableState, m: Map[Action,Reward]): List[String] =
          s.toString ::m
             .toList
             .sortBy (_._1.toString)

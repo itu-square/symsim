@@ -8,16 +8,16 @@ import cats.kernel.BoundedEnumerable
 
 /** TODO: A possible refactoring: separate Agents from finite agents, where the
   * latter would mix in discretization, and finiteness constraints on
-  * FiniteState, and Action, with the corresponding tests
+  * ObservableState, and Action, with the corresponding tests
   */
-trait Agent[State, FiniteState, Action, Reward, Scheduler[_]]:
+trait Agent[State, ObservableState, Action, Reward, Scheduler[_]]:
 
   import instances.given
 
   /** The evidence required to consider a generic instance of Agent to be
     * an agent for the rest of the framework
     */
-  val instances: AgentConstraints[State, FiniteState, Action, Reward, Scheduler]
+  val instances: AgentConstraints[State, ObservableState, Action, Reward, Scheduler]
 
   /** Execute one training step.  If symbolic, it may result in multiple
     * successors and rewards.
@@ -35,7 +35,7 @@ trait Agent[State, FiniteState, Action, Reward, Scheduler[_]]:
     * convenient to maintain discretizations with the agent, as this makes the
     * examples compact.
     */
-  def discretize (s: State): FiniteState
+  def discretize (s: State): ObservableState
 
   /** Return the reward assigned to state s when action a is given (the
     * reward estimation function)
@@ -70,7 +70,7 @@ trait Agent[State, FiniteState, Action, Reward, Scheduler[_]]:
 /** Type evidence required to consider a generic instance of Agent to be
   * an agent for the rest of the framework
   */
-trait AgentConstraints[State, FiniteState, Action, Reward, Scheduler[_]]:
+trait AgentConstraints[State, ObservableState, Action, Reward, Scheduler[_]]:
 
   /** Enforce that actions are enumerable because otherwise we cannot represent
     * Q as a map (enumerabilityof states is already enforced by RL).
@@ -86,10 +86,10 @@ trait AgentConstraints[State, FiniteState, Action, Reward, Scheduler[_]]:
   /** Enforce that states are enumerable because otherwise we cannot
     * represent a policy as a map.
     */
-  given enumState: BoundedEnumerable[FiniteState]
+  given enumState: BoundedEnumerable[ObservableState]
 
   /** Ensure that we use efficient lists (not iterating repeatedly) */
-  lazy val allFiniteStates: List[FiniteState] =
+  lazy val allObservableStates: List[ObservableState] =
     enumState.membersAscending.toList
 
   /** We need to be able to flatten branching created by some
@@ -110,7 +110,7 @@ trait AgentConstraints[State, FiniteState, Action, Reward, Scheduler[_]]:
   given arbitraryState: Arbitrary[State]
 
   /** We can generate random finite states for testing */
-  given Arbitrary[FiniteState] = Arbitrary (Gen.oneOf (allFiniteStates))
+  given Arbitrary[ObservableState] = Arbitrary (Gen.oneOf (allObservableStates))
 
   /** We can generate random actions for testing */
   given Arbitrary[Action] = Arbitrary (Gen.oneOf (allActions))

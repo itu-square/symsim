@@ -26,7 +26,7 @@ import symsim.concrete.Randomized
  */
 
 type GolfState = Int
-type GolfFiniteState = GolfState
+type GolfObservableState = GolfState
 type GolfReward = Double
 
 enum Club:
@@ -36,7 +36,7 @@ enum Direction:
 type GolfAction = (Club, Direction)
 
 object Golf
-   extends Agent[GolfState, GolfFiniteState, GolfAction, GolfReward, Randomized]
+   extends Agent[GolfState, GolfObservableState, GolfAction, GolfReward, Randomized]
    with Episodic:
 
       val TimeHorizon: Int = 2000
@@ -45,7 +45,7 @@ object Golf
          s == 9
 
       // Golf is discrete
-      def discretize (s: GolfState): GolfFiniteState =  s
+      def discretize (s: GolfState): GolfObservableState =  s
 
       private def golfReward (s: GolfState) (a: GolfAction): GolfReward = (s, a) match
          case (6, (Club.P, _)) => -100.0
@@ -104,12 +104,12 @@ end Golf
   * needs to be able to do to work in the framework.
   */
 object GolfInstances
-   extends AgentConstraints[GolfState, GolfFiniteState, GolfAction, GolfReward, Randomized]:
+   extends AgentConstraints[GolfState, GolfObservableState, GolfAction, GolfReward, Randomized]:
 
    given enumAction: BoundedEnumerable[GolfAction] =
       BoundedEnumerableFromList ((Club.P, Direction.L), (Club.P, Direction.R), (Club.D, Direction.L), (Club.D, Direction.R))
 
-   given enumState: BoundedEnumerable[GolfFiniteState] =
+   given enumState: BoundedEnumerable[GolfObservableState] =
       BoundedEnumerableFromList (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
 
    given schedulerIsMonad: Monad[Randomized] = Randomized.randomizedIsMonad

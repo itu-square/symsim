@@ -10,7 +10,7 @@ import org.scalacheck.{Arbitrary, Gen}
 import symsim.concrete.Randomized
 
 case class GridState (x: Int, y: Int)
-type GridFiniteState = GridState
+type GridObservableState = GridState
 type GridReward = Double
 
 object GridAction extends Enumeration:
@@ -19,14 +19,14 @@ object GridAction extends Enumeration:
 
 
 object WindyGrid
-  extends Agent[GridState, GridFiniteState, GridAction, GridReward, Randomized]:
+  extends Agent[GridState, GridObservableState, GridAction, GridReward, Randomized]:
 
     val windspec = Array (0, 0, 0, 1, 1, 1, 2, 2, 1, 0)
 
     def isFinal (s: GridState): Boolean =
       (s.x, s.y) == (8, 4)
 
-    def discretize (s: GridState): GridFiniteState =
+    def discretize (s: GridState): GridObservableState =
       GridState (s.x, s.y)
 
 
@@ -81,14 +81,14 @@ end WindyGrid
   * needs to be able to do to work in the framework.
   */
 object WindyGridInstances
-  extends AgentConstraints[GridState, GridFiniteState, GridAction, GridReward, Randomized]:
+  extends AgentConstraints[GridState, GridObservableState, GridAction, GridReward, Randomized]:
 
   import examples.concrete.windygrid.GridAction._
 
   given enumAction: BoundedEnumerable[GridAction] =
     BoundedEnumerableFromList (U, L, R, D)
 
-  given enumState: BoundedEnumerable[GridFiniteState] =
+  given enumState: BoundedEnumerable[GridObservableState] =
      val ss = for
          x <- Seq (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
          y <- Seq (1, 2, 3, 4, 5, 6, 7)
