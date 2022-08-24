@@ -9,26 +9,33 @@ class Experiments
      alpha = 0.1,
      gamma = 1.0,
      epsilon = 0.05,
-     episodes = 30000,
+     episodes = 70000,
    )
 
    s"SimpleMaze experiment with ${sarsa}" in {
 
       val policy = learnAndLog (sarsa)
 
-      val groundTruth = List (
-         (1,1) -> Up,
-         (1,2) -> Up,
-         (1,3) -> Right,
-         (2,1) -> Left,
-         (2,3) -> Right,
-         (3,1) -> Left,
-         (3,2) -> Up,
-         (3,3) -> Right,
-         (4,1) -> Left,
-         (4,2) -> Right,
-         (4,3) -> Right,
-      ).toMap
+      withClue ("1,1") { policy (1, 1) should be (Up) }
+      withClue ("1,2") { policy (1, 2) should be (Up) }
+      withClue ("1,3") { policy (1, 3) should be (Right) }
+      withClue ("2,1") { policy (2, 1) should be (Left) }
+      withClue ("2,3") { policy (2, 3) should be (Right) }
 
-      policy should be (groundTruth)
+      // We leave 4,3 and 4,2 unconstrained (loosing and winning,
+      // final states)
+      
+      // Which of policy is optimal is a bit hard to
+      // establish, and depends on the constants in the reward
+      // function. We include several options to decrease flakiness of
+      // tests (mostly positions in column 3 are sensitive)
+
+      // this appears to be still a good move
+      withClue ("3,1") { policy (3,1) should be (Left) }
+      // Left is safest but AIAMA reports the dangerous Up
+      withClue ("3,2") { policy (3,2) should (be (Left) or be (Up))  }
+      // Up is safest but AIAMA reports the somewhat risky Right
+      withClue ("3,3") { policy (3,3) should (be (Up) or be (Right)) }
+      // Left is faster, down is safer
+      withClue ("4,1") { policy (4, 1) should (be (Down) or be (Left)) }
    }
