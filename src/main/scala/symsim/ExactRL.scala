@@ -70,7 +70,7 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
      * abstract? Or is qToPolicy too concrete to be here?
      */
    def qToPolicy (q: Q) (using Ordering[Reward]): Policy =
-     def best (m: Map[Action,Reward]): Action =
+     def best (m: Map[Action, Reward]): Action =
        m.map { _.swap } (m.values.max)
      q.view.mapValues (best).to (Map)
 
@@ -84,7 +84,7 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
         rewards <- Gen.sequence[List[Reward], Reward]
           { List.fill (as.size) (genReward) }
         ars = as zip rewards
-      yield Map (ars: _*)
+      yield Map (ars*)
 
       val fs = agent.instances.allObservableStates
       val genStateActionRewards: Gen[Q] = for
@@ -92,7 +92,7 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
         mars <- Gen.sequence[List[Map[Action,Reward]], Map[Action,Reward]]
           { List.fill (fs.size) (genActionReward) }
         smars = fs zip mars
-      yield Map (smars: _*)
+      yield Map (smars*)
 
       genStateActionRewards
 

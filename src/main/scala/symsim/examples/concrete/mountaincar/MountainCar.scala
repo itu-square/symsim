@@ -19,7 +19,9 @@ import symsim.concrete.Randomized
  * the same type to represent the finite state space.
  */
 
-case class CarState (v: Double, p: Double)
+case class CarState (v: Double, p: Double):
+  override def toString: String = f"[v $v%+2.2f, p $p%+2.2f]"
+
 type CarObservableState = CarState
 type CarAction = Double
 type CarReward = Double
