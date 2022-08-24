@@ -65,8 +65,8 @@ object WindyGrid
        Randomized.const (s1 -> GridReward (s1) (a))
 
     def initialize: Randomized[GridState] = for
-       x <- Randomized.between (1, 11)
-       y <- Randomized.between (1, 8)
+       x <- Randomized.repeat (Randomized.between (1, 11))
+       y <- Randomized.repeat (Randomized.between (1, 8))
        s0 = GridState (x, y)
        s <- if isFinal (s0) then initialize else Randomized.const (s0)
     yield s

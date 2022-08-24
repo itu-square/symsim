@@ -59,8 +59,8 @@ object Car
 
 
     def initialize: Randomized[CarState] = for
-      v <- Randomized.between (0.0, 10.0)
-      p <- Randomized.between (0.0, 15.0)
+      v <- Randomized.repeat (Randomized.between (0.0, 10.0))
+      p <- Randomized.repeat (Randomized.between (0.0, 15.0))
       s0 = CarState (v,p)
       s <- if isFinal (s0) then initialize
            else Randomized.const (s0)
