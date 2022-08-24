@@ -9,7 +9,9 @@ import org.scalacheck.{Arbitrary, Gen}
 
 import symsim.concrete.Randomized
 
-case class GridState (x: Int, y: Int)
+case class GridState (x: Int, y: Int):
+  override def toString: String = s"($x,$y)"
+  
 type GridObservableState = GridState
 type GridReward = Double
 
