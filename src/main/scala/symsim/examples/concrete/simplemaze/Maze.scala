@@ -60,7 +60,7 @@ object Maze
       private def mazeReward (s: MazeState): MazeReward = s match
         case (4, 3) => 1.0   // Good final state
         case (4, 2) => -1.0  // Bad final state
-        case (_, _) => -0.04
+        case (_, _) => -0.02
 
 
       def distort (a: MazeAction): Randomized[MazeAction] = a match
@@ -92,7 +92,7 @@ object Maze
       def initialize: Randomized[MazeState] =
          Randomized.repeat { 
            Randomized.oneOf ( 
-             instances.allObservableStates.filter { !isFinal (_) } : _*
+             instances.allObservableStates.filter { s => !isFinal (s) } *
            )
          }
 
