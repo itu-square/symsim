@@ -6,7 +6,8 @@ import cats.syntax.functor.*
 import symsim.Arith.*
 
 trait Sarsa[State, ObservableState, Action, Reward, Scheduler[_]]
-   extends ExactRL[State, ObservableState, Action, Reward, Scheduler]:
+   extends ExactRL[State, ObservableState, Action, Reward, Scheduler],
+           QTable[State, ObservableState, Action, Reward, Scheduler]:
 
    import agent.instances.given
 
@@ -17,8 +18,8 @@ trait Sarsa[State, ObservableState, Action, Reward, Scheduler[_]]
      * @return the updated matrix Q, the successor state, and a
      * reward difference (the size of the update performed)
      */
-   override def learningEpoch (q: Q, s_t: State, a_t: Action)
-      : Scheduler[(Q, State, Action)] =
+   override def learningEpoch (q: VF, s_t: State, a_t: Action)
+      : Scheduler[(VF, State, Action)] =
       for
          sa_tt <- agent.step (s_t) (a_t)
          (s_tt, r_tt) = sa_tt
