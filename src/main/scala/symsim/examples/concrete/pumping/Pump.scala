@@ -14,13 +14,13 @@ import symsim.concrete.Randomized
   *
   * They are called a, b, c, and d parameters in his report.
   */ 
-private val c1: Double = 1.0 / 12
-private val c2: Double = 0.15 / (c1 * 80 * 12 * 24 * 365)
-private val c3: Double = 0.1 / (12 * 24 * 365)
-private val c4: Double = 0.05
+val c1: Double = 1.0 / 12
+val c2: Double = 0.15 / (c1 * 80 * 12 * 24 * 365)
+val c3: Double = 0.1 / (12 * 24 * 365)
+val c4: Double = 0.05
 
 /** Size of the history window for the head-level */
-private val k: Int = 5
+val k: Int = 5
 
 
 
@@ -42,7 +42,33 @@ end PumpState
 
 
 
-/** The state observable to the pump controller. */
+/** Discretize cut points for flow, head, and tank variables./
+  *
+  * We discretize to the first point on the list that is lower than the actual
+  * value of the variable.  So we 'round down'. Values below the last element
+  * in the cut-point list are rounded up (to the last value).
+  *
+  * For now, we have preconditions about low values in discretization so the
+  * getOrElse (rounding up) should never happen.
+  */
+def closest (value: Double) (cutPoints: List[Double]): Double =
+  cutPoints
+    .find { value >= _ }
+    .getOrElse (cutPoints.last)
+
+val flowCutPoints = List (120.0, 115.0, 110.0, 105.0, 100.0, 95.0,
+  90.0, 85.0, 80.0, 75.0, 70.0, 65.0, 60.0, 55.0, 50.0, 0.0)
+
+val headCutPoints = List (10.84, 10.68, 10.52, 10.36, 10.2, 10.04,
+  9.88, 9.72, 9.56, 9.4, 9.24, 9.08, 8.92, 8.76, 8.6, 8.44, 8.28, 
+  8.12, 7.96, 7.8, 7.64, 7.48, 7.32, 7.16, 7.0)
+
+val tankCutPoints = List (2000.0, 1800.0, 1600.0, 1400.0, 1200.0,
+  1000.0, 800.0, 600.0, 400.0, 200.0, 0.0)
+
+
+
+/** The (discrete) state, observable by the pump controller. */
 case class ObservablePumpState (
   f: Double,   // Discretized flow action (current motor speed)
   h: Double,   // Discretized observable head level
@@ -72,24 +98,18 @@ object Pump
 
 
     def discretize (s: PumpState): ObservablePumpState =
-        require (s.tl >= 0, s"s.tl = ${s.tl} is non-negative")
+      require (s.f >= 0.0, s"s.f = ${s.f} is non-negative")
+      require (s.h >= 7.0, s"s.h = ${s.h} >= 7.0")
+      require (s.hm >= 7.0, s"s.hm = ${s.hm} >= 7.0")
+      require (s.tl >= 0.0, s"s.tl = ${s.tl} is non-negative")
 
-        val df = closest (s.f) (List (120.0, 115.0, 110.0, 105.0, 100.0, 95.0,
-            90.0, 85.0, 80.0, 75.0, 70.0, 65.0, 60.0, 55.0, 50.0, 0.0))
-        val dh = closest (s.h) (List (10.84, 10.68, 10.52, 10.36, 10.2, 10.04,
-            9.88, 9.72, 9.56, 9.4, 9.24, 9.08, 8.92, 8.76, 8.6, 8.44, 8.28, 8.12,
-            7.96, 7.8, 7.64, 7.48, 7.32, 7.16, 7.0))
-        val dhm = closest (s.hm) (List (10.84, 10.68, 10.52, 10.36, 10.2, 10.04,
-            9.88, 9.72, 9.56, 9.4, 9.24, 9.08, 8.92, 8.76, 8.6, 8.44, 8.28, 8.12,
-            7.96, 7.8, 7.64, 7.48, 7.32, 7.16, 7.0))
-        val dtl = closest (s.tl) (List (2000.0, 1800.0, 1600.0, 1400.0, 1200.0,
-            1000.0, 800.0, 600.0, 400.0, 200.0, 0.0))
+      val df = closest (s.f) (flowCutPoints)
+      val dh = closest (s.h) (headCutPoints)
+      val dhm = closest (s.hm) (headCutPoints)
+      val dtl = closest (s.tl) (tankCutPoints)
 
-        ObservablePumpState (df, dh, dhm, dtl)
+      ObservablePumpState (df, dh, dhm, dtl)
 
-
-    private def closest (item: Double) (list: List[Double]): Double =
-        list.find (x => item >= x).getOrElse(list.last)
 
 
     private val HEAD_HARD_MIN: Double = 7
