@@ -91,7 +91,7 @@ object Pump extends
   Agent[PumpState, ObservablePumpState, PumpAction, PumpReward, Randomized],
   Episodic:
 
-  val TimeHorizon: Int = 1
+  val TimeHorizon: Int = 2000
 
   def isFinal (s: PumpState): Boolean =
     s.t == 24
