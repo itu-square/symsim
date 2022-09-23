@@ -4,34 +4,62 @@ package examples.concrete.pumping
   *
   * Source: Andreas Holck Høeg-Petersen. Reinforcement Learning for Controlling
   * Groundwater Extraction. MSc thesis at the IT University of Copenhagen.
-  * August 2021.
+  * August 2021. (esp. Chapters 2 and 3)
   */
 
 import symsim.concrete.Randomized
 
-/** Defines the complete PumpState, both observable and unobservable
-  * components.
-  */
+
+/** Constants as fit in the model of AHHP (reference above).
+  *
+  * They are called a, b, c, and d parameters in his report.
+  */ 
+private val c1: Double = 1.0 / 12
+private val c2: Double = 0.15 / (c1 * 80 * 12 * 24 * 365)
+private val c3: Double = 0.1 / (12 * 24 * 365)
+private val c4: Double = 0.05
+
+/** Size of the history window for the head-level */
+private val k: Int = 5
+
+
+
+/** Complete state of a pump, both observable and unobservable. */
 case class PumpState (
-                             f: Double,
-                             h: Double,          // Head level (water level) in the pump, sensor
-                             hm: Double,
-                             tl: Double,
-                             t: Int,
-                             w: Double,
-                             phm: List[Double]
-                     ):
-    override def toString: String =
-        s"[flow=$f, head=$h, head mean=$hm, tank level=$tl, time=$t, water=$w, "
-        + s"prior head means=$phm]"
+  f: Double,          // Flow (speed of pumping, m^3/h), controlled
+  h: Double,          // Head (water) level in the pump, sensor
+  hm: Double,         // Head mean defined over k steps
+  tl: Double,         // Tank level (the amount of water stored in the tank)
+  t: Int,             // Time (epoch)
+  w: Double,          // Water leve in the ground deposits (unobservable)
+  phm: List[Double]): // Past head means (a sliding window of history) 
+
+  override def toString: String =
+    s"[flow=$f, head=$h, head mean=$hm, tank level=$tl, time=$t, "
+      + s"water=$w, past head means=$phm]"
+
+end PumpState
 
 
-case class ObservablePumpState (f: Double, h: Double, hm: Double, tl: Double):
-    override def toString: String =
-        s"[flow=$f, head=$h, head mean=$hm, tank level=$tl]"
+
+/** The state observable to the pump controller. */
+case class ObservablePumpState (
+  f: Double,   // Discretized flow action (current motor speed)
+  h: Double,   // Discretized observable head level
+  hm: Double,  // Discretized, derived head mean
+  tl: Double): // Discretized observable tank level
+
+  override def toString: String =
+    s"[flow=$f, head=$h, head mean=$hm, tank level=$tl]"
+
+end ObservablePumpState
+
+
 
 type PumpAction = Double
 type PumpReward = Double
+
+
 
 object Pump
         extends Agent[PumpState, ObservablePumpState, PumpAction, PumpReward,
@@ -82,14 +110,6 @@ object Pump
     private def flowReward (os: PumpState) (s: PumpState) (a: PumpAction): Double =
         if s.f != os.f then - 0.5
         else 0
-
-
-    /** a, b, c, and d parameters in the thesis of Andreas Holck Høeg-Petersen. */
-    val c1: Double = 1.0 / 12
-    val c2: Double = 0.15 / (c1 * 80 * 12 * 24 * 365)
-    val c3: Double = 0.1 / (12 * 24 * 365)
-    val c4: Double = 0.05
-    val k: Int = 5
 
     val amp: Double = 0.41852857594808646
     val freq: Double = 0.0000597030105413
