@@ -87,100 +87,99 @@ type PumpReward = Double
 
 
 
-object Pump
-        extends Agent[PumpState, ObservablePumpState, PumpAction, PumpReward,
-                Randomized] with Episodic:
+object Pump extends 
+  Agent[PumpState, ObservablePumpState, PumpAction, PumpReward, Randomized],
+  Episodic:
 
-    val TimeHorizon: Int = 1
+  val TimeHorizon: Int = 1
 
-    def isFinal (s: PumpState): Boolean =
-        s.t == 24
-
-
-    def discretize (s: PumpState): ObservablePumpState =
-      require (s.f >= 0.0, s"s.f = ${s.f} is non-negative")
-      require (s.h >= 7.0, s"s.h = ${s.h} >= 7.0")
-      require (s.hm >= 7.0, s"s.hm = ${s.hm} >= 7.0")
-      require (s.tl >= 0.0, s"s.tl = ${s.tl} is non-negative")
-
-      val df = closest (s.f) (flowCutPoints)
-      val dh = closest (s.h) (headCutPoints)
-      val dhm = closest (s.hm) (headCutPoints)
-      val dtl = closest (s.tl) (tankCutPoints)
-
-      ObservablePumpState (df, dh, dhm, dtl)
+  def isFinal (s: PumpState): Boolean =
+    s.t == 24
 
 
+  def discretize (s: PumpState): ObservablePumpState =
+    require (s.f >= 0.0, s"s.f = ${s.f} is non-negative")
+    require (s.h >= 7.0, s"s.h = ${s.h} >= 7.0")
+    require (s.hm >= 7.0, s"s.hm = ${s.hm} >= 7.0")
+    require (s.tl >= 0.0, s"s.tl = ${s.tl} is non-negative")
 
-    private val HEAD_HARD_MIN: Double = 7
-    private val TANK_CAPACITY: Double = 2000
+    val df = closest (s.f) (flowCutPoints)
+    val dh = closest (s.h) (headCutPoints)
+    val dhm = closest (s.hm) (headCutPoints)
+    val dtl = closest (s.tl) (tankCutPoints)
 
-    private def pumpReward (os: PumpState) (s: PumpState) (a: PumpAction): PumpReward =
-        headReward (os) (s) (a) + tankReward (os) (s) (a) + flowReward (os) (s) (a)
-
-    private def headReward (os: PumpState) (s: PumpState) (a: PumpAction): Double =
-        if s.h < HEAD_HARD_MIN then -9999
-        else - ((1 + (s.h - s.hm).abs) * (1 + (s.h - s.hm).abs))
-
-    private def tankReward (os: PumpState) (s: PumpState) (a: PumpAction): Double =
-        if s.t < 0 then -9999
-        else if s.t > TANK_CAPACITY then -9999
-        else 0
-
-    private def flowReward (os: PumpState) (s: PumpState) (a: PumpAction): Double =
-        if s.f != os.f then - 0.5
-        else 0
-
-    val amp: Double = 0.41852857594808646
-    val freq: Double = 0.0000597030105413
-    val phase: Double = -6347.109214682171
+    ObservablePumpState (df, dh, dhm, dtl)
 
 
-    override def step (s: PumpState) (a: PumpAction)
+
+  private val HEAD_HARD_MIN: Double = 7
+  private val TANK_CAPACITY: Double = 2000
+
+  private def pumpReward (os: PumpState) (s: PumpState) (a: PumpAction): PumpReward =
+    headReward (os) (s) (a) + tankReward (os) (s) (a) + flowReward (os) (s) (a)
+
+  private def headReward (os: PumpState) (s: PumpState) (a: PumpAction): Double =
+    if s.h < HEAD_HARD_MIN then -9999
+    else - ((1 + (s.h - s.hm).abs) * (1 + (s.h - s.hm).abs))
+
+  private def tankReward (os: PumpState) (s: PumpState) (a: PumpAction): Double =
+    if s.t < 0 then -9999
+    else if s.t > TANK_CAPACITY then -9999
+    else 0
+
+  private def flowReward (os: PumpState) (s: PumpState) (a: PumpAction): Double =
+    if s.f != os.f then - 0.5
+    else 0
+
+  val amp: Double = 0.41852857594808646
+  val freq: Double = 0.0000597030105413
+  val phase: Double = -6347.109214682171
+
+
+  override def step (s: PumpState) (a: PumpAction)
     : Randomized[(PumpState, PumpReward)] =
-        require (instances.enumAction.membersAscending.contains (a))
-        for
-            nf <- Randomized.gaussian (0.0, 1.0)
-            f1 = a + nf
-            nd <- Randomized.gaussian (0.1, 0.01)
-            cd <- getDemand(s.t + 1)
-            d  = cd + nd
-            tl1 = s.tl + c1 * (f1 - d)
-            h1 = s.h + c4 * (s.w + (c1 * f1 / Math.PI))
-            nw <- Randomized.gaussian (0.0, 1.0)
-            w1 = s.w - c2 * (c1 * f1) + c3 + (amp * Math.sin (2 * Math.PI * (s.t + phase) / freq)) + nw
-            t1 = s.t + 1
-            hm1 = (1.0 / k) * s.phm.sum
-            phm1 = (s.hm :: s.phm).slice (0, k)
-            s1 = PumpState (f = f1, h = h1, hm = hm1, tl = tl1, t = t1, w = w1, phm = phm1)
-            pr = pumpReward (s) (s1) (a)
-        yield (s1, pr)
+    require (instances.enumAction.membersAscending.contains (a))
+    for
+      nf <- Randomized.gaussian (0.0, 1.0)
+      f1 = a + nf
+      nd <- Randomized.gaussian (0.1, 0.01)
+      cd <- getDemand(s.t + 1)
+      d  = cd + nd
+      tl1 = s.tl + c1 * (f1 - d)
+      h1 = s.h + c4 * (s.w + (c1 * f1 / Math.PI))
+      nw <- Randomized.gaussian (0.0, 1.0)
+      w1 = s.w - c2 * (c1 * f1) + c3 + (amp * Math.sin (2 * Math.PI * (s.t + phase) / freq)) + nw
+      t1 = s.t + 1
+      hm1 = (1.0 / k) * s.phm.sum
+      phm1 = (s.hm :: s.phm).slice (0, k)
+      s1 = PumpState (f = f1, h = h1, hm = hm1, tl = tl1, t = t1, w = w1, phm = phm1)
+      pr = pumpReward (s) (s1) (a)
+    yield (s1, pr)
 
 
-    def getDemand (t: Int): Randomized [Double] =
-        if t < 5 then Randomized.between (5.0, 15.0)
-        if t < 12 then Randomized.between (15.0, 45.0)
-        if t < 22 then Randomized.between (20.0, 38.0)
-        else Randomized.between (5.0, 20.0)
+  def getDemand (t: Int): Randomized [Double] =
+    if t < 5 then Randomized.between (5.0, 15.0)
+    if t < 12 then Randomized.between (15.0, 45.0)
+    if t < 22 then Randomized.between (20.0, 38.0)
+    else Randomized.between (5.0, 20.0)
 
 
-    def initialize: Randomized[PumpState] = for
-        f <- Randomized.const(80)
-        h <- Randomized.const(10)
-        hm <- Randomized.const(10)
-        tl <- Randomized.const(1000)
-        t <- Randomized.const(0)
-        w <- Randomized.const(9.11)
-        phm <- Randomized.const(List(10.0, 10.0, 10.0, 10.0, 10.0))
-        s0 = PumpState (f, h, hm, tl, t, w, phm)
-        s <- if isFinal (s0) then initialize
-        else Randomized.const (s0)
-    yield s
+  def initialize: Randomized[PumpState] = for
+    f <- Randomized.const(80)
+    h <- Randomized.const(10)
+    hm <- Randomized.const(10)
+    tl <- Randomized.const(1000)
+    t <- Randomized.const(0)
+    w <- Randomized.const(9.11)
+    phm <- Randomized.const(List(10.0, 10.0, 10.0, 10.0, 10.0))
+    s0 = PumpState (f, h, hm, tl, t, w, phm)
+    s <- if isFinal (s0) then initialize
+    else Randomized.const (s0)
+  yield s
 
+  override def zeroReward: PumpReward = 0.0
 
-    override def zeroReward: PumpReward = 0.0
-
-    val instances = PumpInstances
+  val instances = PumpInstances
 
 end Pump
 
