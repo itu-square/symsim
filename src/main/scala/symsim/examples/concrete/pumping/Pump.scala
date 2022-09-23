@@ -1,5 +1,11 @@
 package symsim
 package examples.concrete.pumping
+/** A case study of control of a water extraction at Marbjerg (operated by HOFOR).
+  *
+  * Source: Andreas Holck Høeg-Petersen. Reinforcement Learning for Controlling
+  * Groundwater Extraction. MSc thesis at the IT University of Copenhagen.
+  * August 2021.
+  */
 
 import symsim.concrete.Randomized
 
