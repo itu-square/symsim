@@ -31,10 +31,10 @@ case class SarsaLaws[State, ObservableState, Action, Reward, Scheduler[_]]
 
    import sarsa.agent.instances.given
 
-   def isStateTotal (q: sarsa.VF): Boolean =
+   def isStateTotal (q: sarsa.Q): Boolean =
      q.keySet == sarsa.agent.instances.allObservableStates.toSet
 
-   def isActionTotal (q: sarsa.VF): Boolean =
+   def isActionTotal (q: sarsa.Q): Boolean =
      q.values.forall { _.keySet == sarsa.agent.instances.allActions.toSet }
 
    val laws: RuleSet = new SimpleRuleSet (
@@ -57,14 +57,14 @@ case class SarsaLaws[State, ObservableState, Action, Reward, Scheduler[_]]
       },
 
       "generated Q matrices are total for finite state space" ->
-      forAll (sarsa.genQ) { (q: sarsa.VF) => isStateTotal (q) },
+      forAll (sarsa.genVF) { (q: sarsa.Q) => isStateTotal (q) },
 
       "generated Q matrices are total for action state space" ->
-      forAll (sarsa.genQ) { (q: sarsa.VF) => isActionTotal (q) },
+      forAll (sarsa.genVF) { (q: sarsa.Q) => isActionTotal (q) },
 
       /* Law: chooseAction gives one of the enumerable actions */
       "chooseAction (q) (s) ∈ Action for all q and s" ->
-      forAll (sarsa.genQ) { (q: sarsa.VF) =>
+      forAll (sarsa.genVF) { (q: sarsa.Q) =>
         forAll { (s: State) =>
           val sa: Scheduler[Action] = sarsa.chooseAction (q) (s)
           forAll (sa.toGen) { a =>
