@@ -25,7 +25,7 @@ trait Agent[State, ObservableState, Action, Reward, Scheduler[_]]:
   def step (s: State) (a: Action): Scheduler[(State, Reward)]
 
 
-  /** True for final states (used for episode end detection) */
+  /** True for final states (used for end-of-episode detection) */
   def isFinal (s: State): Boolean
 
 

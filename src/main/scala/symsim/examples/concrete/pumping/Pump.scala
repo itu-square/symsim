@@ -50,6 +50,9 @@ end PumpState
   *
   * For now, we have preconditions about low values in discretization so the
   * getOrElse (rounding up) should never happen.
+  *
+  * The discretization has been selected in the project cited in the top of
+  * this file.
   */
 def closest (value: Double) (cutPoints: List[Double]): Double =
   cutPoints
@@ -61,10 +64,13 @@ val flowCutPoints = List (120.0, 115.0, 110.0, 105.0, 100.0, 95.0,
 
 val headCutPoints = List (10.84, 10.68, 10.52, 10.36, 10.2, 10.04,
   9.88, 9.72, 9.56, 9.4, 9.24, 9.08, 8.92, 8.76, 8.6, 8.44, 8.28, 
-  8.12, 7.96, 7.8, 7.64, 7.48, 7.32, 7.16, 7.0)
+  8.12, 7.96, 7.8, 7.64, 7.48, 7.32, 7.16, HEAD_HARD_MIN)
 
-val tankCutPoints = List (2000.0, 1800.0, 1600.0, 1400.0, 1200.0,
-  1000.0, 800.0, 600.0, 400.0, 200.0, 0.0)
+val tankCutPoints = List (TANK_CAPACITY, 1800.0, 1600.0, 1400.0, 
+  1200.0, 1000.0, 800.0, 600.0, 400.0, 200.0, 0.0)
+
+val HEAD_HARD_MIN: Double = 7.0
+val TANK_CAPACITY: Double = 2000.0
 
 
 
@@ -91,16 +97,14 @@ object Pump extends
   Agent[PumpState, ObservablePumpState, PumpAction, PumpReward, Randomized],
   Episodic:
 
-  val TimeHorizon: Int = 2000
+  val TimeHorizon: Int = 20000
 
   def isFinal (s: PumpState): Boolean =
-    s.t == 24
-
+    s.t >= 4000 || s.h < HEAD_HARD_MIN || s.t > TANK_CAPACITY || s.t < 0
 
   def discretize (s: PumpState): ObservablePumpState =
-    require (s.f >= 0.0, s"s.f = ${s.f} is non-negative")
-    require (s.h >= 7.0, s"s.h = ${s.h} >= 7.0")
-    require (s.hm >= 7.0, s"s.hm = ${s.hm} >= 7.0")
+    require (s.h >= HEAD_HARD_MIN, s"s.h = ${s.h} >= $HEAD_HARD_MIN")
+    require (s.hm >= HEAD_HARD_MIN, s"s.hm = ${s.hm} >= $HEAD_HARD_MIN")
     require (s.tl >= 0.0, s"s.tl = ${s.tl} is non-negative")
 
     val df = closest (s.f) (flowCutPoints)
@@ -112,24 +116,32 @@ object Pump extends
 
 
 
-  private val HEAD_HARD_MIN: Double = 7
-  private val TANK_CAPACITY: Double = 2000
+  def reward (source: PumpState) (target: PumpState) (a: PumpAction): Double =
 
-  private def pumpReward (os: PumpState) (s: PumpState) (a: PumpAction): PumpReward =
-    headReward (os) (s) (a) + tankReward (os) (s) (a) + flowReward (os) (s) (a)
+    // if target.h < HEAD_HARD_MIN || target.t < 0 || target.t > TANK_CAPACITY 
+    // then -9999
+    // else 
+    //   val headReward = - ((1 + (target.h - target.hm).abs) * (1 + (target.h - target.hm).abs))
+    //   val flowReward = if target.f != source.f then -0.5 else 0
+    //   headReward + flowReward
+ 
 
-  private def headReward (os: PumpState) (s: PumpState) (a: PumpAction): Double =
-    if s.h < HEAD_HARD_MIN then -9999
-    else - ((1 + (s.h - s.hm).abs) * (1 + (s.h - s.hm).abs))
+    def headReward (s: PumpState) (a: PumpAction): Double =
+      if s.h < HEAD_HARD_MIN 
+        then -9999
+        else - ((1 + (s.h - s.hm).abs) * (1 + (s.h - s.hm).abs))
 
-  private def tankReward (os: PumpState) (s: PumpState) (a: PumpAction): Double =
-    if s.t < 0 then -9999
-    else if s.t > TANK_CAPACITY then -9999
-    else 0
+    def tankReward (s: PumpState) (a: PumpAction): Double =
+      if s.t < 0 then -9999
+      else if s.t > TANK_CAPACITY then -9999
+      else 0
 
-  private def flowReward (os: PumpState) (s: PumpState) (a: PumpAction): Double =
-    if s.f != os.f then - 0.5
-    else 0
+    def flowReward (os: PumpState) (s: PumpState) (a: PumpAction): Double =
+      if s.f != os.f then - 0.5
+      else 0
+
+    headReward (target) (a) + tankReward (target) (a) + flowReward (source) (target) (a)
+
 
   val amp: Double = 0.41852857594808646
   val freq: Double = 0.0000597030105413
@@ -153,7 +165,7 @@ object Pump extends
       hm1 = (1.0 / k) * s.phm.sum
       phm1 = (s.hm :: s.phm).slice (0, k)
       s1 = PumpState (f = f1, h = h1, hm = hm1, tl = tl1, t = t1, w = w1, phm = phm1)
-      pr = pumpReward (s) (s1) (a)
+      pr = reward (s) (s1) (a)
     yield (s1, pr)
 
 
@@ -166,7 +178,7 @@ object Pump extends
 
   def initialize: Randomized[PumpState] = for
     f <- Randomized.const(80)
-    h <- Randomized.const(10)
+    h <- Randomized.const(10.0)
     hm <- Randomized.const(10)
     tl <- Randomized.const(1000)
     t <- Randomized.const(0)
@@ -203,15 +215,10 @@ object PumpInstances
 
     given enumState: BoundedEnumerable[ObservablePumpState] =
         val ss = for
-            f <- Seq (0, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110,
-                115, 120)
-            h <- Seq (7.0, 7.16, 7.32, 7.48, 7.64, 7.8, 7.96, 8.12, 8.28, 8.44, 8.6,
-                8.76, 8.92, 9.08, 9.24, 9.4, 9.56, 9.72, 9.88, 10.04, 10.2, 10.36,
-                10.52, 10.68, 10.84)
-            hm <- Seq (7.0, 7.16, 7.32, 7.48, 7.64, 7.8, 7.96, 8.12, 8.28, 8.44, 8.6,
-                8.76, 8.92, 9.08, 9.24, 9.4, 9.56, 9.72, 9.88, 10.04, 10.2, 10.36,
-                10.52, 10.68, 10.84)
-            tl <- Seq (0, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000)
+            f <- flowCutPoints
+            h <- headCutPoints 
+            hm <- headCutPoints 
+            tl <- tankCutPoints
         yield ObservablePumpState (f, h, hm, tl)
         BoundedEnumerableFromList (ss*)
 
@@ -228,7 +235,7 @@ object PumpInstances
         f <- Gen.choose (0, 120)
         h <- Gen.choose (7.0, 10.84)
         hm <- Gen.choose (7.0, 10.84)
-        tl <- Gen.choose (0.0, 2000.0)
+        tl <- Gen.choose (0.0, TANK_CAPACITY)
         t <- Gen.choose (0, 24)
         w <- Gen.choose (0.0, 9.11)
         phm <- Gen.listOfN (5, Gen.choose (7.0, 10.84))
