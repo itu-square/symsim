@@ -21,7 +21,7 @@ case class AgentLaws[State, ObservableState, Action, Reward, Scheduler[_]]
 
   import agent.instances.given
 
-  val finiteStates = agent.instances.enumState.membersAscending
+  val observableStates = agent.instances.enumState.membersAscending
 
   val laws: RuleSet = SimpleRuleSet (
     "agent",
@@ -32,14 +32,14 @@ case class AgentLaws[State, ObservableState, Action, Reward, Scheduler[_]]
       */
     "discretize (s) ∈ ObservableState" ->
     forAll { (s: State) =>
-      finiteStates.contains (agent.discretize (s)) },
+      observableStates.contains (agent.discretize (s)) },
 
     /** Law: Every initialization ends up being discritized to
      *  an enumerable value of ObservableState.
      */
     "discretize (initialize) ∈ ObservableState" ->
     forAll (agent.initialize.toGen) { (s: State) =>
-      finiteStates.contains (agent.discretize (s)) },
+      observableStates.contains (agent.discretize (s)) },
 
     /** Law: Initial state is not final, regardless scheduler. */
     "¬isFinal (initialize)" ->
@@ -56,7 +56,7 @@ case class AgentLaws[State, ObservableState, Action, Reward, Scheduler[_]]
           s1r <- agent.step (s0) (a)
           (s1, r) = s1r
           d1 = agent.discretize (s1)
-        yield finiteStates contains d1
+        yield observableStates.contains (d1)
         prop.toProp
     } },
 
