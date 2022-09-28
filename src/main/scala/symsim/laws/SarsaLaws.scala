@@ -41,30 +41,30 @@ case class SarsaLaws[State, ObservableState, Action, Reward, Scheduler[_]]
       "sarsa",
 
       /* Law: Q matrix has a action-reward map for each finite state */
-      "initQ defined for all ObservableStates" -> isStateTotal (sarsa.initQ),
+      "initQ defined for all ObservableStates" -> isStateTotal (sarsa.initialize),
 
       /* Law: Check that the initialization of Q matrix is correct */
       "initQ defined for all Actions for each source state" ->
-      isActionTotal (sarsa.initQ),
+      isActionTotal (sarsa.initialize),
 
       /* Law: All values in Q matrix are zeroReward initially */
       "initQ contains only zeroRewards" -> {
          val props = for
-           vector <- sarsa.initQ.values
+           vector <- sarsa.initialize.values
            cell   <- vector.values
          yield cell == sarsa.agent.zeroReward
          props.forall (identity)
       },
 
       "generated Q matrices are total for finite state space" ->
-      forAll (sarsa.genQ) { (q: sarsa.Q) => isStateTotal (q) },
+      forAll (sarsa.genVF) { (q: sarsa.Q) => isStateTotal (q) },
 
       "generated Q matrices are total for action state space" ->
-      forAll (sarsa.genQ) { (q: sarsa.Q) => isActionTotal (q) },
+      forAll (sarsa.genVF) { (q: sarsa.Q) => isActionTotal (q) },
 
       /* Law: chooseAction gives one of the enumerable actions */
       "chooseAction (q) (s) ∈ Action for all q and s" ->
-      forAll (sarsa.genQ) { (q: sarsa.Q) =>
+      forAll (sarsa.genVF) { (q: sarsa.Q) =>
         forAll { (s: State) =>
           val sa: Scheduler[Action] = sarsa.chooseAction (q) (s)
           forAll (sa.toGen) { a =>
