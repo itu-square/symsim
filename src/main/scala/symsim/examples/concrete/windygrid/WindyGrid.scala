@@ -69,8 +69,7 @@ object WindyGrid
     def initialize: Randomized[GridState] = for
        x <- Randomized.repeat (Randomized.between (1, 11))
        y <- Randomized.repeat (Randomized.between (1, 8))
-       s0 = GridState (x, y)
-       s <- if isFinal (s0) then initialize else Randomized.const (s0)
+       s = GridState (x, y) if !isFinal (s)
     yield s
 
     override def zeroReward: GridReward = 0
