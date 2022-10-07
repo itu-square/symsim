@@ -3,7 +3,7 @@ package symsim
 import org.scalacheck.{Arbitrary, Gen}
 
 import cats.{Foldable, Monad}
-import cats.syntax.functor._
+import cats.syntax.functor.*
 import cats.kernel.BoundedEnumerable
 
 /** TODO: A possible refactoring: separate Agents from finite agents, where the

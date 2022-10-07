@@ -101,7 +101,7 @@ object MountainCarInstances
       p0 <- Seq (-1.2, -1.03, -0.86, -0.69, -0.52, -0.35, -0.18, -0.01, 0.16, 0.33, 0.5)
       v0 <- Seq (-1.5, -1.2, -0.9, -0.6, -0.3, 0.0, 0.3, 0.6, 0.9, 1.2, 1.5)
     yield CarState (v = v0, p = p0)
-    BoundedEnumerableFromList (ss: _*)
+    BoundedEnumerableFromList (ss*)
 
 
   given schedulerIsMonad: Monad[Randomized] = Randomized.randomizedIsMonad

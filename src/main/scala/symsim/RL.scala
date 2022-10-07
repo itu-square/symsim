@@ -1,7 +1,7 @@
 package symsim
 
 import cats.kernel.BoundedEnumerable
-import cats.syntax.option._
+import cats.syntax.option.*
 import org.typelevel.paiges.Doc
 
 trait RL[ObservableState, Action]:

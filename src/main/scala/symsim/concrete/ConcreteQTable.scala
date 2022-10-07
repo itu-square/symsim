@@ -30,6 +30,7 @@ trait ConcreteQTable[State, ObservableState, Action]
     val schedule = learn (this.initialize, initials)
     schedule.head
 
+
   override def run: Policy =
     qToPolicy (this.runQ)
 
