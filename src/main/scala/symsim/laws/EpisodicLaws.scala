@@ -19,7 +19,7 @@ import symsim.CanTestIn.*
 /** Collect the laws that define correctness of an Agent with Episodic.
   **/
 case class EpisodicLaws[State, ObservableState, Action, Reward, Scheduler[_]]
-   (agent: Agent[State, ObservableState, Action, Reward, Scheduler] with Episodic)
+   (agent: Agent[State, ObservableState, Action, Reward, Scheduler] & Episodic)
    extends org.typelevel.discipline.Laws:
 
    import agent.instances.given

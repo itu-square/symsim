@@ -41,7 +41,7 @@ trait QTable[State, ObservableState, Action, Reward, Scheduler[_]]
       rewards <- Gen.sequence[List[Reward], Reward] {
         List.fill (as.size) (genReward) }
       ars = as zip rewards
-    yield Map (ars: _*)
+    yield Map (ars*)
 
     val fs = agent.instances.allObservableStates
     val genStateActionRewards: Gen[Q] = for

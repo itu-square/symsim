@@ -119,7 +119,7 @@ object MazeInstances
          result = (x, y)
          if Maze.valid (result)
       yield result
-      BoundedEnumerableFromList (ss: _*)
+      BoundedEnumerableFromList (ss*)
 
    given schedulerIsMonad: Monad[Randomized] = Randomized.randomizedIsMonad
 

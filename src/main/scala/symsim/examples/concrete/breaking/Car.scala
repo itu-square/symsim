@@ -101,7 +101,7 @@ object CarInstances
       v <- Seq (0.0, 5.0, 10.0)
       p <- Seq (0.0, 5.0, 10.0, 15.0)
     yield CarState (v,p)
-    BoundedEnumerableFromList (ss: _*)
+    BoundedEnumerableFromList (ss*)
 
   given schedulerIsMonad: Monad[Randomized] =
     concrete.Randomized.randomizedIsMonad
