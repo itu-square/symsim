@@ -12,7 +12,7 @@ class Experiments
      alpha = 0.1,
      gamma = 0.1,
      epsilon = 0.05,
-     episodes = 100000,
+     episodes = 10000,
   )
 
   s"Breaking Car experiment with $sarsa" in {
