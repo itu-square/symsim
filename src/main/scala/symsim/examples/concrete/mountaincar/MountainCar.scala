@@ -76,8 +76,7 @@ object MountainCar
   def initialize: Randomized[CarState] = for
     p <- Randomized.repeat (Randomized.between (-1.2, 0.5))
     v <- Randomized.repeat (Randomized.between (-1.5, 1.5))
-    s0 = CarState (v, p)
-    s <- if isFinal (s0) then initialize else Randomized.const (s0)
+    s = CarState (v, p) if !isFinal (s) 
   yield s
 
   override def zeroReward: CarReward = 0.0

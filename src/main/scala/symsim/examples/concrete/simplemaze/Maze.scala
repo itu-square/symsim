@@ -46,59 +46,57 @@ case object Down extends MazeAction
 
 
 object Maze
-   extends Agent[MazeState, MazeObservableState, MazeAction, MazeReward, Randomized]
-   with Episodic:
+  extends 
+    Agent[MazeState, MazeObservableState, MazeAction, MazeReward, Randomized],
+    Episodic:
 
-      val TimeHorizon: Int = 2000
+  val TimeHorizon: Int = 2000
 
-      def isFinal (s: MazeState): Boolean =
-         s == (4, 3) || s == (4, 2)
+  def isFinal (s: MazeState): Boolean =
+    s == (4, 3) || s == (4, 2)
 
-      // Maze is discrete
-      def discretize (s: MazeState): MazeObservableState =  s
+  // Maze is discrete
+  def discretize (s: MazeState): MazeObservableState =  s
 
-      private def mazeReward (s: MazeState): MazeReward = s match
-        case (4, 3) => 1.0   // Good final state
-        case (4, 2) => -1.0  // Bad final state
-        case (_, _) => -0.02
-
-
-      def distort (a: MazeAction): Randomized[MazeAction] = a match
-         case Up | Down => Randomized.oneOf (Left, Right)
-         case Left | Right => Randomized.oneOf (Up, Down)
+  private def mazeReward (s: MazeState): MazeReward = s match
+    case (4, 3) => 1.0   // Good final state
+    case (4, 2) => -1.0  // Bad final state
+    case (_, _) => -0.02
 
 
-      def successor (s: MazeState) (a: MazeAction): MazeState =
-         require (valid (s))
-         val result = a match
-            case Up    => (s._1, s._2+1)
-            case Down  => (s._1, s._2-1)
-            case Left  => (s._1-1, s._2)
-            case Right => (s._1+1, s._2)
-         if valid (result) then result else s
+  def distort (a: MazeAction): Randomized[MazeAction] = a match
+    case Up | Down => Randomized.oneOf (Left, Right)
+    case Left | Right => Randomized.oneOf (Up, Down)
 
-      def valid (s: MazeState): Boolean =
-         s._1 >= 1 && s._1 <= 4 && s._2 >= 1 && s._2 <= 3 && s != (2, 2)
 
-      val attention = 0.8
+  def successor (s: MazeState) (a: MazeAction): MazeState =
+    require (valid (s))
+    val result = a match
+      case Up    => (s._1, s._2+1)
+      case Down  => (s._1, s._2-1)
+      case Left  => (s._1-1, s._2)
+      case Right => (s._1+1, s._2)
+    if valid (result) then result else s
 
-      def step (s: MazeState) (a: MazeAction): Randomized[(MazeState, MazeReward)] =
-         for
-            precise <- Randomized.coin (attention)
-            action <- if precise then Randomized.const (a) else distort (a)
-            newState = successor (s) (action)
-         yield (newState, mazeReward (newState))
+  def valid (s: MazeState): Boolean =
+     s._1 >= 1 && s._1 <= 4 && s._2 >= 1 && s._2 <= 3 && s != (2, 2)
 
-      def initialize: Randomized[MazeState] =
-         Randomized.repeat { 
-           Randomized.oneOf ( 
-             instances.allObservableStates.filter { s => !isFinal (s) } *
-           )
-         }
+  val attention = 0.8
 
-      override def zeroReward: MazeReward = 0
+  def step (s: MazeState) (a: MazeAction): Randomized[(MazeState, MazeReward)] =
+    for
+      precise <- Randomized.coin (attention)
+      action <- if precise then Randomized.const (a) else distort (a)
+      newState = successor (s) (action)
+    yield (newState, mazeReward (newState))
 
-      val instances = MazeInstances
+  def initialize: Randomized[MazeState] =
+    Randomized.repeat (Randomized.oneOf (instances.allObservableStates*))
+      .filter (s => !isFinal (s))
+
+  override def zeroReward: MazeReward = 0
+
+  val instances = MazeInstances
 
 end Maze
 
