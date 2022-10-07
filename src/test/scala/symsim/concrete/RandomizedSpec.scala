@@ -7,11 +7,12 @@ import org.scalacheck.Prop.{forAll, forAllNoShrink, propBoolean}
 import org.scalacheck.Gen
 
 import symsim.concrete.Randomized.canTestInRandomized
-import symsim.CanTestIn._
+import symsim.CanTestIn.*
 
 /** Sanity tests for Randomized as a Scheduler */
-class RandomizedSpec extends org.scalatest.freespec.AnyFreeSpec
-   with org.scalatestplus.scalacheck.Checkers:
+class RandomizedSpec 
+  extends org.scalatest.freespec.AnyFreeSpec,
+    org.scalatestplus.scalacheck.Checkers:
 
    val C = 5000
 
@@ -93,7 +94,7 @@ class RandomizedSpec extends org.scalatest.freespec.AnyFreeSpec
       }
 
       "20 consecutive values of oneOf(1..100)* are random (different)" in {
-         assert { repeatNotConstant (Randomized.oneOf (1 to 100: _*)) }
+         assert { repeatNotConstant (Randomized.oneOf (1 to 100*)) }
       }
 
       /* This test records what is the problem with referential transparency in
