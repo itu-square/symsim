@@ -9,7 +9,7 @@ class Experiments
      alpha = 0.1,
      gamma = 0.9,
      epsilon = 0.05,
-     episodes = 70000,
+     episodes = 140000,
    )
 
    s"SimpleMaze experiment with ${sarsa}" in {
