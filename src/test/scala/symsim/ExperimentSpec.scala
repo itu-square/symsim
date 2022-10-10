@@ -1,6 +1,10 @@
 package symsim
 
+import java.nio.file.{Paths, Files}
+import java.nio.charset.StandardCharsets
+
 import symsim.concrete.ConcreteQTable
+
 
 trait ExperimentSpec[State, ObservableState, Action]
   extends org.scalatest.freespec.AnyFreeSpec,
@@ -9,12 +13,29 @@ trait ExperimentSpec[State, ObservableState, Action]
    def learnAndLog (setup: concrete.ConcreteExactRL[State, ObservableState, Action]
      with ConcreteQTable[State, ObservableState, Action],
      outputQTable: Boolean = true,
-     outputPolicy: Boolean = true) =
+     outputPolicy: Boolean = true, 
+     outputToFile: Option[String] = None) =
 
      val q = setup.runQ
      val policy = setup.qToPolicy (q)
-     val policy_output = setup.pp_policy (policy).hang (4)
-     if outputQTable then info (policy_output.render (80))
-     val q_output = setup.pp_Q (q).hang (4)
-     if outputPolicy then info (q_output.render (80))
+     val policyOutput = setup.pp_policy (policy)
+     val qOutput = setup.pp_Q (q)
+
+
+     outputToFile match
+     case None => 
+       val stringPolicy = policyOutput.hang (4).render (80)
+       val stringQ = qOutput.hang (4).render (80)
+       if outputPolicy then info (stringPolicy)
+       if outputQTable then info (stringQ)
+     case Some (p) =>
+       val stringPolicy = policyOutput.render (800)
+       val stringQ = qOutput.render (800)
+       if outputPolicy then 
+         Files.write(Paths.get(s"$p.policy"), 
+           stringPolicy.getBytes(StandardCharsets.UTF_8))
+       if outputQTable then 
+         Files.write(Paths.get(s"$p.q"), 
+           stringQ.getBytes(StandardCharsets.UTF_8))
+
      policy

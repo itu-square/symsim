@@ -10,11 +10,11 @@ class Experiments
   val sarsa = symsim.concrete.ConcreteSarsa (
     agent = Pump,
     alpha = 0.1,
-    gamma = 0.1,
+    gamma = 0.9,
     epsilon = 0.05,
-    episodes = 1,
+    episodes = 100,
   )
 
   s"Pumping experiment with $sarsa" in {
-    val policy = learnAndLog (sarsa, outputQTable = false)
+    val policy = learnAndLog (sarsa, outputToFile = Some("pump"))
   }

@@ -26,9 +26,6 @@ type Probability = Double
   **/
 object Randomized:
 
-   def __FORCED[A] (ra: =>Randomized[A]): Randomized[A] = 
-   { print ("FORCED!\n"); ra }
-
    /** Create a generator that produces a single 'a'. Used to create
      * deterministic values when a scheduler/randomized type is
      * expected.
