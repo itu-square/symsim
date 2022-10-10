@@ -26,12 +26,12 @@ val k: Int = 5
 
 /** Complete state of a pump, both observable and unobservable. */
 case class PumpState (
-  f: Double,          // Flow (speed of pumping, m^3/h), controlled
-  h: Double,          // Head (water) level in the pump, sensor
-  hm: Double,         // Head mean defined over k steps
-  tl: Double,         // Tank level (the amount of water stored in the tank)
-  t: Int,             // Time (epoch)
-  w: Double,          // Water leve in the ground deposits (unobservable)
+  f:   Double,        // Flow (speed of pumping, m^3/h), controlled
+  h:   Double,        // Head (water) level in the pump, sensor
+  hm:  Double,        // Head mean defined over k steps
+  tl:  Double,        // Tank level (the amount of water stored in the tank)
+  t:   Int,           // Time (epoch)
+  w:   Double,        // Water level in the ground deposits (unobservable)
   phm: List[Double]): // Past head means (a sliding window of history) 
 
   override def toString: String =
@@ -59,19 +59,24 @@ def closest (value: Double) (cutPoints: List[Double]): Double =
     .find { value >= _ }
     .getOrElse (cutPoints.last)
 
-val flowCutPoints = List (120.0, 115.0, 110.0, 105.0, 100.0, 95.0,
-  90.0, 85.0, 80.0, 75.0, 70.0, 65.0, 60.0, 55.0, 50.0, 0.0)
+val flowCutPoints = List (FLOW_MAX, 115.0, 110.0, 105.0, 100.0, 95.0,
+  90.0, 85.0, 80.0, 75.0, 70.0, 65.0, 60.0, 55.0, 50.0, FLOW_MIN)
 
-val headCutPoints = List (10.84, 10.68, 10.52, 10.36, 10.2, 10.04,
+val headCutPoints = List (HEAD_MAX, 10.68, 10.52, 10.36, 10.2, 10.04,
   9.88, 9.72, 9.56, 9.4, 9.24, 9.08, 8.92, 8.76, 8.6, 8.44, 8.28, 
-  8.12, 7.96, 7.8, 7.64, 7.48, 7.32, 7.16, HEAD_HARD_MIN)
+  8.12, 7.96, 7.8, 7.64, 7.48, 7.32, 7.16, HEAD_MIN)
 
-val tankCutPoints = List (TANK_CAPACITY, 1800.0, 1600.0, 1400.0, 
+val tankCutPoints = List (TANK_MAX, 1800.0, 1600.0, 1400.0, 
   1200.0, 1000.0, 800.0, 600.0, 400.0, 200.0, 0.0)
 
-val HEAD_HARD_MIN: Double = 7.0
-val TANK_CAPACITY: Double = 2000.0
-
+val HEAD_MIN: Double = 7.0
+val HEAD_MAX: Double = 10.84
+val FLOW_MIN: Double = 0.0
+val FLOW_MAX: Double = 120.0
+val TANK_MIN: Double = 0.0
+val TANK_MAX: Double = 2000.0
+val WATER_MIN: Double = 0.0
+val WATER_MAX: Double = 9.11
 
 
 /** The (discrete) state, observable by the pump controller. */
@@ -100,11 +105,11 @@ object Pump extends
   val TimeHorizon: Int = 20000
 
   def isFinal (s: PumpState): Boolean =
-    s.t >= 4000 || s.h < HEAD_HARD_MIN || s.t > TANK_CAPACITY || s.t < 0
+    s.t >= 4000 || s.h < HEAD_MIN || s.t > TANK_MAX || s.t < 0
 
   def discretize (s: PumpState): ObservablePumpState =
-    require (s.h >= HEAD_HARD_MIN, s"s.h = ${s.h} >= $HEAD_HARD_MIN")
-    require (s.hm >= HEAD_HARD_MIN, s"s.hm = ${s.hm} >= $HEAD_HARD_MIN")
+    require (s.h >= HEAD_MIN, s"s.h = ${s.h} >= $HEAD_MIN")
+    require (s.hm >= HEAD_MIN, s"s.hm = ${s.hm} >= $HEAD_MIN")
     require (s.tl >= 0.0, s"s.tl = ${s.tl} is non-negative")
 
     val df = closest (s.f) (flowCutPoints)
@@ -118,7 +123,7 @@ object Pump extends
 
   def reward (source: PumpState) (target: PumpState) (a: PumpAction): Double =
 
-    // if target.h < HEAD_HARD_MIN || target.t < 0 || target.t > TANK_CAPACITY 
+    // if target.h < HEAD_MIN || target.t < 0 || target.t > TANK_MAX 
     // then -9999
     // else 
     //   val headReward = - ((1 + (target.h - target.hm).abs) * (1 + (target.h - target.hm).abs))
@@ -127,13 +132,13 @@ object Pump extends
  
 
     def headReward (s: PumpState) (a: PumpAction): Double =
-      if s.h < HEAD_HARD_MIN 
+      if s.h < HEAD_MIN 
         then -9999
         else - ((1 + (s.h - s.hm).abs) * (1 + (s.h - s.hm).abs))
 
     def tankReward (s: PumpState) (a: PumpAction): Double =
       if s.t < 0 then -9999
-      else if s.t > TANK_CAPACITY then -9999
+      else if s.t > TANK_MAX then -9999
       else 0
 
     def flowReward (os: PumpState) (s: PumpState) (a: PumpAction): Double =
@@ -200,54 +205,53 @@ end Pump
   * needs to be able to do to work in the framework.
   */
 object PumpInstances
-        extends AgentConstraints[PumpState, ObservablePumpState, PumpAction,
-                PumpReward, Randomized]:
+  extends AgentConstraints[PumpState, ObservablePumpState, PumpAction, 
+    PumpReward, Randomized]:
 
-    import cats.{Eq, Monad, Foldable}
-    import cats.kernel.BoundedEnumerable
+  import cats.{Eq, Monad, Foldable}
+  import cats.kernel.BoundedEnumerable
 
-    import org.scalacheck.Gen
-    import org.scalacheck.Arbitrary
-    import org.scalacheck.Arbitrary.arbitrary
+  import org.scalacheck.Gen
+  import org.scalacheck.Arbitrary
+  import org.scalacheck.Arbitrary.arbitrary
 
-    given enumAction: BoundedEnumerable[PumpAction] =
-        BoundedEnumerableFromList (0, 50, 55, 60, 65, 70, 75, 80, 85, 90)
+  given enumAction: BoundedEnumerable[PumpAction] =
+    BoundedEnumerableFromList (0, 50, 55, 60, 65, 70, 75, 80, 85, 90)
 
-    given enumState: BoundedEnumerable[ObservablePumpState] =
-        val ss = for
-            f <- flowCutPoints
-            h <- headCutPoints 
-            hm <- headCutPoints 
-            tl <- tankCutPoints
-        yield ObservablePumpState (f, h, hm, tl)
-        BoundedEnumerableFromList (ss*)
+  given enumState: BoundedEnumerable[ObservablePumpState] =
+    val ss = for
+      f  <- flowCutPoints
+      h  <- headCutPoints 
+      hm <- headCutPoints 
+      tl <- tankCutPoints
+    yield ObservablePumpState (f, h, hm, tl)
+    BoundedEnumerableFromList (ss*)
 
-    given schedulerIsMonad: Monad[Randomized] =
-        concrete.Randomized.randomizedIsMonad
+  given schedulerIsMonad: Monad[Randomized] =
+    concrete.Randomized.randomizedIsMonad
 
-    given schedulerIsFoldable: Foldable[Randomized] =
-        concrete.Randomized.randomizedIsFoldable
+  given schedulerIsFoldable: Foldable[Randomized] =
+    concrete.Randomized.randomizedIsFoldable
 
-    given canTestInScheduler: CanTestIn[Randomized] =
-        concrete.Randomized.canTestInRandomized
+  given canTestInScheduler: CanTestIn[Randomized] =
+    concrete.Randomized.canTestInRandomized
 
-    lazy val genPumpState: Gen[PumpState] = for
-        f <- Gen.choose (0, 120)
-        h <- Gen.choose (7.0, 10.84)
-        hm <- Gen.choose (7.0, 10.84)
-        tl <- Gen.choose (0.0, TANK_CAPACITY)
-        t <- Gen.choose (0, 24)
-        w <- Gen.choose (0.0, 9.11)
-        phm <- Gen.listOfN (5, Gen.choose (7.0, 10.84))
+  lazy val genPumpState: Gen[PumpState] = for
+    f   <- Gen.choose[Double] (FLOW_MIN, FLOW_MAX)
+    h   <- Gen.choose[Double] (HEAD_MIN, HEAD_MAX)
+    hm  <- Gen.choose[Double] (HEAD_MIN, HEAD_MAX)
+    tl  <- Gen.choose[Double] (TANK_MIN, TANK_MAX)
+    t   <- Gen.choose[Int] (0, 24)
+    w   <- Gen.choose[Double] (WATER_MIN, WATER_MAX)
+    phm <- Gen.listOfN (5, Gen.choose (HEAD_MIN, HEAD_MAX))
+  yield PumpState (f, h, hm, tl, t, w, phm)
 
-    yield PumpState (f, h, hm, tl, t, w, phm)
+  given arbitraryState: Arbitrary[PumpState] = Arbitrary (genPumpState)
 
-    given arbitraryState: Arbitrary[PumpState] = Arbitrary (genPumpState)
+  given eqPumpState: Eq[PumpState] = Eq.fromUniversalEquals
 
-    given eqPumpState: Eq[PumpState] = Eq.fromUniversalEquals
+  given arbitraryReward: Arbitrary[PumpReward] = Arbitrary (Gen.double)
 
-    given arbitraryReward: Arbitrary[PumpReward] = Arbitrary (Gen.double)
-
-    given rewardArith: Arith[PumpReward] = Arith.arithDouble
+  given rewardArith: Arith[PumpReward] = Arith.arithDouble
 
 end PumpInstances
