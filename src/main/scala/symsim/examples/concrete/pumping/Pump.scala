@@ -59,16 +59,6 @@ def closest (value: Double) (cutPoints: List[Double]): Double =
     .find { value >= _ }
     .getOrElse (cutPoints.last)
 
-val flowCutPoints = List (FLOW_MAX, 115.0, 110.0, 105.0, 100.0, 95.0,
-  90.0, 85.0, 80.0, 75.0, 70.0, 65.0, 60.0, 55.0, 50.0, FLOW_MIN)
-
-val headCutPoints = List (HEAD_MAX, 10.68, 10.52, 10.36, 10.2, 10.04,
-  9.88, 9.72, 9.56, 9.4, 9.24, 9.08, 8.92, 8.76, 8.6, 8.44, 8.28, 
-  8.12, 7.96, 7.8, 7.64, 7.48, 7.32, 7.16, HEAD_MIN)
-
-val tankCutPoints = List (TANK_MAX, 1800.0, 1600.0, 1400.0, 
-  1200.0, 1000.0, 800.0, 600.0, 400.0, 200.0, 0.0)
-
 val HEAD_MIN: Double = 7.0
 val HEAD_MAX: Double = 10.84
 val FLOW_MIN: Double = 0.0
@@ -78,6 +68,15 @@ val TANK_MAX: Double = 2000.0
 val WATER_MIN: Double = 0.0
 val WATER_MAX: Double = 9.11
 
+val flowCutPoints = List (FLOW_MAX, 115.0, 110.0, 105.0, 100.0, 95.0,
+  90.0, 85.0, 80.0, 75.0, 70.0, 65.0, 60.0, 55.0, 50.0, FLOW_MIN)
+
+val headCutPoints = List (HEAD_MAX, 10.68, 10.52, 10.36, 10.2, 10.04,
+  9.88, 9.72, 9.56, 9.4, 9.24, 9.08, 8.92, 8.76, 8.6, 8.44, 8.28, 
+  8.12, 7.96, 7.8, 7.64, 7.48, 7.32, 7.16, HEAD_MIN)
+
+val tankCutPoints = List (TANK_MAX, 1800.0, 1600.0, 1400.0, 
+  1200.0, 1000.0, 800.0, 600.0, 400.0, 200.0, TANK_MIN)
 
 /** The (discrete) state, observable by the pump controller. */
 case class ObservablePumpState (
@@ -87,7 +86,7 @@ case class ObservablePumpState (
   tl: Double): // Discretized observable tank level
 
   override def toString: String =
-    s"[flow=$f, head=$h, head mean=$hm, tank level=$tl]"
+    s"(flow=$f, head=$h, head mean=$hm, tank level=$tl)"
 
 end ObservablePumpState
 
@@ -105,12 +104,12 @@ object Pump extends
   val TimeHorizon: Int = 20000
 
   def isFinal (s: PumpState): Boolean =
-    s.t >= 4000 || s.h < HEAD_MIN || s.t > TANK_MAX || s.t < 0
+    s.t >= 4000 || s.h < HEAD_MIN || s.t > TANK_MAX || s.t < TANK_MIN
 
   def discretize (s: PumpState): ObservablePumpState =
-    require (s.h >= HEAD_MIN, s"s.h = ${s.h} >= $HEAD_MIN")
+    require (s.h >= HEAD_MIN,  s"s.h = ${s.h} >= $HEAD_MIN")
     require (s.hm >= HEAD_MIN, s"s.hm = ${s.hm} >= $HEAD_MIN")
-    require (s.tl >= 0.0, s"s.tl = ${s.tl} is non-negative")
+    require (s.tl >= TANK_MIN, s"s.tl = ${s.tl} >= $TANK_MIN")
 
     val df = closest (s.f) (flowCutPoints)
     val dh = closest (s.h) (headCutPoints)
@@ -182,16 +181,15 @@ object Pump extends
 
 
   def initialize: Randomized[PumpState] = for
-    f <- Randomized.const(80)
-    h <- Randomized.const(10.0)
-    hm <- Randomized.const(10)
-    tl <- Randomized.const(1000)
-    t <- Randomized.const(0)
-    w <- Randomized.const(9.11)
-    phm <- Randomized.const(List(10.0, 10.0, 10.0, 10.0, 10.0))
-    s0 = PumpState (f, h, hm, tl, t, w, phm)
-    s <- if isFinal (s0) then initialize
-    else Randomized.const (s0)
+    f  <- Randomized.const (80)
+    h  <- Randomized.const (10.0)
+    hm <- Randomized.const (10)
+    tl <- Randomized.const (1000)
+    t  <- Randomized.const (0)
+    w  <- Randomized.const (9.11)
+    phm <- Randomized.const (List (10.0, 10.0, 10.0, 10.0, 10.0))
+    s = PumpState (f, h, hm, tl, t, w, phm)
+        if !isFinal (s)
   yield s
 
   override def zeroReward: PumpReward = 0.0
@@ -219,7 +217,7 @@ object PumpInstances
     BoundedEnumerableFromList (0, 50, 55, 60, 65, 70, 75, 80, 85, 90)
 
   given enumState: BoundedEnumerable[ObservablePumpState] =
-    val ss = for
+    val ss: List[ObservablePumpState] = for
       f  <- flowCutPoints
       h  <- headCutPoints 
       hm <- headCutPoints 
