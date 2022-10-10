@@ -5,7 +5,7 @@ class Experiments
   extends ExperimentSpec[PumpState,ObservablePumpState,PumpAction]:
 
   // Import evidence that states and actions can be enumerated
-  import Pump._
+  import Pump.*
 
   val sarsa = symsim.concrete.ConcreteSarsa (
     agent = Pump,
