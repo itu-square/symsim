@@ -15,13 +15,12 @@ import symsim.concrete.Randomized
   * They are called a, b, c, and d parameters in his report.
   */ 
 val c1: Double = 1.0 / 12
-val c2: Double = 0.15 / (c1 * 80 * 12 * 24 * 365)
-val c3: Double = 0.1 / (12 * 24 * 365)
+val c2: Double = 0.15 / (c1*80*12*24*365)
+val c3: Double = 0.1 / (12*24*365)
 val c4: Double = 0.05
 
 /** Size of the history window for the head-level */
 val k: Int = 5
-
 
 
 /** Complete state of a pump, both observable and unobservable. */
@@ -39,7 +38,6 @@ case class PumpState (
       + s"water=$w, past head means=$phm]"
 
 end PumpState
-
 
 
 /** Discretize cut points for flow, head, and tank variables./
@@ -91,20 +89,22 @@ case class ObservablePumpState (
 end ObservablePumpState
 
 
-
 type PumpAction = Double
 type PumpReward = Double
-
 
 
 object Pump extends 
   Agent[PumpState, ObservablePumpState, PumpAction, PumpReward, Randomized],
   Episodic:
 
+  /** An upper bound on episode duration. Used only in testing */
   val TimeHorizon: Int = 20000
 
+
+  /** If isFinal is true in a state, then the episode is complete */
   def isFinal (s: PumpState): Boolean =
     s.t >= 4000 || s.h < HEAD_MIN || s.tl > TANK_MAX || s.tl < TANK_MIN
+
 
   def discretize (s: PumpState): ObservablePumpState =
     require (s.tl >= TANK_MIN, s"s.tl = ${s.tl} >= $TANK_MIN")
@@ -138,13 +138,14 @@ object Pump extends
       nf   <- Randomized.gaussian (0.0, 1.0)
       f1   =  a + nf
       nd   <- Randomized.gaussian (0.1, 0.01)
-      cd   <- getDemand(s.t + 1)
+      cd   <- getDemand (s.t%24 + 1)
       d    =  cd + nd
       tl1  = s.tl + c1 * (f1 - d)
-      h1   = s.h + c4 * (s.w + (c1 * f1 / Math.PI))
+      h1   = s.h + c4 * (s.w + (c1*f1 / Math.PI))
       nw   <- Randomized.gaussian (0.0, 1.0)
-      w1   = s.w - c2 * (c1 * f1) + c3 + (amp * Math.sin (2 * Math.PI * (s.t + phase) / freq)) + nw
-      hm1  = (1.0 / k) * s.phm.sum
+      w1   = s.w - c2*(c1*f1) + c3 + 
+             (amp*Math.sin (2*Math.PI*(s.t + phase) / freq)) + nw
+      hm1  = (1.0 / k)*s.phm.sum
       phm1 = (s.hm:: s.phm).slice (0, k)
       s1   = PumpState (f1, h1, hm1, tl1, s.t + 1, w1, phm1)
       pr   = reward (s) (s1) (a)
@@ -152,6 +153,7 @@ object Pump extends
 
 
   def getDemand (t: Int): Randomized[Double] =
+    require (t >= 0 && t <= 24)
     if t < 5 then Randomized.between (5.0, 15.0)
     if t < 12 then Randomized.between (15.0, 45.0)
     if t < 22 then Randomized.between (20.0, 38.0)
@@ -168,6 +170,7 @@ object Pump extends
     s = PumpState (f, h, hm, tl, 0, w, phm)
         if !isFinal (s)
   yield s
+
 
   override def zeroReward: PumpReward = 0.0
 
@@ -191,7 +194,8 @@ object PumpInstances
   import org.scalacheck.Arbitrary.arbitrary
 
   given enumAction: BoundedEnumerable[PumpAction] =
-    BoundedEnumerableFromList (0, 50, 55, 60, 65, 70, 75, 80, 85, 90)
+    BoundedEnumerableFromList (0.0, 50.0, 55.0, 60.0, 65.0, 70.0, 
+      75.0, 80.0, 85.0, 90.0)
 
   given enumState: BoundedEnumerable[ObservablePumpState] =
     val ss: List[ObservablePumpState] = for

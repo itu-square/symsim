@@ -12,7 +12,7 @@ class Experiments
     alpha = 0.1,
     gamma = 0.9,
     epsilon = 0.05,
-    episodes = 100,
+    episodes = 3000,
   )
 
   s"Pumping experiment with $sarsa" in {
