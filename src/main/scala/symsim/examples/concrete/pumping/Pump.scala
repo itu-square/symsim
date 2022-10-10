@@ -104,11 +104,9 @@ object Pump extends
   val TimeHorizon: Int = 20000
 
   def isFinal (s: PumpState): Boolean =
-    s.t >= 4000 || s.h < HEAD_MIN || s.t > TANK_MAX || s.t < TANK_MIN
+    s.t >= 4000 || s.h < HEAD_MIN || s.tl > TANK_MAX || s.tl < TANK_MIN
 
   def discretize (s: PumpState): ObservablePumpState =
-    require (s.h >= HEAD_MIN,  s"s.h = ${s.h} >= $HEAD_MIN")
-    require (s.hm >= HEAD_MIN, s"s.hm = ${s.hm} >= $HEAD_MIN")
     require (s.tl >= TANK_MIN, s"s.tl = ${s.tl} >= $TANK_MIN")
 
     val df = closest (s.f) (flowCutPoints)
@@ -119,32 +117,13 @@ object Pump extends
     ObservablePumpState (df, dh, dhm, dtl)
 
 
-
   def reward (source: PumpState) (target: PumpState) (a: PumpAction): Double =
-
-    // if target.h < HEAD_MIN || target.t < 0 || target.t > TANK_MAX 
-    // then -9999
-    // else 
-    //   val headReward = - ((1 + (target.h - target.hm).abs) * (1 + (target.h - target.hm).abs))
-    //   val flowReward = if target.f != source.f then -0.5 else 0
-    //   headReward + flowReward
- 
-
-    def headReward (s: PumpState) (a: PumpAction): Double =
-      if s.h < HEAD_MIN 
-        then -9999
-        else - ((1 + (s.h - s.hm).abs) * (1 + (s.h - s.hm).abs))
-
-    def tankReward (s: PumpState) (a: PumpAction): Double =
-      if s.t < 0 then -9999
-      else if s.t > TANK_MAX then -9999
-      else 0
-
-    def flowReward (os: PumpState) (s: PumpState) (a: PumpAction): Double =
-      if s.f != os.f then - 0.5
-      else 0
-
-    headReward (target) (a) + tankReward (target) (a) + flowReward (source) (target) (a)
+    if target.h < HEAD_MIN || target.tl < TANK_MIN || target.tl > TANK_MAX 
+    then -9999
+    else 
+      val flowReward = if target.f != source.f then -0.5 else 0
+      val headCost = (1 + (target.h - target.hm).abs) * (1 + (target.h - target.hm).abs)
+      flowReward - headCost
 
 
   val amp: Double = 0.41852857594808646
@@ -156,24 +135,23 @@ object Pump extends
     : Randomized[(PumpState, PumpReward)] =
     require (instances.enumAction.membersAscending.contains (a))
     for
-      nf <- Randomized.gaussian (0.0, 1.0)
-      f1 = a + nf
-      nd <- Randomized.gaussian (0.1, 0.01)
-      cd <- getDemand(s.t + 1)
-      d  = cd + nd
-      tl1 = s.tl + c1 * (f1 - d)
-      h1 = s.h + c4 * (s.w + (c1 * f1 / Math.PI))
-      nw <- Randomized.gaussian (0.0, 1.0)
-      w1 = s.w - c2 * (c1 * f1) + c3 + (amp * Math.sin (2 * Math.PI * (s.t + phase) / freq)) + nw
-      t1 = s.t + 1
-      hm1 = (1.0 / k) * s.phm.sum
-      phm1 = (s.hm :: s.phm).slice (0, k)
-      s1 = PumpState (f = f1, h = h1, hm = hm1, tl = tl1, t = t1, w = w1, phm = phm1)
-      pr = reward (s) (s1) (a)
+      nf   <- Randomized.gaussian (0.0, 1.0)
+      f1   =  a + nf
+      nd   <- Randomized.gaussian (0.1, 0.01)
+      cd   <- getDemand(s.t + 1)
+      d    =  cd + nd
+      tl1  = s.tl + c1 * (f1 - d)
+      h1   = s.h + c4 * (s.w + (c1 * f1 / Math.PI))
+      nw   <- Randomized.gaussian (0.0, 1.0)
+      w1   = s.w - c2 * (c1 * f1) + c3 + (amp * Math.sin (2 * Math.PI * (s.t + phase) / freq)) + nw
+      hm1  = (1.0 / k) * s.phm.sum
+      phm1 = (s.hm:: s.phm).slice (0, k)
+      s1   = PumpState (f1, h1, hm1, tl1, s.t + 1, w1, phm1)
+      pr   = reward (s) (s1) (a)
     yield (s1, pr)
 
 
-  def getDemand (t: Int): Randomized [Double] =
+  def getDemand (t: Int): Randomized[Double] =
     if t < 5 then Randomized.between (5.0, 15.0)
     if t < 12 then Randomized.between (15.0, 45.0)
     if t < 22 then Randomized.between (20.0, 38.0)
@@ -181,14 +159,13 @@ object Pump extends
 
 
   def initialize: Randomized[PumpState] = for
-    f  <- Randomized.const (80)
-    h  <- Randomized.const (10.0)
-    hm <- Randomized.const (10)
-    tl <- Randomized.const (1000)
-    t  <- Randomized.const (0)
-    w  <- Randomized.const (9.11)
+    f   <- Randomized.const (80)
+    h   <- Randomized.const (10.0)
+    hm  <- Randomized.const (10)
+    tl  <- Randomized.const (1000)
+    w   <- Randomized.const (9.11)
     phm <- Randomized.const (List (10.0, 10.0, 10.0, 10.0, 10.0))
-    s = PumpState (f, h, hm, tl, t, w, phm)
+    s = PumpState (f, h, hm, tl, 0, w, phm)
         if !isFinal (s)
   yield s
 
