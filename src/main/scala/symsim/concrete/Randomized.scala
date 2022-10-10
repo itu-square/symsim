@@ -3,7 +3,7 @@ package symsim.concrete
 import cats.data.State
 import org.scalacheck.{Gen, Prop}
 
-import scala.jdk.StreamConverters._
+import scala.jdk.StreamConverters.*
 import scala.util.Try
 
 import java.security.SecureRandom

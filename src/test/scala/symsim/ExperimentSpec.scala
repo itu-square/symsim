@@ -5,7 +5,6 @@ import java.nio.charset.StandardCharsets
 
 import symsim.concrete.ConcreteQTable
 
-
 trait ExperimentSpec[State, ObservableState, Action]
   extends org.scalatest.freespec.AnyFreeSpec,
   org.scalatest.matchers.should.Matchers:

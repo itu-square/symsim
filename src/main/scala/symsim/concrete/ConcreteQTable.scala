@@ -15,6 +15,7 @@ trait ConcreteQTable[State, ObservableState, Action]
     val qs = q (agent.discretize (s)) map { _.swap }
     qs (qs.keys.max)
 
+
   def chooseAction (q: Q) (s: State): Randomized[Action] =
     for
       explore <- Randomized.coin (this.epsilon)
@@ -29,8 +30,10 @@ trait ConcreteQTable[State, ObservableState, Action]
     val schedule = learn (this.initialize, initials)
     schedule.head
 
+
   override def run: Policy =
     qToPolicy (this.runQ)
+
 
   /** Convert the matrix Q after training into a Policy map. TODO: should not
     * this be using the bestAction method? Or, why is the best action method
@@ -40,7 +43,6 @@ trait ConcreteQTable[State, ObservableState, Action]
     def best (m: Map[Action, Double]): Action =
       m.map { _.swap } (m.values.max)
     q.view.mapValues (best).to (Map)
-
 
 
   /** We assume that all values define the same set of actions valuations.  */

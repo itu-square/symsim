@@ -76,8 +76,7 @@ object MountainCar
   def initialize: Randomized[CarState] = for
     p <- Randomized.repeat (Randomized.between (-1.2, 0.5))
     v <- Randomized.repeat (Randomized.between (-1.5, 1.5))
-    s0 = CarState (v, p)
-    s <- if isFinal (s0) then initialize else Randomized.const (s0)
+    s = CarState (v, p) if !isFinal (s) 
   yield s
 
   override def zeroReward: CarReward = 0.0
@@ -101,7 +100,7 @@ object MountainCarInstances
       p0 <- Seq (-1.2, -1.03, -0.86, -0.69, -0.52, -0.35, -0.18, -0.01, 0.16, 0.33, 0.5)
       v0 <- Seq (-1.5, -1.2, -0.9, -0.6, -0.3, 0.0, 0.3, 0.6, 0.9, 1.2, 1.5)
     yield CarState (v = v0, p = p0)
-    BoundedEnumerableFromList (ss: _*)
+    BoundedEnumerableFromList (ss*)
 
 
   given schedulerIsMonad: Monad[Randomized] = Randomized.randomizedIsMonad

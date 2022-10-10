@@ -1,16 +1,16 @@
 name := "symsim"
 
-ThisBuild / scalaVersion := "3.0.1"
+ThisBuild / scalaVersion := "3.1.3"
 
-val scalatestVersion = "3.2.10"
+val scalatestVersion = "3.2.14"
 val catsVersion = "2.6.1"
 
 
 scalacOptions ++= Seq (
   "-deprecation",
   "-feature",
-  "-Xfatal-warnings",
   "-Yindent-colons",
+  "-source:future",
 )
 
 
@@ -19,7 +19,7 @@ libraryDependencies ++= Seq (
   "org.scalatest" %% "scalatest-freespec" % scalatestVersion % Test,
   "org.scalatest" %% "scalatest-shouldmatchers" % scalatestVersion % Test,
   "org.scalatest" %% "scalatest-mustmatchers" % scalatestVersion % Test,
-  "org.scalatestplus" %% "scalacheck-1-15" % (scalatestVersion+".0") % Test,
+  "org.scalatestplus" %% "scalacheck-1-17" % (scalatestVersion+".0") % Test,
   "org.typelevel" %% "cats-core" % catsVersion,
   "org.typelevel" %% "cats-laws" % catsVersion,
   "org.typelevel" %% "discipline-scalatest" % "2.1.5",

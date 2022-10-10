@@ -1,7 +1,7 @@
 package symsim
 package examples.concrete.windygrid
 
-import examples.concrete.windygrid.GridAction._
+import examples.concrete.windygrid.GridAction.*
 import cats.{Eq, Foldable, Monad}
 import cats.kernel.BoundedEnumerable
 
@@ -69,8 +69,7 @@ object WindyGrid
     def initialize: Randomized[GridState] = for
        x <- Randomized.repeat (Randomized.between (1, 11))
        y <- Randomized.repeat (Randomized.between (1, 8))
-       s0 = GridState (x, y)
-       s <- if isFinal (s0) then initialize else Randomized.const (s0)
+       s = GridState (x, y) if !isFinal (s)
     yield s
 
     override def zeroReward: GridReward = 0
@@ -85,8 +84,6 @@ end WindyGrid
 object WindyGridInstances
   extends AgentConstraints[GridState, GridObservableState, GridAction, GridReward, Randomized]:
 
-  import examples.concrete.windygrid.GridAction._
-
   given enumAction: BoundedEnumerable[GridAction] =
     BoundedEnumerableFromList (U, L, R, D)
 
@@ -95,7 +92,7 @@ object WindyGridInstances
          x <- Seq (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
          y <- Seq (1, 2, 3, 4, 5, 6, 7)
      yield GridState (x, y)
-     BoundedEnumerableFromList (ss: _*)
+     BoundedEnumerableFromList (ss*)
 
 
   given schedulerIsMonad: Monad[Randomized] = Randomized.randomizedIsMonad

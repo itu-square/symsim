@@ -23,10 +23,24 @@ object Car
   extends Agent[CarState, CarObservableState, CarAction, CarReward, Randomized]
   with Episodic:
 
+    /** The episode should be guaranteed to terminate after
+      * TimeHorizon steps. This is used *only* *for* testing. It does
+      * not actually termintae the episodes. It is a bug if they run
+      * longer.
+      */
     val TimeHorizon: Int = 2000
 
+    /** Granularity of the step in seconds */
+    private val t: Double = 2.0
+
+    /** Evidence of type class membership for this agent. */
+    val instances = CarInstances
+
+    override val zeroReward: CarReward = 0.0
+ 
+
     def isFinal (s: CarState): Boolean =
-      s.v == 0.0 || Math.abs (s.p) >= 1000.0
+      s.v == 0.0 || s.p >= 10 || Math.abs (s.p) >= 1000.0
 
 
     def discretize (s: CarState): CarObservableState =
@@ -44,9 +58,6 @@ object Car
       else a
 
 
-    /** Granularity of the step in seconds */
-    private val t: Double = 2.0
-
     // TODO: this is now deterministic but eventually needs to be randomized
     def step (s: CarState) (a: CarAction): Randomized[(CarState, CarReward)] =
       require (instances.enumAction.membersAscending.contains (a))
@@ -60,16 +71,9 @@ object Car
 
     def initialize: Randomized[CarState] = for
       v <- Randomized.repeat (Randomized.between (0.0, 10.0))
-      p <- Randomized.repeat (Randomized.between (0.0, 15.0))
-      s0 = CarState (v,p)
-      s <- if isFinal (s0) then initialize
-           else Randomized.const (s0)
+      p <- Randomized.between (0.0, 15.0)
+      s = CarState (v, p) if !isFinal (s)
     yield s
-
-
-    override def zeroReward: CarReward = 0.0
-
-    val instances = CarInstances
 
 end Car
 
@@ -95,7 +99,7 @@ object CarInstances
       v <- Seq (0.0, 5.0, 10.0)
       p <- Seq (0.0, 5.0, 10.0, 15.0)
     yield CarState (v,p)
-    BoundedEnumerableFromList (ss: _*)
+    BoundedEnumerableFromList (ss*)
 
   given schedulerIsMonad: Monad[Randomized] =
     concrete.Randomized.randomizedIsMonad
