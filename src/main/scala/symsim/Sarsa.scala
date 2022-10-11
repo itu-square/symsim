@@ -24,7 +24,7 @@ trait Sarsa[State, ObservableState, Action, Reward, Scheduler[_]]
          sa_tt <- agent.step (s_t) (a_t)
          (s_tt, r_tt) = sa_tt
          // SARSA: on-policy (p.844 in Russel & Norvig)
-         a_tt <- chooseAction (q) (s_tt)
+         a_tt <- chooseAction (q) (agent.discretize (s_tt))
 
          ds_t = agent.discretize (s_t)
          ds_tt = agent.discretize (s_tt)
