@@ -23,7 +23,8 @@ libraryDependencies ++= Seq (
   "org.typelevel" %% "cats-core" % catsVersion,
   "org.typelevel" %% "cats-laws" % catsVersion,
   "org.typelevel" %% "discipline-scalatest" % "2.1.5",
-  "org.typelevel" %% "paiges-core" % "0.4.2"
+  "org.typelevel" %% "paiges-core" % "0.4.2",
+  "org.scalanlp" %% "breeze" % "2.1.0",
 )
 
 Test / parallelExecution := false
