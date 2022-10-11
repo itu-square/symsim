@@ -109,7 +109,7 @@ class RandomizedSpec
 
       "Randomized.gaussian (m, d) has stddev 'd' and mean 'm'" in check {
 
-         val n = 5000
+         val n = 10000
          val epsilon = 0.05
 
          forAllNoShrink (Gen.choose (-100.0, +100.0), Gen.choose(0.001,+3.0)) {
