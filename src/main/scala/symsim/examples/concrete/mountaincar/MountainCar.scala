@@ -47,6 +47,7 @@ object MountainCar
     require (s.p <= 0.5, s"s.p = ${s.p} is not within the boundaries")
     require (s.v >= -1.5, s"s.v = ${s.v} is not within the boundaries")
     require (s.v <= 1.5, s"s.v = ${s.v} is not within the boundaries")
+
     val dp = roundAt (2) (-1.2 + (((s.p + 1.2) / 0.17).floor) * 0.17)
     val dv = roundAt (2) (-1.5 + (((s.v + 1.5) / 0.30).floor) * 0.30)
     CarState (v = dv.min (1.5).max (-1.5), p = dp.min (0.5).max (-1.2))
