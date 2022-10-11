@@ -43,8 +43,8 @@ case class ConcreteSarsaLaws[State, FiniteState, Action]
            "The entry for each state must not be empty.")
 
          val trials = for 
-           s_t     <- agent.initialize
-           a_tt    <- chooseAction (q) (s_t)
+           s_t  <- agent.initialize
+           a_tt <- chooseAction (q) (s_t)
          yield a_tt != bestAction (q) (s_t)
 
          // We implement this as a bayesian test, checking whether htere is
