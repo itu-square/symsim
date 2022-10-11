@@ -19,7 +19,8 @@ class ConcreteSarsaSpec
   )
 
   "This should stack overflow (checking the stack size C)" in {
-    def h (n: Int): Int = if n == 0 then 1 else h (n-1) + 1
+    def h (n: Int): Int = 
+      if n == 0 then 1 else h (n-1) + 1
     assertThrows[java.lang.StackOverflowError] { h (C) }
   }
 
