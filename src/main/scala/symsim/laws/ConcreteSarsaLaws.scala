@@ -35,14 +35,6 @@ case class ConcreteSarsaLaws[State, FiniteState, Action]
    import sarsa.*
    import agent.instances.given
 
-   def isStateTotal (q: sarsa.Q): Boolean =
-     q.keySet == sarsa.agent.instances.allObservableStates.toSet
-
-   def isActionTotal (q: sarsa.Q): Boolean =
-     q.values.forall { _.keySet == sarsa.agent.instances.allActions.toSet }
-
-   val states = sarsa.agent.instances.arbitraryState.arbitrary
-
    given Arbitrary[Q] = Arbitrary (sarsa.genVF)
 
    val laws: RuleSet = SimpleRuleSet (
@@ -50,7 +42,7 @@ case class ConcreteSarsaLaws[State, FiniteState, Action]
      "probability of choosing best action is greater than (1 - ε)" ->
        forAllNoShrink { (q: Q, a_t: Action) =>
          
-         // Two sanity checks that the generators works
+         // Two sanity checks to confirm that the generators works reasonably
          require (q.nonEmpty, 
            "The Q-Table cannot be empty") 
          require (q.values.forall { _.nonEmpty }, 
