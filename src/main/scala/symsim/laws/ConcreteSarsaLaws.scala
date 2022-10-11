@@ -52,20 +52,18 @@ case class ConcreteSarsaLaws[State, FiniteState, Action]
          // We check this by computing the posterior and asking CDF (ε) ≥ 0.95
          // Using the number of episodes as the #trials is a bit of an abuse
 
-         val N = sarsa.episodes
-         val successes = trials.take (N).count (_ => true)
-         val failures = N - successes
-         assert (trials.take (N).forall (_ => true))
+         val successes = trials.take (episodes).count { _ == true }
+         val failures = episodes - successes
 
          import Rand.VariableSeed.*
          // α=1 and β=1 gives a prior, weak flat, unbiased
-         val ltEpsilon =  Beta (1 + successes, 1 + failures).cdf (epsilon)
+         val cdfEpsilon =  Beta (2 + successes, 2 + failures).cdf (epsilon)
 
-         (ltEpsilon >= 0.95) :| 
+         (cdfEpsilon >= 0.995) :| 
            s"""|The beta posterior test results (failing):
-               |    posterior_cdf(${epsilon}) == $ltEpsilon
+               |    posterior_cdf(${epsilon}) == $cdfEpsilon
                |    #exploration selections ≠ best action: $successes 
                |    #best action selections: $failures 
-               |    #total trials: $N""".stripMargin
+               |    #total trials: $episodes""".stripMargin
       },
     )
