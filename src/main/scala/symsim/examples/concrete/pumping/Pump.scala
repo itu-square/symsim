@@ -167,8 +167,8 @@ object Pump extends
     tl  <- Randomized.const (1000)
     w   <- Randomized.const (9.11)
     phm <- Randomized.const (List (10.0, 10.0, 10.0, 10.0, 10.0))
-    s = PumpState (f, h, hm, tl, 0, w, phm)
-        if !isFinal (s)
+    s   =  PumpState (f, h, hm, tl, 0, w, phm)
+      _ =  assert (!isFinal (s))
   yield s
 
 
