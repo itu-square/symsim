@@ -71,6 +71,12 @@ case class ConcreteSarsaLaws[State, FiniteState, Action]
 
          // Construct the result compositionally (inlined manually here, 
          // but in general this is an interpreter)
+         //
+         // Now this test looks essentially the same as learning Epoch, but if
+         // we have an interpreter for BDL, it allows to test detailed
+         // implementations against high-level specs. This similarity
+         // is purely caused by us manually inlining the BDL semantics 
+         // here for Sarsa-1 (see paper).
          val bdl = for 
            (s_tt,r_tt) <- agent.step (s_t) (a_t)
            os_t         = agent.discretize (s_t)
