@@ -33,7 +33,7 @@ class ConcreteSarsaSpec
 
 
   "initQ terminates, no stack overflow (regression)"  in {
-    sarsa.initialize
+    sarsa.initialize.head
   }
 
   "learn is tail recursive, no stack overflow (regression)"  in {
