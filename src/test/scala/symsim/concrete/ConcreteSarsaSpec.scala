@@ -8,15 +8,15 @@ class ConcreteSarsaSpec
   // Import evidence that states and actions can be enumerated
   import UnitAgent.*
 
+  val C = 555555
+
   val sarsa = ConcreteSarsa (
     agent = UnitAgent,
     alpha = 0.1,
     gamma = 0.1,
     epsilon = 0.2, // explore vs exploit ratio
-    episodes = 150000,
+    episodes = 2*C
   )
-
-  val C = 555555
 
   "This should stack overflow (checking the stack size C)" in {
     def h (n: Int): Int = if n == 0 then 1 else h (n-1) + 1
@@ -36,12 +36,12 @@ class ConcreteSarsaSpec
     sarsa.initialize.head
   }
 
+  // this test does not really prove the tail recursiveness,
+  // but at least checks for crash
+  // also with the immediate final state 'learn' is not really tested here
   "learn is tail recursive, no stack overflow (regression)"  in {
     val result = sarsa.learningEpisode (sarsa.initialize, ())
     result.head
-    // this test does not really prove the tail recursiveness,
-    // but at least checks for crash
-    // also with the immediate final state 'learn' is not really tested here
   }
 
   "runQ is tail recursive, no stack overflow (regression)"  in {
