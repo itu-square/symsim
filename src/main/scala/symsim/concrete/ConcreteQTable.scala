@@ -11,12 +11,12 @@ trait ConcreteQTable[State, ObservableState, Action]
 
   import agent.instances.*
 
-  def bestAction (q: Q) (s: State): Action =
-    val qs = q (agent.discretize (s)) map { _.swap }
+  def bestAction (q: Q) (s: ObservableState): Action =
+    val qs = q (s).map { _.swap }
     qs (qs.keys.max)
 
 
-  def chooseAction (q: Q) (s: State): Randomized[Action] =
+  def chooseAction (q: Q) (s: ObservableState): Randomized[Action] =
     for
       explore <- Randomized.coin (this.epsilon)
       action  <- if explore
