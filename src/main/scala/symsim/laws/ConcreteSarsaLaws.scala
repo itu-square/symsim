@@ -63,20 +63,25 @@ case class ConcreteSarsaLaws[State, FiniteState, Action]
     },
 
     "distribution produced by an update function follows Eq. 14 (BDL)" ->
-       forAllNoShrink { (q: Q, s_t: State, a_t: Action) =>
+       forAllNoShrink { (q_t: Q, s_t: State, a_t: Action) =>
 
          // call monolithic implementation
          val sut: Randomized[(Q, State, Action)] = 
-           sarsa.learningEpoch (q, s_t, a_t)
+           sarsa.learningEpoch (q_t, s_t, a_t)
 
          // Construct the result compositionally (inlined manually here, 
          // but in general this is an interpreter)
          val bdl = for 
            (s_tt,r_tt) <- agent.step (s_t) (a_t)
+           os_t         = agent.discretize (s_t)
            os_tt        = agent.discretize (s_tt)
-           a_tt         <- sarsa.chooseAction (q) (os_tt)
-           g_tt         = r_tt + sarsa.gamma * q (os_tt) (a_tt)
-         yield ???
+           a_tt         <- sarsa.chooseAction (q_t) (os_tt)
+           g_tt         = r_tt + sarsa.gamma * q_t (os_tt) (a_tt)
+           u            = q_t (os_t) (a_t) - alpha * (g_tt - q_t (os_t) (a_t))
+           q_tt         = q_t + (os_tt -> (q_t (os_tt) + (a_t -> u)))
+         yield (q_tt, s_tt, a_tt)
+
+         // Now here compare the two distributions
          true
        }
 
