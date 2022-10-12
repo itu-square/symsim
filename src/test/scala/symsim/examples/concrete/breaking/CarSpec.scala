@@ -30,7 +30,7 @@ class CarSpec
     "A stopped car cannot move, however much you break" in check {
       forAll (positions, actions) { (p, a) =>
         val (s1, r) = Car.step (CarState (v = 0.0, p = p)) (a).head
-        (a <= 0) ==> (s1.p == p)
+        s1.p == p
       }
     }
 
