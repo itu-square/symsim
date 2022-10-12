@@ -27,13 +27,19 @@ class CarSpec
 
     // Tests
 
-    "The car cannot move backwards" in check {
+    "A stopped car cannot move, however much you break" in check {
       forAll (positions, actions) { (p, a) =>
         val (s1, r) = Car.step (CarState (v = 0.0, p = p)) (a).head
-        (a <= 0) ==> (s1.p >= p)
+        (a <= 0) ==> (s1.p == p)
       }
     }
 
+    "The car cannot move backwards by breaking" in check {
+      forAll (velocities, positions, actions) { (v, p, a) =>
+        val (s1, r) = Car.step (CarState (v, p = p)) (a).head
+        (v != 0) ==> (s1.p >= p)
+      }
+    }
 
     "Position never becomes negative" in check {
       forAll (velocities, positions, actions) { (v, p, a) =>
