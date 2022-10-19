@@ -38,7 +38,7 @@ class CarSpec
     "The car cannot move backwards by breaking" in check {
       forAll (velocities, positions, actions) { (v, p, a) =>
         for (s1, r) <- Car.step (CarState (v, p = p)) (a) 
-        yield v != 0 ==> s1.p >= p
+        yield (v != 0 ==> s1.p >= p)
       }
     }
 
