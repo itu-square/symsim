@@ -1,7 +1,8 @@
 package symsim
 package examples.concrete.breaking
 
-import CanTestIn.*
+import symsim.concrete.Randomized.given
+import CanTestIn.given
 
 import org.scalatest.*
 import prop.*
@@ -36,8 +37,8 @@ class CarSpec
 
     "The car cannot move backwards by breaking" in check {
       forAll (velocities, positions, actions) { (v, p, a) =>
-        val (s1, r) = Car.step (CarState (v, p = p)) (a).head
-        (v != 0) ==> (s1.p >= p)
+        for (s1, r) <- Car.step (CarState (v, p = p)) (a) 
+        yield v != 0 ==> s1.p >= p
       }
     }
 
