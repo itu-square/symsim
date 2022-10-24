@@ -49,7 +49,7 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
   def learningEpisode (f: VF, s_t: State): Scheduler[VF] =
     def p (f: VF, s: State, a: Action): Boolean = agent.isFinal (s)
     for
-      a <- chooseAction (f) (agent.discretize (s_t))
+      a <- chooseAction (f) (agent.observe (s_t))
       fin <- Monad[Scheduler].iterateUntilM (f, s_t, a) (learningEpoch) (p)
     yield fin._1
 

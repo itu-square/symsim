@@ -27,19 +27,19 @@ case class AgentLaws[State, ObservableState, Action, Reward, Scheduler[_]]
     "agent",
 
     /** Law: Every state from the environment/agent state space can
-      * be discretized and represented in the enumerable finite state
+      * be observed and represented in the enumerable finite state
       * space that the agent uses for learning and for control decisions.
       */
-    "discretize (s) ∈ ObservableState" ->
+    "observe (s) ∈ ObservableState" ->
     forAll { (s: State) =>
-      observableStates.contains (agent.discretize (s)) },
+      observableStates.contains (agent.observe (s)) },
 
     /** Law: Every initialization ends up being discritized to
      *  an enumerable value of ObservableState.
      */
-    "discretize (initialize) ∈ ObservableState" ->
+    "observe (initialize) ∈ ObservableState" ->
     forAll (agent.initialize.toGen) { (s: State) =>
-      observableStates.contains (agent.discretize (s)) },
+      observableStates.contains (agent.observe (s)) },
 
     /** Law: Initial state is not final, regardless scheduler. */
     "¬isFinal (initialize)" ->
@@ -47,15 +47,15 @@ case class AgentLaws[State, ObservableState, Action, Reward, Scheduler[_]]
       !agent.isFinal (s) },
 
     /** Law: An agent step from any state lands in a state
-      * that be discretized into ObservableState.
+      * that be observed into ObservableState.
       */
-    "discretize (step (s) (a)._1) ∈ ObservableState" ->
+    "observe (step (s) (a)._1) ∈ ObservableState" ->
     forAll { (s0: State) =>
       forAll { (a: Action) =>
         val prop = for
           s1r <- agent.step (s0) (a)
           (s1, r) = s1r
-          d1 = agent.discretize (s1)
+          d1 = agent.observe (s1)
         yield observableStates.contains (d1)
         prop.toProp
     } },

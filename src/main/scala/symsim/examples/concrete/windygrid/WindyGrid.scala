@@ -28,7 +28,7 @@ object WindyGrid
     def isFinal (s: GridState): Boolean =
       (s.x, s.y) == (8, 4)
 
-    def discretize (s: GridState): GridObservableState =
+    def observe (s: GridState): GridObservableState =
       GridState (s.x, s.y)
 
 

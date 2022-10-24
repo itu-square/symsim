@@ -24,10 +24,10 @@ trait Sarsa[State, ObservableState, Action, Reward, Scheduler[_]]
          sa_tt <- agent.step (s_t) (a_t)
          (s_tt, r_tt) = sa_tt
          // SARSA: on-policy (p.844 in Russel & Norvig)
-         a_tt <- chooseAction (q) (agent.discretize (s_tt))
+         a_tt <- chooseAction (q) (agent.observe (s_tt))
 
-         ds_t = agent.discretize (s_t)
-         ds_tt = agent.discretize (s_tt)
+         ds_t = agent.observe (s_t)
+         ds_tt = agent.observe (s_tt)
          old_entry = q (ds_t) (a_t)
          correction = r_tt + gamma * q (ds_tt) (a_tt) - old_entry
          qval = old_entry + alpha * correction

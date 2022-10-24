@@ -43,7 +43,7 @@ object Car
       s.v == 0.0 || s.p >= 10 || Math.abs (s.p) >= 1000.0
 
 
-    def discretize (s: CarState): CarObservableState =
+    def observe (s: CarState): CarObservableState =
       require (s.v >= 0, s"s.v = ${s.v} is not non-negative")
       require (s.p >= 0, s"s.p = ${s.p} is not non-negative")
 

@@ -56,7 +56,7 @@ object Maze
     s == (4, 3) || s == (4, 2)
 
   // Maze is discrete
-  def discretize (s: MazeState): MazeObservableState =  s
+  def observe (s: MazeState): MazeObservableState =  s
 
   private def mazeReward (s: MazeState): MazeReward = s match
     case (4, 3) => 1.0   // Good final state

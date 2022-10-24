@@ -39,7 +39,7 @@ class Bandit (banditReward: List [Randomized[BanditReward]])
   override def isFinal (s: BanditState): Boolean = s
 
   // Bandit is discrete
-  override def discretize (s: BanditState): BanditState = s
+  override def observe (s: BanditState): BanditState = s
   
   override def step (s: BanditState) (a: BanditAction): Randomized[(BanditState, BanditReward)] =
     for r <- banditReward (a) yield (true, r)

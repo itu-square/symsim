@@ -45,7 +45,7 @@ object Golf
          s == 9
 
       // Golf is discrete
-      def discretize (s: GolfState): GolfObservableState =  s
+      def observe (s: GolfState): GolfObservableState =  s
 
       private def golfReward (s: GolfState) (a: GolfAction): GolfReward = (s, a) match
          case (6, (Club.P, _)) => -100.0
