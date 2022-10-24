@@ -40,8 +40,8 @@ case class ConcreteSarsaLaws[State, FiniteState, Action]
 
         val trials = for 
           s_t  <- agent.initialize
-          a_tt <- chooseAction (q) (agent.discretize (s_t))
-        yield a_tt != bestAction (q) (agent.discretize (s_t))
+          a_tt <- chooseAction (q) (agent.observe (s_t))
+        yield a_tt != bestAction (q) (agent.observe (s_t))
 
         // We implement this as a bayesian test, checking whether htere is
         // 0.95 belief that the probability of suboptimal action is ≤ ε.
@@ -68,7 +68,7 @@ case class ConcreteSarsaLaws[State, FiniteState, Action]
          // #samples for the distribution test
          val n = 40000 
 
-         val os_t = agent.discretize (s_t)
+         val os_t = agent.observe (s_t)
 
          // call monolithic implementation
          val sut: Randomized[(Q, State, Action)] = 
@@ -84,7 +84,7 @@ case class ConcreteSarsaLaws[State, FiniteState, Action]
          // here for Sarsa-1 (see paper).
          val bdl = for 
            (s_tt,r_tt) <- agent.step (s_t) (a_t)
-           os_tt        = agent.discretize (s_tt)
+           os_tt        = agent.observe (s_tt)
            a_tt         <- sarsa.chooseAction (q_t) (os_tt)
            g_tt         = r_tt + sarsa.gamma * q_t (os_tt) (a_tt)
            u            = q_t (os_t) (a_t) - alpha * (g_tt - q_t (os_t) (a_t))

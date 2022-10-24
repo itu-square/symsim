@@ -35,7 +35,7 @@ trait Agent[State, ObservableState, Action, Reward, Scheduler[_]]:
     * convenient to maintain discretizations with the agent, as this makes the
     * examples compact.
     */
-  def discretize (s: State): ObservableState
+  def observe (s: State): ObservableState
 
   /** Return the reward assigned to state s when action a is given (the
     * reward estimation function)

@@ -42,7 +42,7 @@ object MountainCar
     s.p >= 0.5
 
 
-  def discretize (s: CarState): CarObservableState =
+  def observe (s: CarState): CarObservableState =
     require (s.p >= -1.2, s"s.p = ${s.p} is not within the boundaries")
     require (s.p <= 0.5, s"s.p = ${s.p} is not within the boundaries")
     require (s.v >= -1.5, s"s.v = ${s.v} is not within the boundaries")

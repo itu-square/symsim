@@ -13,7 +13,7 @@ type UnitReward = Double
 object UnitAgent
    extends Agent[UnitState, UnitState, UnitAction, UnitReward, Randomized]:
       override def isFinal (s: UnitState): Boolean = true
-      override def discretize (s: UnitState): UnitState =  s
+      override def observe (s: UnitState): UnitState =  s
       override def step (s: UnitState) (a: UnitAction): Randomized[(UnitState, UnitReward)] =
         Randomized.const (() -> 0.1)
       override def initialize: Randomized[UnitState] = Randomized.const (())

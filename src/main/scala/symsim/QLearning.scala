@@ -24,8 +24,8 @@ trait QLearning[State, ObservableState, Action, Reward, Scheduler[_]]
       sa_tt <- agent.step (s_t) (a_t)
       (s_tt, r_tt) = sa_tt
 
-      ds_t = agent.discretize (s_t)
-      ds_tt = agent.discretize (s_tt)
+      ds_t = agent.observe (s_t)
+      ds_tt = agent.observe (s_tt)
       
       // Q-learning is off-policy (p.844 in Russel & Norvig)
       a_tt = bestAction (q) (ds_tt)

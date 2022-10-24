@@ -42,7 +42,7 @@ end PumpState
 
 /** Discretize cut points for flow, head, and tank variables./
   *
-  * We discretize to the first point on the list that is lower than the actual
+  * We observe to the first point on the list that is lower than the actual
   * value of the variable.  So we 'round down'. Values below the last element
   * in the cut-point list are rounded up (to the last value).
   *
@@ -106,7 +106,7 @@ object Pump extends
     s.t >= 4000 || s.h < HEAD_MIN || s.tl > TANK_MAX || s.tl < TANK_MIN
 
 
-  def discretize (s: PumpState): ObservablePumpState =
+  def observe (s: PumpState): ObservablePumpState =
     require (s.tl >= TANK_MIN, s"s.tl = ${s.tl} >= $TANK_MIN")
 
     val df = closest (s.f) (flowCutPoints)
