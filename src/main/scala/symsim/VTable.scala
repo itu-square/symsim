@@ -3,7 +3,7 @@ package symsim
 import org.scalacheck.Gen
 
 trait VTable[State, ObservableState, Action, Reward, Scheduler[_]]
-  extends ValueFunction[State, ObservableState, Action, Reward, Scheduler]:
+  extends ValueFunction[ObservableState, Action, Reward, Scheduler]:
 
   this: ExactRL[State, ObservableState, Action, Reward, Scheduler] =>
 

@@ -19,7 +19,7 @@ import org.typelevel.paiges.Doc
   */
 trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
   extends RL[ObservableState, Action],
-    ValueFunction[State, ObservableState, Action, Reward, Scheduler]:
+    ValueFunction[ObservableState, Action, Reward, Scheduler]:
 
   import agent.instances.given
 

@@ -12,7 +12,7 @@ import symsim.concrete.{ConcreteExactRL, Randomized}
 
 
 trait QTable[State, ObservableState, Action, Reward, Scheduler[_]]
-  extends ValueFunction[State, ObservableState, Action, Reward, Scheduler]:
+  extends ValueFunction[ObservableState, Action, Reward, Scheduler]:
   this: ExactRL[State, ObservableState, Action, Reward, Scheduler] =>
 
   import agent.instances.*
