@@ -1,7 +1,7 @@
 package symsim
 
 import org.scalacheck.Gen
-trait ValueFunction[State, ObservableState, Action, Reward, Scheduler[_]]:
+trait ValueFunction[ObservableState, Action, Reward, Scheduler[_]]:
   type VF
   def bestAction (vf: VF) (s: ObservableState): Action
   def chooseAction (vf: VF) (s: ObservableState): Scheduler[Action]
