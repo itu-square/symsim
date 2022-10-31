@@ -7,8 +7,5 @@ import laws.EpisodicLaws
 class PumpIsAgentSpec
   extends SymSimSpec:
 
-  implicit override val generatorDrivenConfig =
-    PropertyCheckConfiguration(minSuccessful = 100)
-
   checkAll ("concrete.pumping.Pump is an Agent", AgentLaws (Pump).laws)
   checkAll ("concrete.pumping.Pump is Episodic", EpisodicLaws (Pump).laws)

@@ -7,9 +7,6 @@ import laws.EpisodicLaws
 class MountainCarIsAgentSpec
   extends SymSimSpec:
 
-  implicit override val generatorDrivenConfig =
-    PropertyCheckConfiguration(minSuccessful = 100)
-
   checkAll ("concrete.mountaincar.MountainCar is an Agent", AgentLaws (MountainCar).laws)
 // Randomized testing of this law is too simplistic for mountaincar to
 // reliably pass the test, so it is deactivated for now. A symbolic test'
