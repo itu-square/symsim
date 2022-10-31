@@ -39,8 +39,8 @@ class PumpSpec
     "The tank level never can be negative" in check {
       forAll (flow, head, head_mean, tank, time, water, past_head_mean, actions) {
         (f, h, hm, tl, t, w, phm, a) =>
-        val (s1, r) = Pump.step (PumpState (f, h, hm, tl, t, w, phm)) (a).head
-        s1.tl >= TANK_MIN
+        for (s1, r) <- Pump.step (PumpState (f, h, hm, tl, t, w, phm)) (a)
+        yield s1.tl >= TANK_MIN
       }
     }
 
