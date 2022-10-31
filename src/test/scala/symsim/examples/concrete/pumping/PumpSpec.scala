@@ -1,6 +1,8 @@
 package symsim
 package examples.concrete.pumping
 
+import symsim.concrete.Randomized.given
+import CanTestIn.given
 import CanTestIn.*
 
 import org.scalatest.*
@@ -59,6 +61,16 @@ class PumpSpec
     "Test getDemand" in check {
       forAllNoShrink (time) { t1 =>
         exists (time) {t2 => Pump.getDemand (t1) != Pump.getDemand (t2)}
+      }
+    }
+
+    "There is an action for each state which results no overflow" in check {
+      forAllNoShrink(flow, head, head_mean, tank, time, water, past_head_mean) {
+        (f, h, hm, tl, t, w, phm) =>
+          exists(actions) { a =>
+            for (s1, r) <- Pump.step(PumpState(f, h, hm, tl, t, w, phm))(a)
+              yield (s1.tl <= TANK_MAX)
+          }
       }
     }
 
