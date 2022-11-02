@@ -19,6 +19,9 @@ class MazeSpec
   extends org.scalatest.freespec.AnyFreeSpec,
     org.scalatestplus.scalacheck.Checkers:
 
+  given PropertyCheckConfiguration =
+    PropertyCheckConfiguration(minSuccessful = 100)
+
   "Sanity checks for symsim.concrete.breaking" - {
 
     // Generators of test data
@@ -67,7 +70,7 @@ class MazeSpec
     }
 
     "checking optimal policy" in check {
-      val sarsa = ConcreteSarsa(Maze, 0.1, 1, 0.05, 100000)
+      val sarsa = ConcreteSarsa(Maze, 0.1, 1, 0.05, 150000)
       forAllNoShrink(states) { s =>
         val Q = sarsa.learningEpisode (sarsa.initialize, s).head
         val optPolicy = sarsa.bestAction (Q)(s)
