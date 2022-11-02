@@ -19,7 +19,7 @@ class CarSpec
   extends org.scalatest.freespec.AnyFreeSpec,
     org.scalatestplus.scalacheck.Checkers:
 
-  implicit override val generatorDrivenConfig =
+  given PropertyCheckConfiguration =
     PropertyCheckConfiguration(minSuccessful = 100)
 
   "Sanity checks for symsim.concrete.breaking" - {
