@@ -13,8 +13,5 @@ class BanditIsAgentSpecConst
 class BanditIsAgentSpecGaussian
    extends SymSimSpec:
 
-   implicit override val generatorDrivenConfig =
-      PropertyCheckConfiguration(minSuccessful = 100)
-
    checkAll ("concrete.simplebandit.Bandit is an Agent", AgentLaws (BanditObjGaussian).laws)
    checkAll ("concrete.simplebandit.Bandit is Episodic", EpisodicLaws (BanditObjGaussian).laws)

@@ -14,7 +14,7 @@ class RandomizedSpec
   extends org.scalatest.freespec.AnyFreeSpec,
     org.scalatestplus.scalacheck.Checkers:
 
-  implicit override val generatorDrivenConfig =
+  given PropertyCheckConfiguration =
     PropertyCheckConfiguration(minSuccessful = 100)
 
   val C = 5000

@@ -6,9 +6,6 @@ import symsim.examples.concrete.mountaincar.MountainCar
 class ConcreteSarsaIsSarsaSpec
   extends SymSimSpec:
 
-  implicit override val generatorDrivenConfig =
-    PropertyCheckConfiguration(minSuccessful = 100)
-
   val csarsa = ConcreteSarsa (
     agent = MountainCar,
     alpha = 0.1,
