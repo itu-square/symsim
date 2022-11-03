@@ -1,5 +1,5 @@
 package symsim
-package examples.concrete.breaking
+package examples.concrete.braking
 
 import symsim.concrete.Randomized
 
@@ -61,7 +61,7 @@ object Car
     // TODO: this is now deterministic but eventually needs to be randomized
     def step (s: CarState) (a: CarAction): Randomized[(CarState, CarReward)] =
       require (instances.enumAction.membersAscending.contains (a))
-      // Stop moving when velecity is zero, breaking is not moving backwards
+      // Stop moving when velecity is zero, braking is not moving backwards
       val t1 = Math.min (- s.v / a, t)
       val p1 = Math.min (s.p + s.v*t1 + 0.5*a*t1*t1, 10.0)
       val v1 = if p1 >= 10 then 0

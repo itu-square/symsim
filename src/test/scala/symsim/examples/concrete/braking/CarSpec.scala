@@ -1,5 +1,5 @@
 package symsim
-package examples.concrete.breaking
+package examples.concrete.braking
 
 import symsim.concrete.Randomized.given
 import CanTestIn.given
@@ -11,15 +11,15 @@ import org.scalacheck.Gen
 import org.scalatest.prop.Whenever
 import org.scalatest.*
 import org.scalacheck.Prop.{forAll, forAllNoShrink, propBoolean, exists}
-import examples.concrete.breaking.CarState
-import examples.concrete.breaking.Car
+import examples.concrete.braking.CarState
+import examples.concrete.braking.Car
 
 /** Sanity tests for Randomized as a Scheduler */
 class CarSpec
   extends org.scalatest.freespec.AnyFreeSpec,
     org.scalatestplus.scalacheck.Checkers:
 
-  "Sanity checks for symsim.concrete.breaking" - {
+  "Sanity checks for symsim.concrete.braking" - {
 
     // Generators of test data
     val positions = Gen.choose[Double] (0.0, 10.0)
@@ -35,7 +35,7 @@ class CarSpec
       }
     }
 
-    "The car cannot move backwards by breaking" in check {
+    "The car cannot move backwards by braking" in check {
       forAll (velocities, positions, actions) { (v, p, a) =>
         for (s1, r) <- Car.step (CarState (v, p = p)) (a)
         yield (v != 0 ==> s1.p >= p)
