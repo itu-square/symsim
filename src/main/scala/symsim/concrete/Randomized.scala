@@ -1,5 +1,7 @@
 package symsim.concrete
 
+import scala.annotation.targetName
+
 import cats.data.State
 import org.scalacheck.{Gen, Prop}
 
@@ -76,6 +78,7 @@ object Randomized:
    given canTestInRandomized: symsim.CanTestIn[Randomized] =
       new symsim.CanTestIn[Randomized] {
 
+         @targetName ("toPropBoolean")
          def toProp (rProp: Randomized[Boolean]) =
             Prop.forAllNoShrink (toGen (rProp)) (identity[Boolean])
 
