@@ -7,6 +7,7 @@ import org.scalatest.*
 import prop.*
 import org.scalacheck.Arbitrary.*
 import org.scalacheck.Gen
+import org.scalacheck.Gen.const
 import org.scalatest.prop.Whenever
 import org.scalatest.*
 import org.scalacheck.Prop.{exists, forAll, forAllNoShrink, propBoolean}
@@ -72,9 +73,9 @@ class MazeSpec
     "checking optimal policy" in check {
       val sarsa = ConcreteSarsa(Maze, 0.1, 1, 0.05, 150000)
       forAllNoShrink(states) { s =>
-        val Q = sarsa.learningEpisode (sarsa.initialize, s).head
-        val optPolicy = sarsa.bestAction (Q)(s)
-        optPolicy != Down
+        for
+          Q <- sarsa.learningEpisode (sarsa.initialize, s)
+        yield sarsa.bestAction (Q) (s) != Down
       }
     }
   }
