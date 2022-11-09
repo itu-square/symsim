@@ -1,5 +1,5 @@
 package symsim
-package examples.concrete.breaking
+package examples.concrete.braking
 
 class Experiments
   extends ExperimentSpec[CarState, CarObservableState, CarAction]:
