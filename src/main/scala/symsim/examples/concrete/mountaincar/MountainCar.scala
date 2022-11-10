@@ -68,7 +68,7 @@ object MountainCar
   def step (s: CarState) (a: CarAction): Randomized[(CarState, CarReward)] =
     val v = s.v + (gravity * mass * cos (3.0 * s.p) + a / mass - friction * s.v) * dt
     val p = s.p + (v * dt)
-    val (v1, p1) = if p < -1.2 then (-1.2, 0.0) else (v, p) 
+    val (v1, p1) = if p < -1.2 then (0.0, -1.2) else (v, p)
     val s1 = CarState (v = v1.max (-1.5).min (1.5), 
                        p = p1.min (0.5))
     Randomized.const (s1 -> carReward (s1) (a))
