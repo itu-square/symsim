@@ -33,7 +33,7 @@ with a bunch of simple examples.
    ```sh
    git checkout -b tic-tac-toe
    ```
-3. Create a new package in `src/main/scala/symsim/examples/concrete/`. The existing one is called `breaking`, let's call the new one `tictactoe`
+3. Create a new package in `src/main/scala/symsim/examples/concrete/`. The existing one is called `braking`, let's call the new one `tictactoe`
 
    ```sh
    mkdir -pv src/main/scala/symsim/examples/concrete/tictactoe
@@ -42,10 +42,10 @@ with a bunch of simple examples.
 
 4. Inside the new directory create a file `TicTacToe.scala`.
    ```
-   cp -iv src/main/scala/symsim/examples/concrete/breaking/Car.scala src/main/scala/symsim/examples/concrete/tictactoe/TicTacToe.scala
+   cp -iv src/main/scala/symsim/examples/concrete/braking/Car.scala src/main/scala/symsim/examples/concrete/tictactoe/TicTacToe.scala
    edit src/main/scala/symsim/examples/concrete/tictactoe/TicTacToe.scala
    ```
-   Adjust the name of the package object from breaking to `tictactoe`. Then change the four types (both names and definitions) to whatever makes sense for TicTacToe. For instances create
+   Adjust the name of the package object from braking to `tictactoe`. Then change the four types (both names and definitions) to whatever makes sense for TicTacToe. For instances create
    `TicState` - to represent the state of the game
    `TicObservableState` - this might be just a renaming because the Tic Tac Toe state space is finite
    `TicAction` - possible moves
@@ -69,7 +69,7 @@ with a bunch of simple examples.
 
 9. Running the learning
 
-   There is a corresponding test tree (to the `main` source tree).  Under `concrete/examples/breaking/` you will find the file `Experiments.scala` that shows how the breaking car learning is executed.  So far, we disguise it as a test.  You can copy this file to the corresponding directory for `tictactoe` and adjust it to instantiate the tic-tac-toe learning.
+   There is a corresponding test tree (to the `main` source tree).  Under `concrete/examples/braking/` you will find the file `Experiments.scala` that shows how the braking car learning is executed.  So far, we disguise it as a test.  You can copy this file to the corresponding directory for `tictactoe` and adjust it to instantiate the tic-tac-toe learning.
 
 ## Credits
 
