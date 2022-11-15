@@ -10,7 +10,6 @@ import prop.*
 import org.scalacheck.Arbitrary.*
 import org.scalacheck.Gen
 import org.scalatest.prop.Whenever
-import org.scalatest.*
 import org.scalacheck.Prop.{forAll, forAllNoShrink, propBoolean, exists}
 import examples.concrete.pumping.*
 
