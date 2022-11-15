@@ -5,11 +5,8 @@ import symsim.concrete.Randomized.given
 import CanTestIn.given
 import org.scalatest.*
 import prop.*
-import org.scalacheck.Arbitrary.*
 import org.scalacheck.Gen
 import org.scalacheck.Gen.const
-import org.scalatest.prop.Whenever
-import org.scalatest.*
 import org.scalacheck.Prop.{exists, forAll, forAllNoShrink, propBoolean}
 import examples.concrete.simplemaze.MazeState
 import examples.concrete.simplemaze.Maze
@@ -23,7 +20,7 @@ class MazeSpec
   given PropertyCheckConfiguration =
     PropertyCheckConfiguration(minSuccessful = 100)
 
-  "Sanity checks for symsim.concrete.breaking" - {
+  "Sanity checks for symsim.concrete.simplemaze" - {
 
     // Generators of test data
     val xs = Gen.oneOf [Int](1, 2, 3, 4)
