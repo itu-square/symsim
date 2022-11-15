@@ -5,10 +5,7 @@ import symsim.concrete.Randomized.given
 import CanTestIn.given
 import org.scalatest.*
 import prop.*
-import org.scalacheck.Arbitrary.*
 import org.scalacheck.Gen
-import org.scalatest.prop.Whenever
-import org.scalatest.*
 import org.scalacheck.Prop.{exists, forAll, forAllNoShrink, propBoolean}
 import examples.concrete.windygrid.GridState
 import examples.concrete.windygrid.WindyGrid
@@ -22,7 +19,7 @@ class WindyGridSpec
   given PropertyCheckConfiguration =
     PropertyCheckConfiguration(minSuccessful = 100)
 
-  "Sanity checks for symsim.concrete.breaking" - {
+  "Sanity checks for symsim.concrete.windygrid" - {
 
     // Generators of test data
     val xs = Gen.choose [Int](1, 10)
