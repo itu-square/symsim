@@ -102,8 +102,6 @@ object CliffWalkingInstances
     lazy val genCWState: Gen[CWState] = for
         x <- Gen.oneOf (Seq (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11))
         y <- Gen.oneOf (Seq (0, 1, 2, 3))
-//        x <- Gen.choose(0, 11)
-//        y <- Gen.choose(0, 3)
     yield CWState (x, y)
 
     given arbitraryState: Arbitrary[CWState] = Arbitrary (genCWState)
