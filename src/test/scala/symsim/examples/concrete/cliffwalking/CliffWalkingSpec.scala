@@ -8,9 +8,7 @@ import org.scalatest.*
 import prop.*
 import org.scalacheck.Arbitrary.*
 import org.scalacheck.Gen
-import org.scalatest.prop.Whenever
-import org.scalatest.*
-import org.scalacheck.Prop.{forAll, forAllNoShrink, propBoolean, exists}
+import org.scalacheck.Prop.*
 import examples.concrete.cliffwalking.CWState
 import examples.concrete.cliffwalking.CliffWalking
 
@@ -25,11 +23,7 @@ class CliffWalkingSpec
   "Sanity checks for symsim.concrete.braking" - {
 
     // Generators of test data
-    val genA = Gen.choose(0.1, 0.3)
-    val genE = Gen.choose(0.001, 0.2)
     val states = Gen.oneOf (CliffWalking.instances.enumState.membersAscending)
-    val xs = Gen.oneOf(Seq(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11))
-    val ys = Gen.oneOf(Seq(0, 1, 2, 3))
     val actions = Gen.oneOf (CliffWalking.instances.enumAction.membersAscending)
 
     // Tests
@@ -40,12 +34,5 @@ class CliffWalkingSpec
         yield r < 0
       }
     }
-
-//    "The intial state is not terminal" in check {
-//      for
-//        s <- CliffWalking.initialize
-//      yield !CliffWalking.isFinal(s)
-//    }
-
 
   }
