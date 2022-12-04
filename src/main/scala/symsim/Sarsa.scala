@@ -28,9 +28,9 @@ trait Sarsa[State, ObservableState, Action, Reward, Scheduler[_]]
 
          ds_t = agent.observe (s_t)
          ds_tt = agent.observe (s_tt)
-         old_entry = q (ds_t) (a_t)
-         correction = r_tt + gamma * q (ds_tt) (a_tt) - old_entry
+         old_entry = q (ds_t, a_t)
+         correction = r_tt + gamma * q (ds_tt, a_tt) - old_entry
          qval = old_entry + alpha * correction
 
-         q1 = q + (ds_t -> (q (ds_t) + (a_t -> qval)))
+         q1 = q.updated ((ds_t, a_t), qval)
       yield (q1, s_tt, a_tt)
