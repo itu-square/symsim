@@ -18,36 +18,31 @@ trait QTable[State, ObservableState, Action, Reward, Scheduler[_]]
   import agent.instances.*
   import agent.instances.given
 
-  type Q = Map[ObservableState, Map[Action, Reward]]
+  opaque type Q = Map[(ObservableState, Action), Reward]
   type VF = Q
+
+  extension (q: Q) 
+    inline def apply (s: ObservableState, a: Action): Reward = 
+      q.getOrElse (s -> a, agent.zeroReward)
+    inline def updated = q.updated
 
 
   /** Construct a zero initialized Q matrix */
-  def initialize: Q =
-    // Create the initial Q matrix (zero's everywhere)
-    val qa = allActions
-      .map { a => (a, agent.zeroReward) }
-      .toMap
-
-    val q0 = allObservableStates
-      .map { state => (state, qa) }
-      .toMap
-
-    q0
-
+  def initialize: Q = Map()
 
   /** Generate total Q matrices for testing. 
     *
     * Note that just asking for arbitrary[Map[ObservableState, Map[Action,
-    * Reward]]] will return rnaomd Q-tables, but not guaranteeing that they are
+    * Reward]]] will return random Q-tables, but not guaranteeing that they are
     * total (for instance, by default an empty Map will be produced). 
     **/
   val genVF: Gen[Q] =
-    val l1 = List.fill (allActions.size) (arbitrary[Reward]) 
-    val genActionRewardMap = 
-      for rs <- Gen.sequence[List[Reward], Reward] (l1)
-      yield Map (allActions zip rs*)
+    val rewards = List.fill (allActions.size*allObservableStates.size) 
+                    (arbitrary[Reward]) 
+    val stateAc = for
+       s <- allObservableStates
+       a <- allActions
+    yield (s, a)
 
-    val  l2 = List.fill (allObservableStates.size) (genActionRewardMap)
-    for maps <- Gen.sequence[List[Map[Action, Reward]], Map[Action, Reward]] (l2)
-    yield Map (allObservableStates zip maps*)
+    for rs <- Gen.sequence[List[Reward], Reward] (rewards)
+    yield Map[(ObservableState, Action), Reward] (stateAc zip rs*)
