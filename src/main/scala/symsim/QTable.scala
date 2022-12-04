@@ -18,13 +18,14 @@ trait QTable[State, ObservableState, Action, Reward, Scheduler[_]]
   import agent.instances.*
   import agent.instances.given
 
-  opaque type Q = Map[(ObservableState, Action), Reward]
+  type Key = (ObservableState, Action)
+  opaque type Q = Map[Key, Reward]
   type VF = Q
 
   extension (q: Q) 
     def apply (s: ObservableState, a: Action): Reward = 
       q.getOrElse ((s, a), agent.zeroReward)
-    def updated: ((ObservableState, Action), Reward) => Q = q.updated
+    def updated: (Key, Reward) => Q = q.updated
 
 
   /** Construct a zero initialized Q matrix */
