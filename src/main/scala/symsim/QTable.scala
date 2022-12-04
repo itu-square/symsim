@@ -22,9 +22,9 @@ trait QTable[State, ObservableState, Action, Reward, Scheduler[_]]
   type VF = Q
 
   extension (q: Q) 
-    inline def apply (s: ObservableState, a: Action): Reward = 
-      q.getOrElse (s -> a, agent.zeroReward)
-    inline def updated = q.updated
+    def apply (s: ObservableState, a: Action): Reward = 
+      q.getOrElse ((s, a), agent.zeroReward)
+    def updated: ((ObservableState, Action), Reward) => Q = q.updated
 
 
   /** Construct a zero initialized Q matrix */
