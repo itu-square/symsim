@@ -1,5 +1,5 @@
 package symsim
-package examples.concrete.cliffwalking
+package examples.concrete.cliffWalking
 
 class Experiments
   extends ExperimentSpec[CWState, CWObservableState, CWAction]:
@@ -12,7 +12,7 @@ class Experiments
     alpha = 0.1,
     gamma = 0.1,
     epsilon = 0.1,
-    episodes = 400
+    episodes = 100
   )
 
   s"CliffWalking experiment with $sarsa" in {
