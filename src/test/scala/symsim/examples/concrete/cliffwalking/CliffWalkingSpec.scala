@@ -1,26 +1,21 @@
 package symsim
-package examples.concrete.cliffwalking
+package examples.concrete.cliffWalking
 
 import symsim.concrete.Randomized.given
 import CanTestIn.given
 
-import org.scalatest.*
-import prop.*
+import org.scalacheck.{Arbitrary, Gen, Prop}
 import org.scalacheck.Arbitrary.*
-import org.scalacheck.Gen
+import org.scalacheck.Prop.forAll
 import org.scalacheck.Prop.*
-import examples.concrete.cliffwalking.CWState
-import examples.concrete.cliffwalking.CliffWalking
+import examples.concrete.cliffWalking.CWState
+import examples.concrete.cliffWalking.CliffWalking
+import symsim.concrete.ConcreteSarsa
+import symsim.concrete.Randomized
 
 /** Sanity tests for Randomized as a Scheduler */
 class CliffWalkingSpec
-  extends org.scalatest.freespec.AnyFreeSpec,
-    org.scalatestplus.scalacheck.Checkers:
-
-  given PropertyCheckConfiguration =
-    PropertyCheckConfiguration(minSuccessful = 100)
-
-  "Sanity checks for symsim.concrete.braking" - {
+  extends org.scalacheck.Properties("CliffWalking"):
 
     // Generators of test data
     val states = Gen.oneOf (CliffWalking.instances.enumState.membersAscending)
@@ -28,11 +23,8 @@ class CliffWalkingSpec
 
     // Tests
 
-    "All rewards are negative" in check {
+    property("All rewards are negative") =
       forAll(states, actions) { (s, a) =>
         for (_, r) <- CliffWalking.step (s) (a)
         yield r < 0
       }
-    }
-
-  }
