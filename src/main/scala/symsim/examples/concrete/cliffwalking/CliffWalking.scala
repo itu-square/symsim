@@ -43,16 +43,16 @@ object CliffWalking
   def observe (s: CWState): CWObservableState = s
 
   def move (s: CWState, a: CWAction): CWState =
-    require(s.x >= 0)
-    require(s.x <= BoardWidth)
-    require(s.y >= 0)
-    require(s.y <= BoardHeight)
+    require (s.x >= 0)
+    require (s.x <= BoardWidth)
+    require (s.y >= 0)
+    require (s.y <= BoardHeight)
 
     a match
-      case CWAction.Up => CWState (s.x, (s.y + 1).min(BoardHeight))
-      case CWAction.Down => CWState (s.x, (s.y - 1).max(0))
-      case CWAction.Right => CWState ((s.x + 1).min(BoardWidth), s.y)
-      case CWAction.Left => CWState ((s.x - 1).max(0), s.y)
+      case CWAction.Up => CWState (s.x, (s.y + 1).min (BoardHeight))
+      case CWAction.Down => CWState (s.x, (s.y - 1).max (0))
+      case CWAction.Right => CWState ((s.x + 1).min (BoardWidth), s.y)
+      case CWAction.Left => CWState ((s.x - 1).max (0), s.y)
 
 
   def cwReward (s: CWState) (a: CWAction): CWReward =
@@ -101,8 +101,8 @@ object CliffWalkingInstances
   given canTestInScheduler: CanTestIn[Randomized] = Randomized.canTestInRandomized
 
   lazy val genCWState: Gen[CWState] = for
-    x <- Gen.oneOf((0 to BoardWidth).toSeq)
-    y <- Gen.oneOf((0 to BoardHeight).toSeq)
+    x <- Gen.oneOf ((0 to BoardWidth).toSeq)
+    y <- Gen.oneOf ((0 to BoardHeight).toSeq)
   yield CWState (x, y)
 
   given arbitraryState: Arbitrary[CWState] = Arbitrary (genCWState)
