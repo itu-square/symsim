@@ -22,11 +22,33 @@ trait QTable[State, ObservableState, Action, Reward, Scheduler[_]]
   type VF = Q
 
   extension (q: Q) 
+
+    /** Allowing to access q(s, a) */
     def apply (s: ObservableState, a: Action): Reward = 
-      q.getOrElse (s, Map[Action, Reward]()).getOrElse (a, agent.zeroReward)
+      q.getOrElse (s, Map[Action, Reward] ())
+       .getOrElse (a, agent.zeroReward)
+
+    /** A copy of the Q-Table with a new entry for (s, a) */
     def updated (s: ObservableState, a: Action, v: Reward): Q = 
       q.updated (s, (q.getOrElse (s, Map ()).updated (a, v))) 
-    private /* TODO? */ def actionValues (s: ObservableState): Map[Action, Reward] = q (s)
+
+    /** An action-value map for a given state.
+      * 
+      * For the time being throws NoSuchElement exception if the state 
+      * is not known to this Q table yet. This can be easily fixed if 
+      * needed.
+      */
+    def actionValues (s: ObservableState): Map[Action, Reward] = 
+      q.getOrElse (s, Map[Action, Reward] ())
+
+    /** States explored and represented in this Q-table so far */
+    def states: List[ObservableState] = q.keys.toList
+
+    /** All actions seen by this Q-table */
+    def actions: Set[Action] = 
+      q.values
+       .flatMap { _.keys }
+       .toSet
 
 
   /** Construct a zero initialized Q matrix */

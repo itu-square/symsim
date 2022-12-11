@@ -32,12 +32,6 @@ case class ConcreteSarsaLaws[State, FiniteState, Action]
     "probability of not choosing the best action is smaller than ε" ->
       forAllNoShrink { (q: Q, a_t: Action) =>
         
-        // Two sanity checks to confirm that the generators work reasonably
-        require (q.nonEmpty, 
-          "The Q-Table cannot be empty") 
-        require (q.values.forall { _.nonEmpty }, 
-          "The entry for each state must not be empty.")
-
         val trials = for 
           s_t  <- agent.initialize
           a_tt <- chooseAction (q) (agent.observe (s_t))
@@ -86,9 +80,9 @@ case class ConcreteSarsaLaws[State, FiniteState, Action]
            (s_tt,r_tt) <- agent.step (s_t) (a_t)
            os_tt        = agent.observe (s_tt)
            a_tt         <- sarsa.chooseAction (q_t) (os_tt)
-           g_tt         = r_tt + sarsa.gamma * q_t (os_tt) (a_tt)
-           u            = q_t (os_t) (a_t) - alpha * (g_tt - q_t (os_t) (a_t))
-           q_tt         = q_t + (os_tt -> (q_t (os_tt) + (a_t -> u)))
+           g_tt         = r_tt + sarsa.gamma * q_t (os_tt, a_tt)
+           u            = q_t (os_t, a_t) - alpha * (g_tt - q_t (os_t, a_t))
+           q_tt         = q_t.updated (os_tt, a_t, u)
          yield (q_tt, s_tt, a_tt)
 
          // We do this test by assuming that both distributions are normal 
@@ -104,8 +98,8 @@ case class ConcreteSarsaLaws[State, FiniteState, Action]
          //
          // Extract a univariate distributions over updates
         
-         val sutUpdates = sut.map { (q_tt, _, _) => q_tt (os_t) (a_t) }.take (n)
-         val bdlUpdates = bdl.map { (q_tt, _, _) => q_tt (os_t) (a_t) }.take (n)
+         val sutUpdates = sut.map { (q_tt, _, _) => q_tt (os_t, a_t) }.take (n)
+         val bdlUpdates = bdl.map { (q_tt, _, _) => q_tt (os_t, a_t) }.take (n)
 
          val sutMean = sutUpdates.sum / n.toDouble
          val bdlMean = bdlUpdates.sum / n.toDouble

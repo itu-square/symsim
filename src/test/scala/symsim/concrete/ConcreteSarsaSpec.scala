@@ -34,7 +34,7 @@ class ConcreteSarsaSpec
 
 
   "initQ terminates, no stack overflow (regression)"  in {
-    sarsa.initialize.head
+    sarsa.initialize
   }
 
   // this test does not really prove the tail recursiveness,

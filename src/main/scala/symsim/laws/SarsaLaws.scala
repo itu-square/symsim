@@ -14,6 +14,8 @@ import org.scalacheck.util.Pretty.*
 import symsim.CanTestIn.*
 import symsim.Arith.*
 
+import scala.util.Try
+
 /**
  * Laws that have to be obeyed by any refinement of symsim.SARSA
  *
@@ -32,27 +34,23 @@ case class SarsaLaws[State, ObservableState, Action, Reward, Scheduler[_]]
    import sarsa.agent.instances.given
 
    def isStateTotal (q: sarsa.Q): Boolean =
-     q.keySet == sarsa.agent.instances.allObservableStates.toSet
+     q.states == sarsa.agent.instances.allObservableStates.toSet
 
    def isActionTotal (q: sarsa.Q): Boolean =
-     q.values.forall { _.keySet == sarsa.agent.instances.allActions.toSet }
+     q.states.forall { s =>
+       q.actionValues (s).keySet == sarsa.agent.instances.allActions.toSet }
 
    val laws: RuleSet = new SimpleRuleSet (
       "sarsa",
 
-      /* Law: Q matrix has a action-reward map for each finite state */
-      "initQ defined for all ObservableStates" -> isStateTotal (sarsa.initialize),
-
-      /* Law: Check that the initialization of Q matrix is correct */
-      "initQ defined for all Actions for each source state" ->
-      isActionTotal (sarsa.initialize),
-
       /* Law: All values in Q matrix are zeroReward initially */
       "initQ contains only zeroRewards" -> {
+         import sarsa.apply
+         val q = sarsa.initialize
          val props = for
-           vector <- sarsa.initialize.values
-           cell   <- vector.values
-         yield cell == sarsa.agent.zeroReward
+           s <- sarsa.agent.instances.allObservableStates
+           a <- sarsa.agent.instances.allActions
+         yield q (s, a) == sarsa.agent.zeroReward
          props.forall (identity)
       },
 
