@@ -13,7 +13,9 @@ trait ConcreteQTable[State, ObservableState, Action]
 
   def bestAction (q: Q) (s: ObservableState): Action =
     val qs = q.actionValues (s).map { _.swap }
-    qs (qs.keys.max)
+    if qs.isEmpty 
+      then agent.instances.allActions.head
+      else qs (qs.keys.max)
 
 
   def chooseAction (q: Q) (s: ObservableState): Randomized[Action] =
