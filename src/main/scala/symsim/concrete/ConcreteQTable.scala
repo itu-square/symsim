@@ -35,32 +35,26 @@ trait ConcreteQTable[State, ObservableState, Action]
     qToPolicy (this.runQ)
 
 
-  /** Convert the matrix Q after training into a Policy map. TODO: should not
-    * this be using the bestAction method? Or, why is the best action method
-    * abstract? Or is qToPolicy too concrete to be here?
-    */
+  /** Convert the matrix Q after training into a Policy map. */
   def qToPolicy (q: Q) (using Ordering[Double]): Policy =
-    def best (m: Map[Action, Double]): Action =
-      m.map { _.swap } (m.values.max)
-    q.view.mapValues (best).to (Map)
+    q.states.map { s => (s, bestAction (q) (s)) }.to (Map)
 
 
   /** We assume that all values define the same set of actions valuations.  */
   def pp_Q (q: Q): Doc =
     val headings = "" ::q
-      .values
-      .head
-      .keys
-      .map (_.toString)
+      .actions
+      .map { _.toString }
       .toList
       .sorted
     def fmt (s: ObservableState, m: Map[Action, Double]): List[String] =
       s.toString ::m
         .toList
-        .sortBy (_._1.toString)
+        .sortBy { _._1.toString }
         .map { _._2.toString.take (7).padTo (7,'0') }
     val rows = q
-        .toList
-        .sortBy (_._1.toString)
+        .states
+        .map { s => (s, q.actionValues (s)) }
+        .sortBy { _._1.toString }
         .map (fmt)
     symsim.tabulate (' ', " | ", headings ::rows, "-".some, "-+-".some)
