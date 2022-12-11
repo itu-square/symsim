@@ -12,7 +12,7 @@ trait ConcreteQTable[State, ObservableState, Action]
   import agent.instances.*
 
   def bestAction (q: Q) (s: ObservableState): Action =
-    val qs = q (s).map { _.swap }
+    val qs = q.actionValues (s).map { _.swap }
     qs (qs.keys.max)
 
 
