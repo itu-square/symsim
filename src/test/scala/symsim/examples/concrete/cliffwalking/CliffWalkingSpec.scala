@@ -13,9 +13,12 @@ import examples.concrete.cliffWalking.CliffWalking
 import symsim.concrete.ConcreteSarsa
 import symsim.concrete.Randomized
 
+// To eliminate the warning on CliffWalkingSpec, until scalacheck makes it open
+import scala.language.adhocExtensions
+
 /** Sanity tests for Randomized as a Scheduler */
 class CliffWalkingSpec
-  extends org.scalacheck.Properties("CliffWalking"):
+  extends org.scalacheck.Properties ("CliffWalking"):
 
     // Generators of test data
     val states = Gen.oneOf (CliffWalking.instances.enumState.membersAscending)
