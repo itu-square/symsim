@@ -16,7 +16,8 @@ class UnitAgentExperiments
   )
 
   s"UnitAgent test run with $sarsa (should not crash)" in {
-     learnAndLog (sarsa) should be (List (() -> ()).toMap)
+    val p: sarsa.Policy = learnAndLog (sarsa) 
+    (p.isEmpty || p (()) == ()) should be (true)
   }
 
   val qLearning = symsim.concrete.ConcreteQLearning (
@@ -28,5 +29,6 @@ class UnitAgentExperiments
   )
 
   s"UnitAgent test run with $qLearning (should not crash)" in {
-      learnAndLog (qLearning) should be (List (() -> ()).toMap)
+    val p: qLearning.Policy = learnAndLog (qLearning) 
+    (p.isEmpty || p (()) == ()) should be (true)
   }
