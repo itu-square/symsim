@@ -44,19 +44,20 @@ trait ConcreteQTable[State, ObservableState, Action]
 
   /** We assume that all values define the same set of actions valuations.  */
   def pp_Q (q: Q): Doc =
-    val headings = "" ::q
-      .actions
+    val actions = q.actions.toList.sortBy { _.toString }
+    val headings = "" :: actions
       .map { _.toString }
-      .toList
       .sorted
-    def fmt (s: ObservableState, m: Map[Action, Double]): List[String] =
+    def fmt (s: ObservableState, m: List[Double]): List[String] =
       s.toString ::m
-        .toList
-        .sortBy { _._1.toString }
-        .map { _._2.toString.take (7).padTo (7,'0') }
+        .map { _.toString.take (7).padTo (7, '0') }
     val rows = q
-        .states
-        .map { s => (s, q.actionValues (s)) }
-        .sortBy { _._1.toString }
-        .map (fmt)
-    symsim.tabulate (' ', " | ", headings ::rows, "-".some, "-+-".some)
+      .states
+      .sortBy { _.toString }
+      .map { s => (s, actions.map { q (s, _) }) }
+      .map (fmt)
+    assert (headings.nonEmpty)
+    if rows.nonEmpty then
+      symsim.tabulate (' ', " | ", headings ::rows, "-".some, "-+-".some)
+    else 
+      Doc.text ("The lazy Q table does not contain any states")
