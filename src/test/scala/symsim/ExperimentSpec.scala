@@ -10,16 +10,15 @@ trait ExperimentSpec[State, ObservableState, Action]
   org.scalatest.matchers.should.Matchers:
 
    def learnAndLog (setup: concrete.ConcreteExactRL[State, ObservableState, Action]
-     with ConcreteQTable[State, ObservableState, Action],
+                             & ConcreteQTable[State, ObservableState, Action],
      outputQTable: Boolean = true,
      outputPolicy: Boolean = true, 
-     outputToFile: Option[String] = None) =
+     outputToFile: Option[String] = None): setup.Policy =
 
      val q = setup.runQ
      val policy = setup.qToPolicy (q)
      val policyOutput = setup.pp_policy (policy)
      val qOutput = setup.pp_Q (q)
-
 
      outputToFile match
      case None => 

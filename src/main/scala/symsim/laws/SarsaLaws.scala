@@ -34,7 +34,7 @@ case class SarsaLaws[State, ObservableState, Action, Reward, Scheduler[_]]
    import sarsa.agent.instances.given
 
    def isStateTotal (q: sarsa.Q): Boolean =
-     q.states == sarsa.agent.instances.allObservableStates.toSet
+     q.states.toSet == sarsa.agent.instances.allObservableStates.toSet
 
    def isActionTotal (q: sarsa.Q): Boolean =
      q.states.forall { s =>
