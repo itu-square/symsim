@@ -3,23 +3,20 @@ package examples.concrete.golf
 
 import symsim.concrete.Randomized.given
 import CanTestIn.given
-import org.scalatest.*
-import prop.*
-import org.scalacheck.Gen
-import org.scalacheck.Prop.{exists, forAll, forAllNoShrink, propBoolean}
+import org.scalacheck.{Arbitrary, Gen, Prop}
+import org.scalacheck.Arbitrary.*
+import org.scalacheck.Prop.forAll
+import org.scalacheck.Prop.*
 import examples.concrete.golf.GolfState
 import examples.concrete.golf.Golf
 import symsim.concrete.ConcreteSarsa
 
+// To eliminate the warning on GolfSpec, until scalacheck makes it open
+import scala.language.adhocExtensions
+
 /** Sanity tests for Randomized as a Scheduler */
 class GolfSpec
-  extends org.scalatest.freespec.AnyFreeSpec,
-    org.scalatestplus.scalacheck.Checkers:
-
-  given PropertyCheckConfiguration =
-    PropertyCheckConfiguration(minSuccessful = 100)
-
-  "Sanity checks for symsim.concrete.golf" - {
+  extends org.scalacheck.Properties ("Golf"):
 
     // Generators of test data
     val states = Gen.choose[Int] (1, 10)
@@ -29,20 +26,20 @@ class GolfSpec
 
     // Tests
 
-    "There is no action that leads agent to initial state" in check {
+    property ("There is no action that leads agent to initial state") = {
       forAll (states, actions) { (s, a) =>
         for (s1, r) <- Golf.step (s) (a) yield s1 != 1
       }
     }
 
-    "Ball stuck in the sand until using club D" in check {
+    property ("Ball stuck in the sand until using club D") = {
       forAll(actions) { a =>
         for (s1, r) <- Golf.step (6) (a)
         yield ((a._1 != Club.D) ==> (s1 == 6))
       }
     }
 
-    "Q-table values are non-positive" in check {
+    property ("Q-table values are non-positive") = {
       forAllNoShrink (states, actions) { (s, a) =>
         for
           Q <- sarsa.learningEpisode (sarsa.initialize, s)
@@ -50,7 +47,7 @@ class GolfSpec
       }
     }
 
-    "Using club D in the sand is the best" in check {
+    property ("Using club D in the sand is the best") = {
       forAllNoShrink (states, actions) { (s, a) =>
         for
           Q <- sarsa.learningEpisode (sarsa.initialize, s)
@@ -58,13 +55,11 @@ class GolfSpec
       }
     }
 
-    "shooting into the sand is not a good choice" in check {
-      forAllNoShrink (states, actions) { (s, a) =>
-        for
-          Q <- sarsa.learningEpisode (sarsa.initialize, s)
-        yield (Q (2) ((Club.D, Direction.L)) >= Q (2) ((Club.D, Direction.R))) &&
-                (Q (4) ((Club.P, Direction.L)) >= Q (4) ((Club.P, Direction.R)))
-      }
-    }
-
-  }
+//    property ("shooting into the sand is not a good choice") = {
+//      forAllNoShrink (states, actions) { (s, a) =>
+//        for
+//          Q <- sarsa.learningEpisode (sarsa.initialize, s)
+//        yield (Q (2) ((Club.D, Direction.L)) >= Q (2) ((Club.D, Direction.R))) &&
+//                (Q (4) ((Club.P, Direction.L)) >= Q (4) ((Club.P, Direction.R)))
+//      }
+//    }
