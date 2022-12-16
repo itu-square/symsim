@@ -5,21 +5,18 @@ import symsim.concrete.Randomized.given
 import CanTestIn.given
 import CanTestIn.*
 
-import org.scalatest.*
-import prop.*
+import org.scalacheck.{Arbitrary, Gen, Prop}
 import org.scalacheck.Arbitrary.*
-import org.scalacheck.Gen
-import org.scalatest.prop.Whenever
-import org.scalacheck.Prop.{forAll, forAllNoShrink, propBoolean, exists}
+import org.scalacheck.Prop.forAll
+import org.scalacheck.Prop.*
 import examples.concrete.pumping.*
 
-/** Sanity tests for Randomized as a Scheduler */
+// To eliminate the warning on Pumping, until scalacheck makes it open
+import scala.language.adhocExtensions
+
+
 class PumpSpec
-  extends org.scalatest.freespec.AnyFreeSpec,
-    org.scalatestplus.scalacheck.Checkers:
-
-
-  "Sanity checks for symsim.concrete.pumping" - {
+  extends org.scalacheck.Properties ("Pumping"):
 
     // Generators of test data
     val flow = Gen.choose[Double] (FLOW_MIN, FLOW_MAX)
@@ -35,7 +32,7 @@ class PumpSpec
 
     // Tests
 
-    "The tank level never can be negative" in check {
+    property ("The tank level never can be negative") = {
       forAll (flow, head, head_mean, tank, time, water, past_head_mean, actions) {
         (f, h, hm, tl, t, w, phm, a) =>
         for (s1, r) <- Pump.step (PumpState (f, h, hm, tl, t, w, phm)) (a)
@@ -43,28 +40,28 @@ class PumpSpec
       }
     }
 
-    "There is an observable state for each valid state in the environment" in check {
-      forAllNoShrink (flow, head, head_mean, tank, time, water, past_head_mean, actions) {
+    property ("There is an observable state for each valid state in the environment") = {
+      forAll (flow, head, head_mean, tank, time, water, past_head_mean, actions) {
         (f, h, hm, tl, t, w, phm, a) =>
           val (s1, r) = Pump.step (PumpState (f, h, hm, tl, t, w, phm)) (a).head
-          exists (obsStates) {s => s == Pump.discretize (s1)}
+          exists (obsStates) {s => s == Pump.observe (s1)}
       }
     }
 
-    "The time can be more than TANK_MAX (comparing is not correct)" in check {
+    property ("The time can be more than TANK_MAX (comparing is not correct)") = {
       exists (time) { t =>
         t > TANK_MAX
       }
     }
 
-    "Test getDemand" in check {
-      forAllNoShrink (time) { t1 =>
+    property ("Test getDemand") = {
+      forAll (time) { t1 =>
         exists (time) {t2 => Pump.getDemand (t1) != Pump.getDemand (t2)}
       }
     }
 
-    "There is an action for each state which results no overflow" in check {
-      forAllNoShrink(flow, head, head_mean, tank, time, water, past_head_mean) {
+    property ("There is an action for each state which results no overflow") = {
+      forAll (flow, head, head_mean, tank, time, water, past_head_mean) {
         (f, h, hm, tl, t, w, phm) =>
           exists(actions) { a =>
             for (s1, r) <- Pump.step(PumpState(f, h, hm, tl, t, w, phm))(a)
@@ -72,5 +69,3 @@ class PumpSpec
           }
       }
     }
-
-  }
