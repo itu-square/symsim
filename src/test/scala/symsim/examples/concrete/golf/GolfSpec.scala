@@ -33,14 +33,14 @@ class GolfSpec
     }
 
     property ("Ball stuck in the sand until using club D") = {
-      forAll(actions) { a =>
+      forAll (actions) { a =>
         for (s1, r) <- Golf.step (6) (a)
         yield ((a._1 != Club.D) ==> (s1 == 6))
       }
     }
 
     property ("Q-table values are non-positive") = {
-      forAllNoShrink (states, actions) { (s, a) =>
+      forAll (states, actions) { (s, a) =>
         for
           Q <- sarsa.learningEpisode (sarsa.initialize, s)
         yield Q (s) (a) <= 0
@@ -48,7 +48,7 @@ class GolfSpec
     }
 
     property ("Using club D in the sand is the best") = {
-      forAllNoShrink (states, actions) { (s, a) =>
+      forAll (states, actions) { (s, a) =>
         for
           Q <- sarsa.learningEpisode (sarsa.initialize, s)
         yield sarsa.bestAction (Q) (6)._1 == Club.D
