@@ -110,10 +110,11 @@ trait AgentConstraints[State, ObservableState, Action, Reward, Scheduler[_]]:
   given arbitraryState: Arbitrary[State]
 
   /** We can generate random finite states for testing */
-  given Arbitrary[ObservableState] = Arbitrary (Gen.oneOf (allObservableStates))
+  given asbitraryObservableState: Arbitrary[ObservableState] = 
+    Arbitrary (Gen.oneOf (allObservableStates))
 
   /** We can generate random actions for testing */
-  given Arbitrary[Action] = Arbitrary (Gen.oneOf (allActions))
+  given arbitraryAction: Arbitrary[Action] = Arbitrary (Gen.oneOf (allActions))
 
   /** We can generate randome Reward values */
   given arbitraryReward: Arbitrary[Reward]
