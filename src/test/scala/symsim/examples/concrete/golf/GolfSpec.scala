@@ -54,12 +54,3 @@ class GolfSpec
         yield sarsa.bestAction (Q) (6)._1 == Club.D
       }
     }
-
-//    property ("shooting into the sand is not a good choice") = {
-//      forAllNoShrink (states, actions) { (s, a) =>
-//        for
-//          Q <- sarsa.learningEpisode (sarsa.initialize, s)
-//        yield (Q (2) ((Club.D, Direction.L)) >= Q (2) ((Club.D, Direction.R))) &&
-//                (Q (4) ((Club.P, Direction.L)) >= Q (4) ((Club.P, Direction.R)))
-//      }
-//    }
