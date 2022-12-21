@@ -1,12 +1,12 @@
-package symsim
-package examples.concrete.windygrid
+package symsim.examples.concrete.windygrid
 
-import symsim.concrete.Randomized.given
-import CanTestIn.given
 import org.scalacheck.Gen
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Prop.*
+
+import symsim.concrete.Randomized.given
 import symsim.concrete.ConcreteSarsa
+import symsim.CanTestIn.given
 
 // To eliminate the warning on WindyGird, until scalacheck makes it open
 import scala.language.adhocExtensions
