@@ -14,40 +14,30 @@ import scala.language.adhocExtensions
 class WindyGridSpec
   extends org.scalacheck.Properties ("WindyGrid"):
 
-  // Generators of test data
-
-  val xs = Gen.choose[Int] (1, 10)
-  val ys = Gen.choose[Int] (1, 7)
-  val actions = Gen.oneOf (WindyGrid.instances.enumAction.membersAscending)
-
-  // Tests
+  import WindyGrid.instances.{arbitraryAction, arbitraryState}
 
   property ("Up and Down will never affect the x value") =
-    forAll (xs, ys) { (x, y) =>
-      for
-        (s1, r) <- WindyGrid.step (GridState (x, y)) (GridAction.U)
-        (s2, r) <- WindyGrid.step (GridState (x, y)) (GridAction.D)
-      yield s1._1 == x && s2._1 == x
+    forAll { (s: GridState) => for
+        (s1, r) <- WindyGrid.step (s) (GridAction.U)
+        (s2, r) <- WindyGrid.step (s) (GridAction.D)
+      yield s1._1 == s.x && s2._1 == s.x
     }
 
-  property ("When there is wind, R will affect both x and y unless in the y's upper bound") =
-    forAll (xs, ys) { (x, y) =>
-      for
-        (s1, r) <- WindyGrid.step (GridState (x, y)) (GridAction.R)
-      yield (x >= 4 && x <= 8 && y <= 6) ==> (s1._1 != x && s1._2 != y)
+  property ("If wind, R affects both x and y unless in the y's upper bound") =
+    forAll { (s: GridState) => for 
+      (s1, r) <- WindyGrid.step (s) (GridAction.R)
+      yield (s.x >= 4 && s.x <= 8 && s.y <= 6) ==> (s1._1 != s.x && s1._2 != s.y)
     }
 
-  property ("When there is wind, L will affect both x and y unless in the y's upper bound") =
-    forAll (xs, ys) { (x, y) =>
-      for
-        (s1, r) <- WindyGrid.step (GridState (x, y)) (GridAction.L)
-      yield (x >= 4 && x <= 8 && y <= 6) ==> (s1._1 != x && s1._2 != y)
+  property ("If wind, L affects both x and y unless in the y's upper bound") =
+    forAll { (s: GridState) =>
+      for (s1, r) <- WindyGrid.step (s) (GridAction.L)
+      yield (s.x >= 4 && s.x <= 8 && s.y <= 6) ==> (s1._1 != s.x && s1._2 != s.y)
     }
 
   property ("Q-table values are non-positive") =
-    val sarsa = ConcreteSarsa (WindyGrid, 0.1, 1, 0.05, 100000)
-    forAll (xs, ys, actions) { (x, y, a) =>
-      for
-        Q <- sarsa.learningEpisode (sarsa.initialize, GridState (x, y))
-      yield Q (GridState (x, y)) (a) <= 0
+    val sarsa = ConcreteSarsa (WindyGrid, 0.1, 0.5, 0.1, 100)
+    forAll { (s: GridState, a: GridAction) =>
+      for Q <- sarsa.learningEpisode (sarsa.initialize, s)
+      yield Q (s, a) <= 0
     }

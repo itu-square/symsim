@@ -2,7 +2,7 @@ package symsim
 package examples.concrete.windygrid
 
 class Experiments
-  extends ExperimentSpec[GridState, GridObservableState, GridAction.Value]:
+  extends ExperimentSpec[GridState, GridObservableState, GridAction]:
 
   // Import evidence that states and actions can be enumerated
   import WindyGrid.*
