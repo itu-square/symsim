@@ -66,6 +66,9 @@ object Randomized:
       between (0, choices.size)
          .map { i => choices (i) }
 
+   def eachOf[A] (choices: A*): Randomized[A] = 
+     LazyList(choices*)
+
    def repeat[A] (ra: =>Randomized[A]): Randomized[A] =
       LazyList.continually (ra).flatten
 
