@@ -7,7 +7,7 @@ class Experiments
    val sarsa = symsim.concrete.ConcreteSarsa (
      agent = Maze,
      alpha = 0.1,
-     gamma = 0.5,
+     gamma = 1,
      epsilon = 0.05,
      episodes = 140000,
    )
