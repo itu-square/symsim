@@ -5,6 +5,7 @@ import org.scalacheck.Prop.*
 
 import symsim.CanTestIn.given
 import symsim.concrete.ConcreteSarsa
+import symsim.concrete.Randomized
 import symsim.concrete.Randomized.given
 
 // Eliminate the warning on GolfSpec until scalacheck marks Properties it open
@@ -15,7 +16,8 @@ class GolfSpec
 
   import Golf.instances.{arbitraryState, arbitraryAction}
 
-  val sarsa = ConcreteSarsa (Golf, 0.1, 0.1, 0.1, 100000)
+  // The number of episodes set to zero, as it is ignored in tests below
+  val sarsa = ConcreteSarsa (Golf, 0.1, 0.1, 0.1, 0)
 
   property ("There is no action that leads agent to initial state") =
     forAll { (s: GolfState, a: GolfAction) =>
@@ -35,8 +37,7 @@ class GolfSpec
       yield Q (s, a) <= 0
     }
 
-  property ("Using club D in the sand is the best trained action") =
-    forAll { (s: GolfState, a: GolfAction) =>
-      for Q <- sarsa.learningEpisode (sarsa.initialize, s)
-      yield sarsa.bestAction (Q) (6)._1 == Club.D
-    }
+  property ("Using club D in the sand is the best trained action after 100 episodes") =
+    val initials = Randomized.repeat(Randomized.const(Golf.StartState)).take(200)
+    val Q = sarsa.learn (sarsa.initialize, initials)
+    Q.take(50).forall { Q => sarsa.bestAction (Q) (Golf.SandState)._1 == Club.D }

@@ -4,14 +4,15 @@ import org.scalacheck.Gen
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Prop.*
 
-import symsim.concrete.Randomized.given
-import symsim.concrete.ConcreteSarsa
 import symsim.CanTestIn.given
+import symsim.concrete.ConcreteSarsa
+import symsim.concrete.Randomized
+import symsim.concrete.Randomized.given
 
 // To eliminate the warning on WindyGird, until scalacheck makes it open
 import scala.language.adhocExtensions
 
-class WindyGridSpec
+object WindyGridSpec
   extends org.scalacheck.Properties ("WindyGrid"):
 
   import WindyGrid.instances.{arbitraryAction, arbitraryState}
@@ -37,10 +38,12 @@ class WindyGridSpec
     }
 
   // The test runs 1 episode regardless the last argument value (`episodes`)
+  // The fixture has to be setup here, as otherwise the parallelization seems
+  // to rerun training multiple times (if it is put inside the property)
   val sarsa = ConcreteSarsa (WindyGrid, 0.1, 0.5, 0.1, 1)
+  val initials = Randomized.eachOf(WindyGrid.instances.allObservableStates*)
+  val Qs = sarsa.learn (sarsa.initialize, initials).take(5).toList
 
   property ("Q-table values are non-positive") =
-    forAll { (s: GridState, a: GridAction) =>
-      for Q <- sarsa.learningEpisode (sarsa.initialize, s)
-      yield Q (s, a) <= 0
-    }
+    forAll { (s: GridState, a: GridAction) => 
+      Qs.forall { Q => Q (s, a) <= 0 } }
