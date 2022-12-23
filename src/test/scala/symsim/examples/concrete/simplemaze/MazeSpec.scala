@@ -11,7 +11,7 @@ import Maze.instances.{arbitraryState, arbitraryAction}
 // Eliminate the warning on MazeSpec, until scalacheck makes Properties open
 import scala.language.adhocExtensions
 
-class MazeSpec
+object MazeSpec
   extends org.scalacheck.Properties ("simplemaze.Maze"):
 
   property ("Agent near to left wall, cannot go left") =
