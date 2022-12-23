@@ -35,6 +35,11 @@ import symsim.concrete.Randomized
  */
 
 type MazeState = (Int,Int)
+
+extension (s: MazeState)
+  inline def x: Int = s._1
+  inline def y: Int = s._2
+
 type MazeObservableState = MazeState
 type MazeReward = Double
 
