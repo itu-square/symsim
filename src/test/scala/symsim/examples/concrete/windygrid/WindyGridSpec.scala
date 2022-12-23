@@ -8,13 +8,13 @@ import symsim.concrete.ConcreteSarsa
 import symsim.concrete.Randomized
 import symsim.concrete.Randomized.given
 
-// To eliminate the warning on WindyGridSpec, until scalacheck makes it open
+import WindyGrid.instances.{arbitraryAction, arbitraryState}
+
+// Eliminate the warning on WindyGridSpec until scalacheck makes Properties open
 import scala.language.adhocExtensions
 
 object WindyGridSpec
   extends org.scalacheck.Properties ("WindyGrid"):
-
-  import WindyGrid.instances.{arbitraryAction, arbitraryState}
 
   property ("Up and Down will never affect the x value") =
     forAll { (s: GridState) => 
