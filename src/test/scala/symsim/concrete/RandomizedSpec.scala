@@ -104,36 +104,35 @@ class RandomizedSpec
      * the current implementation of Randomized.
      */
     "Randomized is referentially transparent (failing)" ignore {
-        assert (
-           Randomized.repeat (Randomized.between(1,100)).take (10).toList ==
-           Randomized.repeat (Randomized.between(1,100)).take (10).toList
-        )
+      assert (
+        Randomized.repeat (Randomized.between(1,100)).take (10).toList ==
+        Randomized.repeat (Randomized.between(1,100)).take (10).toList
+      )
     }
 
     "Randomized.gaussian (m, d) has stddev 'd' and mean 'm'" in check {
 
-       val n = 10000
-       val epsilon = 0.05
+      val n = 20000
+      val epsilon = 0.06
 
-       forAllNoShrink (Gen.choose (-100.0, +100.0), Gen.choose(0.001,+3.0)) {
-          (m: Double, d: Double) =>
-             val sample = Randomized.repeat (Randomized.gaussian (mean = m, stddev = d)).take (n)
-             val mean = sample.sum / n
-             val variance = sample.map { x => (x-mean)*(x-mean) }.sum / n
-             ("Mean"   |: Math.abs (mean/m - 1.0) <= epsilon) &&
-             ("StdDev" |: Math.abs (Math.sqrt (variance)/d - 1.0) <= epsilon)
-       }
+      forAllNoShrink (Gen.choose (-100.0, +100.0), Gen.choose(0.001,+3.0)) {
+        (m: Double, d: Double) =>
+          val sample = Randomized.repeat (Randomized.gaussian (mean = m, stddev = d)).take (n)
+          val mean = sample.sum / n
+          val variance = sample.map { x => (x-mean)*(x-mean) }.sum / n
+          ("Mean"   |: Math.abs (mean/m - 1.0) <= epsilon) &&
+          ("StdDev" |: Math.abs (Math.sqrt (variance)/d - 1.0) <= epsilon)
+      }
     }
-
   }
 
   "Randomized Foldable Instance" - {
 
     "check that foldLeft works (sum)" in {
-       val r = Randomized.repeat (Randomized.oneOf (1)).take (C)
-       val sum = Randomized.randomizedIsFoldable
-          .foldLeft[Int, Int] (r, 0) { _ + _ }
-       assert (sum == C)
+      val r = Randomized.repeat (Randomized.oneOf (1)).take (C)
+      val sum = Randomized.randomizedIsFoldable
+        .foldLeft[Int, Int] (r, 0) { _ + _ }
+      assert (sum == C)
     }
   }
 
