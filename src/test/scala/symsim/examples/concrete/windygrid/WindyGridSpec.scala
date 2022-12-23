@@ -1,7 +1,6 @@
 package symsim.examples.concrete.windygrid
 
 import org.scalacheck.Gen
-import org.scalacheck.Prop.forAll
 import org.scalacheck.Prop.*
 
 import symsim.CanTestIn.given
@@ -9,7 +8,7 @@ import symsim.concrete.ConcreteSarsa
 import symsim.concrete.Randomized
 import symsim.concrete.Randomized.given
 
-// To eliminate the warning on WindyGird, until scalacheck makes it open
+// To eliminate the warning on WindyGridSpec, until scalacheck makes it open
 import scala.language.adhocExtensions
 
 object WindyGridSpec
