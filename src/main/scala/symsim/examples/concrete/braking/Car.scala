@@ -112,8 +112,8 @@ object CarInstances
     concrete.Randomized.canTestInRandomized
 
   lazy val genCarState: Gen[CarState] = for
-     v <- Gen.choose (0.0, Double.MaxValue)
-     p <- Gen.choose (0.0, Double.MaxValue)
+     v <- Gen.choose (0.0, 10.0)
+     p <- Gen.choose (0.0, 10.0)
   yield CarState (v, p)
 
   given arbitraryState: Arbitrary[CarState] = Arbitrary (genCarState)

@@ -14,7 +14,7 @@ import org.scalacheck.Prop.{forAll, forAllNoShrink, propBoolean, exists}
 import examples.concrete.braking.CarState
 import examples.concrete.braking.Car
 
-/** Sanity tests for Randomized as a Scheduler */
+/** Sanity tests for symsim.concrete.braking */
 class CarSpec
   extends org.scalatest.freespec.AnyFreeSpec,
     org.scalatestplus.scalacheck.Checkers:
@@ -24,52 +24,45 @@ class CarSpec
 
   "Sanity checks for symsim.concrete.braking" - {
 
-    // Generators of test data
-    val positions = Gen.choose[Double] (0.0, 10.0)
-    val velocities = Gen.choose[Double] (0.0,10.0)
-    val actions = Gen.oneOf (Car.instances.enumAction.membersAscending)
+    import Car.instances.{arbitraryState, arbitraryAction}
 
     // Tests
 
     "A stopped car cannot move, however much you break" in check {
-      forAll (positions, actions) { (p, a) =>
-        for (s1, r) <- Car.step (CarState (v = 0.0, p = p)) (a)
-        yield s1.p == p
+      forAll { (s: CarState, a: CarAction) =>
+        for (s1, r) <- Car.step (s.copy (v = 0.0)) (a)
+        yield s1.p == s.p
       }
     }
 
     "The car cannot move backwards by braking" in check {
-      forAll (velocities, positions, actions) { (v, p, a) =>
-        for (s1, r) <- Car.step (CarState (v, p = p)) (a)
-        yield (v != 0 ==> s1.p >= p)
+      forAll { (s: CarState, a: CarAction) =>
+        for (s1, r) <- Car.step (s) (a)
+        yield (s.v != 0 ==> s1.p >= s.p)
       }
     }
 
     "Position never becomes negative" in check {
-      forAll (velocities, positions, actions) { (v, p, a) =>
-        for (s1, r) <- Car.step (CarState (v = v, p = p)) (a)
+      forAll { (s: CarState, a: CarAction) =>
+        for (s1, r) <- Car.step (s) (a)
         yield s1.p >= 0.0
       }
     }
 
 
     "Reward is valid 1" in check {
-      forAll  (positions, positions, velocities, actions) { (p1, p2, v, a) =>
-        for
-          (_, r1) <- Car.step (CarState (v = v, p = p1)) (a)
-          (_, r2) <- Car.step (CarState (v = v, p = p2)) (a)
-        yield p1 <= p2 ==> r1 >= r2
-      }
-    }
+      forAll  { (s1: CarState, s2: CarState, a: CarAction) => for
+        (_, r1) <- Car.step (CarState (v = s1.v, p = s1.p min s2.p)) (a)
+        (_, r2) <- Car.step (CarState (v = s1.v, p = s1.p max s2.p)) (a)
+      yield r1 >= r2
+    } }
 
 
     "Reward is valid 2" in check {
-      forAll  (velocities, velocities, positions, actions) { (v1, v2, p, a) =>
-        for
-          (_, r1) <- Car.step (CarState (v1, p)) (a)
-          (_, r2) <- Car.step (CarState (v2, p)) (a)
-        yield v1 <= v2 ==> r1 >= r2
-      }
-    }
+      forAll { (s1: CarState, s2: CarState, a: CarAction) => for
+        (_, r1) <- Car.step (CarState (v = s1.v min s2.v, p = s1.p)) (a)
+        (_, r2) <- Car.step (CarState (v = s1.v max s2.v, p = s1.p)) (a)
+      yield r1 >= r2
+    } }
 
   }
