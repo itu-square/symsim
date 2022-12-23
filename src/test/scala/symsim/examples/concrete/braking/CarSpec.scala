@@ -7,14 +7,14 @@ import org.scalacheck.Prop.*
 import symsim.CanTestIn.given
 import symsim.concrete.Randomized.given
 
+import Car.instances.{arbitraryState, arbitraryAction}
+
 // To eliminate the warning on CarSpec, until scalacheck makes it open
 import scala.language.adhocExtensions
 
 /** Sanity tests for symsim.concrete.braking */
 object CarSpec
   extends org.scalacheck.Properties ("braking.Car"):
-
-  import Car.instances.{arbitraryState, arbitraryAction}
 
   property("A stopped car cannot move, however much you break") = 
     forAll { (s: CarState, a: CarAction) =>
