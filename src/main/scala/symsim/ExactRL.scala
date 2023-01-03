@@ -26,7 +26,6 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
   val agent: Agent[State, ObservableState, Action, Reward, Scheduler]
 
   def alpha: Double
-  def gamma: Double
 
   /** A single step of the learning algorithm
     *

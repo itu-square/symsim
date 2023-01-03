@@ -11,6 +11,8 @@ trait QLearning[State, ObservableState, Action, Reward, Scheduler[_]]
 
   import agent.instances.given
 
+  def gamma: Double
+
   /** A single step of the learning algorithm
     *
     * @param q the last Q-matrix
