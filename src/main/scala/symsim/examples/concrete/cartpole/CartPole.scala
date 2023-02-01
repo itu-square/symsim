@@ -17,7 +17,7 @@ type CartPoleReward = Double
 
 def closest (value: Double) (cutPoints: List[Double]): Double =
   cutPoints
-    .find { value >= _ }
+    .find { value <= _ }
     .getOrElse (cutPoints.last)
 
 val CP_MIN = -4.8
@@ -28,12 +28,11 @@ val PA_MIN = -0.418
 val PA_MAX = 0.418
 val PV_MIN = -Double.MaxValue
 val PV_MAX = Double.MaxValue
-val T_MAX  = 200
 
-val cPCutPoints = List (CP_MIN, -3.84, -2.88, -1.92,-0.96, 0, 0.96, 1.92, 2.88, 3.84, CP_MAX)
-val cVCutPoints = List (CV_MIN, -800, -600, -400, -200, 0, 200, 400, 600, 800, CV_MAX)
-val pACutPoints = List (PA_MIN, -0.3344, -0.2508, -0.1672, -0.0836, 0, 0.0836, 0.1672, 0.2508, 0.3344, PA_MAX)
-val pVCutPoints = List (PV_MIN, -800, -600, -400, -200, 0, 200, 400, 600, 800, PV_MAX)
+val cPCutPoints = List (CP_MIN, -2.4, -1.0, -0.5,-0.2, -0.1, 0, 0.1, 0.2, 0.5, 1.0, 2.4, CP_MAX)
+val cVCutPoints = List (CV_MIN, -2, -1.5, -1.0, -0.7, -0.5, 0, 0.5, 0.7, 1.0, 1.5, 2, CV_MAX)
+val pACutPoints = List (PA_MIN, -0.2, -0.15, -0.1, -0.05, 0, 0.05, 0.1, 0.15, 0.2, PA_MAX)
+val pVCutPoints = List (PV_MIN, -2, -1.5, -1.0, -0.7, -0.5, 0, 0.5, 0.7, 1.0, 1.5, 2, PV_MAX)
 
 object CartPole
   extends Agent[CartPoleState, CartPoleObservableState, CartPoleAction, CartPoleReward, Randomized]
@@ -69,10 +68,6 @@ object CartPole
 
 
     def observe (s: CartPoleState): CartPoleObservableState =
-//      val dcp = s.cp
-//      val dcv = s.cv
-//      val dpa = s.pa
-//      val dpv = s.pv
       val dcp = closest (s.cp) (cPCutPoints)
       val dcv = closest (s.cv) (cVCutPoints)
       val dpa = closest (s.pa) (pACutPoints)
@@ -103,6 +98,7 @@ object CartPole
       val cv1 = s.cv + tau * xacc
       val pa1 = s.pa + tau * s.pv
       val pv1 = s.pv + tau * thetaacc
+
 
       val s1 = CartPoleState (cp = cp1, cv = cv1, pa = pa1, pv = pv1)
       Randomized.const (s1, cartPoleReward (s1) (a))
@@ -159,7 +155,6 @@ object CartPoleInstances
     cv <- Gen.choose[Double] (CV_MIN, CV_MIN)
     pa <- Gen.choose[Double] (PA_MIN, PA_MAX)
     pv <- Gen.choose[Double] (PV_MIN, PV_MAX)
-    t <- Gen.choose[Int](0, T_MAX)
   yield CartPoleState (cp, cv, pa, pv)
 
   given arbitraryState: Arbitrary[CartPoleState] = Arbitrary (genCartPoleState)
