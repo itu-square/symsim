@@ -21,9 +21,9 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
   extends RL[ObservableState, Action],
     ValueFunction[ObservableState, Action, Reward, Scheduler]:
 
-  import agent.instances.given
-
   val agent: Agent[State, ObservableState, Action, Reward, Scheduler]
+
+  import agent.instances.given
 
   def alpha: Double
 

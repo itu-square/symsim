@@ -11,6 +11,9 @@ trait ConcreteQTable[State, ObservableState, Action]
 
   import agent.instances.*
 
+  def value (q: Q) (s: ObservableState, a: Action): Double = 
+    q (s, a)
+
   def bestAction (q: Q) (s: ObservableState): Action =
     val qs = q.actionValues (s).map { _.swap }
     if qs.isEmpty 
