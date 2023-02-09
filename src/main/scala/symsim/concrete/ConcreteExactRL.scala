@@ -4,7 +4,7 @@ package concrete
 import cats.kernel.BoundedEnumerable
 
 trait ConcreteExactRL[State, ObservableState, Action]
-   extends ExactRL[State, ObservableState, Action, Double, Randomized]:
+  extends ExactRL[State, ObservableState, Action, Double, Randomized]:
 
   import agent.instances.*
 

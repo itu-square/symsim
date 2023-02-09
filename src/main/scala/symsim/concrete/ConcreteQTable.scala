@@ -14,6 +14,12 @@ trait ConcreteQTable[State, ObservableState, Action]
   def value (q: Q) (s: ObservableState, a: Action): Double = 
     q (s, a)
 
+  def probability (q: Q) (s: ObservableState, a: Action): Double = 
+    if a == bestAction (q) (s) 
+    then 1 - this.epsilon + this.epsilon / this.agent.instances.numberOfActions
+    else  this.epsilon / this.agent.instances.numberOfActions
+
+
   def bestAction (q: Q) (s: ObservableState): Action =
     val qs = q.actionValues (s).map { _.swap }
     if qs.isEmpty 
