@@ -1,13 +1,14 @@
 package symsim
 package concrete
 
+/** A BDL term for an estimation step. */
 enum Est: 
   case Sample (gamma: Double)
   case Expectation (gamma: Double)
 
   def γ: Double = this match 
-  case Sample (gamma) => gamma
-  case Expectation (gamma) => gamma
+    case Sample (gamma) => gamma
+    case Expectation (gamma) => gamma
 
 import Est.*
 
@@ -18,7 +19,6 @@ import Est.*
  *  @param update the final update --- the last step in the diagram
  */
 case class Update (est: List[Est], alpha: Double, update: Est):
-
   def α: Double = this.alpha
 
 
@@ -48,9 +48,9 @@ case class BDLLearn[State, ObservableState, Action] (
    *          reward difference (the size of the update performed)
    */
   def learningEpoch (q: VF, s_t: State, a_t: Action)
-    : Randomized[(VF, State, Action)] = ???
+    : Randomized[(VF, State, Action)] =
     for
-      // sa_tt <- agent.step (s_t) (a_t)
+      sa_tt <- agent.step (s_t) (a_t) // TODO, dummy to compile
       // (s_tt, r_tt) = sa_tt
       // // SARSA: on-policy (p.844 in Russel & Norvig)
       // a_tt <- chooseAction (q) (agent.observe (s_tt))
@@ -62,7 +62,43 @@ case class BDLLearn[State, ObservableState, Action] (
       // qval = old_entry + alpha * correction
 
       // q1 = q.updated (ds_t, a_t, qval)
-    yield (q1, s_tt, a_tt)
+    yield ??? // (q1, s_tt, a_tt)
 
 
-    def est (est: List[Est]) (q: VF) (s_t: State, a_t: Action, 0?, 1?): ??? = ???
+  /** Semantics of a single estimation step.
+   *
+   *  @param est the step term we are interpreting
+   *  @param q   the current value function (like a Q-table)
+   *  @param s_t the previous concrete state 
+   *  @param a_t the previously decided next action to execute 
+   *  @param g_t the accumulated reward (with discounting)
+   *  @param γ_t the accumulated discount factor
+   *  @return the next state, the next action to execute, the
+   *          accumulated reward value, and the accumulated discount 
+   *          factor.
+   */
+  def est (est: Est) (q: VF) (s_t: State, a_t: Action, g_t: Double, γ_t: Double)
+    : Randomized[(State, Action, Double, Double)]= est match 
+
+    case Sample (γ) => 
+      for 
+        sr_tt        <- agent.step (s_t) (a_t)
+        (s_tt, r_tt) = sr_tt
+        a_tt         <- chooseAction (q) (agent.observe (s_tt))
+        g_tt         = g_t + γ_t * r_tt
+        γ_tt         = γ_t * γ
+      yield (s_tt, a_tt, g_tt, γ_tt)
+
+    case Expectation (γ) => 
+      for 
+        sr_tt        <- agent.step (s_t) (a_t)
+        (s_tt, r_tt) = sr_tt
+        os_tt        = agent.observe (s_tt)
+        a_tt         <- chooseAction (q) (os_tt)
+        expectation  = agent.instances.allActions
+                         .filter { _ != a_tt }
+                         .map { a => probability (q) (os_tt, a) * value (q) (os_tt, a) }
+                         .sum
+        g_tt         = g_t + γ_t * (r_tt + expectation) 
+        γ_tt         = γ_t * γ * probability (q) (os_tt, a_tt)
+      yield (s_tt, a_tt, g_tt, γ_tt)
