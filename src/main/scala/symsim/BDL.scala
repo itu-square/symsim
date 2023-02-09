@@ -1,6 +1,8 @@
 package symsim
 package concrete
 
+import cats.Foldable
+import cats.syntax.foldable.*
 /** A BDL term for an estimation step. */
 enum Est: 
   case Sample (gamma: Double)
@@ -64,6 +66,15 @@ case class BDLLearn[State, ObservableState, Action] (
       // q1 = q.updated (ds_t, a_t, qval)
     yield ??? // (q1, s_tt, a_tt)
 
+  /** Semantics of a sequence of estimation steps. */
+  def sem (ests: List[Est]) (q_t: VF) 
+    (s_t: State, a_t: Action, g_t: Double, γ_t: Double)
+    : Randomized[(State, Action, Double, Double)]= 
+
+    ests.foldM[Randomized, (State, Action, Double, Double)]
+      (s_t, a_t, g_t, γ_t)
+      { case ((s_t, a_t, g_t, γ_t), e) => sem (e) (q_t) (s_t, a_t, g_t, γ_t) }
+
 
   /** Semantics of a single estimation step.
    *
@@ -77,14 +88,15 @@ case class BDLLearn[State, ObservableState, Action] (
    *          accumulated reward value, and the accumulated discount 
    *          factor.
    */
-  def est (est: Est) (q: VF) (s_t: State, a_t: Action, g_t: Double, γ_t: Double)
+  def sem (est: Est) (q_t: VF) 
+    (s_t: State, a_t: Action, g_t: Double, γ_t: Double)
     : Randomized[(State, Action, Double, Double)]= est match 
 
     case Sample (γ) => 
       for 
         sr_tt        <- agent.step (s_t) (a_t)
         (s_tt, r_tt) = sr_tt
-        a_tt         <- chooseAction (q) (agent.observe (s_tt))
+        a_tt         <- chooseAction (q_t) (agent.observe (s_tt))
         g_tt         = g_t + γ_t * r_tt
         γ_tt         = γ_t * γ
       yield (s_tt, a_tt, g_tt, γ_tt)
@@ -94,11 +106,12 @@ case class BDLLearn[State, ObservableState, Action] (
         sr_tt        <- agent.step (s_t) (a_t)
         (s_tt, r_tt) = sr_tt
         os_tt        = agent.observe (s_tt)
-        a_tt         <- chooseAction (q) (os_tt)
+        a_tt         <- chooseAction (q_t) (os_tt)
         expectation  = agent.instances.allActions
-                         .filter { _ != a_tt }
-                         .map { a => probability (q) (os_tt, a) * value (q) (os_tt, a) }
-                         .sum
+                       .filter { _ != a_tt }
+                       .map { a => 
+                         probability (q_t) (os_tt, a) * value (q_t) (os_tt, a) }
+                       .sum
         g_tt         = g_t + γ_t * (r_tt + expectation) 
-        γ_tt         = γ_t * γ * probability (q) (os_tt, a_tt)
+        γ_tt         = γ_t * γ * probability (q_t) (os_tt, a_tt)
       yield (s_tt, a_tt, g_tt, γ_tt)
