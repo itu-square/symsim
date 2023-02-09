@@ -83,6 +83,9 @@ trait AgentConstraints[State, ObservableState, Action, Reward, Scheduler[_]]:
   lazy val allActions: List[Action] =
     enumAction.membersAscending.toList
 
+  lazy val numberOfActions: Int = 
+    allActions.size
+
   /** Enforce that states are enumerable because otherwise we cannot
     * represent a policy as a map.
     */
