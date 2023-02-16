@@ -27,13 +27,12 @@ trait ConcreteQTable[State, ObservableState, Action]
       else qs (qs.keys.max)
 
 
-  def chooseAction (q: Q) (s: ObservableState): Randomized[Action] =
-    for
-      explore <- Randomized.coin (this.epsilon)
-      action  <- if explore
-                 then Randomized.oneOf (allActions*)
-                 else Randomized.const (bestAction (q) (s))
-    yield action
+  def chooseAction (q: Q) (s: ObservableState): Randomized[Action] = for
+    explore <- Randomized.coin (this.epsilon)
+    action  <- if explore
+               then Randomized.oneOf (allActions*)
+               else Randomized.const (bestAction (q) (s))
+  yield action
 
 
   def runQ: Q =
