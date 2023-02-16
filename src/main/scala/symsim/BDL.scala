@@ -1,8 +1,15 @@
 package symsim
 package concrete
 
+
+// TODO
+// import cats.Monad
+// import cats.syntax.functor.*
+// import cats.syntax.flatMap.*
 import cats.Foldable
 import cats.syntax.foldable.*
+// import cats.syntax.option.*
+
 /** A BDL term for an estimation step. */
 enum Est: 
   case Sample (gamma: Double)
@@ -40,8 +47,6 @@ case class BDLLearn[State, ObservableState, Action] (
   override def toString: String =
     s"BDL(..., 𝜀=$epsilon, $episodes episodes)"
 
-  // import agent.instances.given
-
   /** A single step of the learning algorithm
    *
    *  @param q   the last Q-matrix
@@ -49,22 +54,38 @@ case class BDLLearn[State, ObservableState, Action] (
    *  @return the updated matrix Q, the successor state, and a
    *          reward difference (the size of the update performed)
    */
-  def learningEpoch (q: VF, s_t: State, a_t: Action)
-    : Randomized[(VF, State, Action)] =
-    for
-      sa_tt <- agent.step (s_t) (a_t) // TODO, dummy to compile
-      // (s_tt, r_tt) = sa_tt
-      // // SARSA: on-policy (p.844 in Russel & Norvig)
-      // a_tt <- chooseAction (q) (agent.observe (s_tt))
+  def learningEpoch (q_t: VF, s_t: State, a_t: Action)
+    : Randomized[(VF, State, Action)] = bdl.update match 
+  case Sample (γ) => 
+    for 
+      (s_tk, a_tk, g_tk, γ_tk) <- sem (bdl.est) (q_t) (s_t, a_t, 0.0, 1.0)
+      (s_tkk, r_tkk)           <- agent.step (s_t) (a_t)
+      (os_t, os_tkk)           =  (agent.observe (s_t), agent.observe (s_tkk))
+      a_tkk                    <- chooseAction (q_t) (os_tkk)
+      g_tkk                    = g_tk + γ_tk * r_tkk 
+                               + γ * γ_tk * value (q_t) (os_tkk, a_tkk)
+      q_t_value                = value (q_t) (os_t, a_t)
+      q_tt_value               = q_t_value + bdl.α * (g_tkk - q_t_value)
+      q_tt                     = q_t.updated (os_t, a_t, q_tt_value)
+    yield (q_tt, s_tkk, a_tkk)
 
-      // ds_t = agent.observe (s_t)
-      // ds_tt = agent.observe (s_tt)
-      // old_entry = q (ds_t, a_t)
-      // correction = r_tt + gamma * q (ds_tt, a_tt) - old_entry
-      // qval = old_entry + alpha * correction
-
-      // q1 = q.updated (ds_t, a_t, qval)
-    yield ??? // (q1, s_tt, a_tt)
+  case Expectation (γ) => 
+    for 
+      (s_tk, a_tk, g_tk, γ_tk) <- sem (bdl.est) (q_t) (s_t, a_t, 0.0, 1.0)
+      (s_tkk, r_tkk)           <- agent.step (s_t) (a_t)
+      (os_t, os_tkk)           =  (agent.observe (s_t), agent.observe (s_tkk))
+      a_tkk                    <- chooseAction (q_t) (os_tkk)
+      expectation              = agent.instances.allActions
+                                  .map { a => 
+                                    probability (q_t) (os_tkk, a) 
+                                      * value (q_t) (os_tkk, a) }
+                                  .sum
+      g_tkk                    = g_tk + γ_tk * r_tkk + γ * γ_tk * expectation
+      q_t_value                = value (q_t) (os_t, a_t)
+      q_tt_value               = q_t_value + bdl.α * (g_tkk - q_t_value)
+      q_tt                     = q_t.updated (os_t, a_t, q_tt_value)
+    yield (q_tt, s_tkk, a_tkk)
+      
 
   /** Semantics of a sequence of estimation steps. */
   def sem (ests: List[Est]) (q_t: VF) 
@@ -94,8 +115,7 @@ case class BDLLearn[State, ObservableState, Action] (
 
     case Sample (γ) => 
       for 
-        sr_tt        <- agent.step (s_t) (a_t)
-        (s_tt, r_tt) = sr_tt
+        (s_tt, r_tt) <- agent.step (s_t) (a_t)
         a_tt         <- chooseAction (q_t) (agent.observe (s_tt))
         g_tt         = g_t + γ_t * r_tt
         γ_tt         = γ_t * γ
@@ -103,8 +123,7 @@ case class BDLLearn[State, ObservableState, Action] (
 
     case Expectation (γ) => 
       for 
-        sr_tt        <- agent.step (s_t) (a_t)
-        (s_tt, r_tt) = sr_tt
+        (s_tt, r_tt) <- agent.step (s_t) (a_t)
         os_tt        = agent.observe (s_tt)
         a_tt         <- chooseAction (q_t) (os_tt)
         expectation  = agent.instances.allActions
