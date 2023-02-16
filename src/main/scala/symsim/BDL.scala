@@ -28,15 +28,13 @@ case class Update (est: List[Est], alpha: Double, update: Est):
 /** A learning algorithm defined by a backup diagram (or in other
  *  words an interpreter for a BDL term.
  */
-case class BDLLearn[State, ObservableState, Action] (
-  val agent: Agent[State, ObservableState, Action, Double, Randomized],
-  val bdl: Update,
-  val epsilon: Probability, 
-  val episodes: Int
-) extends ConcreteExactRL[State, ObservableState, Action], 
-  ConcreteQTable[State, ObservableState, Action]:
-  
-  override def alpha: Double = bdl.alpha
+trait BDLLearn[State, ObservableState, Action]
+  extends ConcreteExactRL[State, ObservableState, Action], 
+    ConcreteQTable[State, ObservableState, Action]:
+ 
+  def epsilon: Probability
+  def episodes: Int
+  def bdl: Update 
 
   override def toString: String =
     s"BDL(..., 𝜀=$epsilon, $episodes episodes)"
