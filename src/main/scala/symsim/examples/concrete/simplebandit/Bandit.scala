@@ -47,8 +47,6 @@ class Bandit (banditReward: List [Randomized[BanditReward]])
   override def initialize: Randomized[BanditState] =
     Randomized.const (false)
 
-  override def zeroReward: BanditReward = 0
-
   override val instances = BanditInstances (banditReward)
 
 end Bandit

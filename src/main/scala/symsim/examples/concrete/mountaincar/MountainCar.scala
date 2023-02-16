@@ -81,8 +81,6 @@ object MountainCar
          if !isFinal (s) 
   yield s
 
-  override def zeroReward: CarReward = 0.0
-
   val instances = MountainCarInstances
 
 end MountainCar

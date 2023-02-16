@@ -171,9 +171,6 @@ object Pump extends
       _ =  assert (!isFinal (s))
   yield s
 
-
-  override def zeroReward: PumpReward = 0.0
-
   val instances = PumpInstances
 
 end Pump
