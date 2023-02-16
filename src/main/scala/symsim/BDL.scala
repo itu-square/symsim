@@ -1,14 +1,8 @@
 package symsim
 package concrete
 
-
-// TODO
-// import cats.Monad
-// import cats.syntax.functor.*
-// import cats.syntax.flatMap.*
 import cats.Foldable
 import cats.syntax.foldable.*
-// import cats.syntax.option.*
 
 /** A BDL term for an estimation step. */
 enum Est: 
