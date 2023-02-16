@@ -53,19 +53,6 @@ trait Agent[State, ObservableState, Action, Reward, Scheduler[_]]:
   def initialize: Scheduler[State]
 
 
-  /** A representation of a zero reward (initial reward).  This
-    * might be abstracting too match.  On the other hand, this can be used to
-    * represent a symbolic zero reward, for instance.
-    */
-  def zeroReward: Reward
-  // TODO: Spire seems to be the library for abstracting numerics in Scala
-  // TODO: This looks like something that could go together or fold into
-  // instances (perhaps it is a property in Arith)
-
-
-
-
-
 
 /** Type evidence required to consider a generic instance of Agent to be
   * an agent for the rest of the framework

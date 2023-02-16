@@ -16,6 +16,7 @@ trait Arith[A] extends Eq[A]:
   def minus (a1: A, a2: A): A
   def plus (a1: A, a2: A): A
   def doubleTimes (d: Double, a: A): A
+  def zero: A
 
 
 object Arith:
@@ -32,6 +33,8 @@ object Arith:
     def *[A: Arith] (a: A): A = d.times[A] (a)
     def times[A: Arith] (a: A): A = arith[A].doubleTimes (d, a)
 
+  extension [A] (l: List[A]) (using arithA: Arith[A])
+    def sum = l.foldLeft (arithA.zero) (arithA.plus)
 
   /* Instances for standard types */
   // TODO: instances should eventually be moved to symsim.instances
