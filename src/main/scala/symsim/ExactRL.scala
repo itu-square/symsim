@@ -26,11 +26,12 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
   import agent.instances.given
 
   def alpha: Double
+  def α: Double = this.alpha
 
   /** A single step of the learning algorithm
     *
     * @param q the last Q-matrix
-    * @param s_t current state
+    * @param s_t current 
     * @return the updated matrix Q, the successor state, and a
     * reward difference (the size of the update performed)
     *

@@ -34,10 +34,9 @@ object Arith:
     def times[A: Arith] (a: A): A = arith[A].doubleTimes (d, a)
 
   extension [A] (l: List[A]) (using arithA: Arith[A])
-    def sum = l.foldLeft (arithA.zero) (arithA.plus)
+    def arithSum = l.foldLeft (arithA.zero) (arithA.plus)
 
   /* Instances for standard types */
-  // TODO: instances should eventually be moved to symsim.instances
 
   given arithDouble: Arith[Double] = new Arith[Double]:
     def times (x: Double, y: Double): Double = x * y
@@ -45,3 +44,4 @@ object Arith:
     def minus (x: Double, y: Double): Double = x - y
     def doubleTimes (d: Double, a: Double): Double = d * a
     def eqv (x: Double, y: Double): Boolean = x == y
+    def zero: Double = 0.0

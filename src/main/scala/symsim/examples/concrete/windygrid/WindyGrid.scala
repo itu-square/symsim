@@ -68,8 +68,6 @@ object WindyGrid extends
     s = GridState (x, y) if !isFinal (s)
   yield s
 
-  override def zeroReward: GridReward = 0
-
   val instances = WindyGridInstances
 
 end WindyGrid

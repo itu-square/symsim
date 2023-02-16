@@ -99,8 +99,6 @@ object Maze
     Randomized.repeat (Randomized.oneOf (instances.allObservableStates*))
       .filter (s => !isFinal (s))
 
-  override def zeroReward: MazeReward = 0
-
   val instances = MazeInstances
 
 end Maze

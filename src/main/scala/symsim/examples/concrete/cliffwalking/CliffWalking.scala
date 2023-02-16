@@ -71,8 +71,6 @@ object CliffWalking
     s = CWState (x, y) if !isFinal (s)
   yield s
 
-  override def zeroReward: CWReward = 0
-
   val instances = CliffWalkingInstances
 
 end CliffWalking

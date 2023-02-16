@@ -13,6 +13,7 @@ import org.scalacheck.util.Pretty.*
 
 import symsim.CanTestIn.*
 import symsim.Arith.*
+import symsim.concrete.ConcreteExactRL
 
 import scala.util.Try
 
@@ -28,29 +29,31 @@ import scala.util.Try
  * Same comment in AgentLaws.scala
  */
 case class SarsaLaws[State, ObservableState, Action, Reward, Scheduler[_]]
-   (sarsa: Sarsa[State, ObservableState, Action, Reward, Scheduler])
+   (sarsa: ExactRL[State, ObservableState, Action, Reward, Scheduler] 
+     & QTable[State, ObservableState, Action, Reward, Scheduler])
    extends org.typelevel.discipline.Laws:
 
    import sarsa.agent.instances.given
+   import sarsa.agent.instances.*
 
    def isStateTotal (q: sarsa.Q): Boolean =
-     q.states.toSet == sarsa.agent.instances.allObservableStates.toSet
+     q.states.toSet == allObservableStates.toSet
 
    def isActionTotal (q: sarsa.Q): Boolean =
      q.states.forall { s =>
-       q.actionValues (s).keySet == sarsa.agent.instances.allActions.toSet }
+       q.actionValues (s).keySet == allActions.toSet }
 
    val laws: RuleSet = new SimpleRuleSet (
       "sarsa",
 
-      /* Law: All values in Q matrix are zeroReward initially */
-      "initQ contains only zeroRewards" -> {
+      /* Law: All values in Q matrix are zero initially */
+      "initQ contains only zeroes" -> {
          import sarsa.apply
          val q = sarsa.initialize
          val props = for
-           s <- sarsa.agent.instances.allObservableStates
-           a <- sarsa.agent.instances.allActions
-         yield q (s, a) == sarsa.agent.zeroReward
+           s <- allObservableStates
+           a <- allActions
+         yield q (s, a) == arith[Reward].zero
          props.forall (identity)
       },
 
@@ -66,7 +69,6 @@ case class SarsaLaws[State, ObservableState, Action, Reward, Scheduler[_]]
         forAll { (s: State) =>
           val sa: Scheduler[Action] =
             sarsa.chooseAction (q) (sarsa.agent.observe (s))
-          forAll (sa.toGen) { a =>
-            sarsa.agent.instances.allActions.contains (a)
+          forAll (sa.toGen) { a => allActions.contains (a)
       } } },
     )

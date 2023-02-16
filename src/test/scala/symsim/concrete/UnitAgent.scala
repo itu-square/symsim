@@ -17,7 +17,6 @@ object UnitAgent
       override def step (s: UnitState) (a: UnitAction): Randomized[(UnitState, UnitReward)] =
         Randomized.const (() -> 0.1)
       override def initialize: Randomized[UnitState] = Randomized.const (())
-      override def zeroReward: UnitReward = 0.0
       override val instances = UnitInstances
 
 

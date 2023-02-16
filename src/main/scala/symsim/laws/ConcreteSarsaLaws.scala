@@ -9,7 +9,8 @@ import org.scalacheck.Arbitrary
 import breeze.stats.distributions.{Rand, Beta, Gaussian}
 import breeze.stats.distributions.Rand.VariableSeed.*
 
-import symsim.concrete.ConcreteSarsa
+import symsim.concrete.ConcreteExactRL
+import symsim.concrete.ConcreteQTable
 import symsim.concrete.Randomized
 
 /**
@@ -17,8 +18,10 @@ import symsim.concrete.Randomized
  *
  * TODO: Why is this just for Concrete? Does it have to?
  */
-case class ConcreteSarsaLaws[State, FiniteState, Action]
-  (sarsa: ConcreteSarsa[State, FiniteState, Action])
+case class ConcreteSarsaLaws[State, ObservableState, Action]
+  (sarsa: ConcreteExactRL[State, ObservableState, Action] 
+    & ConcreteQTable[State, ObservableState, Action],
+   gamma: Double)
   extends org.typelevel.discipline.Laws:
 
   import sarsa.*
@@ -80,7 +83,7 @@ case class ConcreteSarsaLaws[State, FiniteState, Action]
            (s_tt,r_tt) <- agent.step (s_t) (a_t)
            os_tt        = agent.observe (s_tt)
            a_tt         <- sarsa.chooseAction (q_t) (os_tt)
-           g_tt         = r_tt + sarsa.gamma * q_t (os_tt, a_tt)
+           g_tt         = r_tt + gamma * q_t (os_tt, a_tt)
            u            = q_t (os_t, a_t) - alpha * (g_tt - q_t (os_t, a_t))
            q_tt         = q_t.updated (os_tt, a_t, u)
          yield (q_tt, s_tt, a_tt)

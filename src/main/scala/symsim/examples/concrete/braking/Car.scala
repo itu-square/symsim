@@ -36,9 +36,6 @@ object Car
     /** Evidence of type class membership for this agent. */
     val instances = CarInstances
 
-    override val zeroReward: CarReward = 0.0
- 
-
     def isFinal (s: CarState): Boolean =
       s.v == 0.0 || s.p >= 10 || Math.abs (s.p) >= 1000.0
 

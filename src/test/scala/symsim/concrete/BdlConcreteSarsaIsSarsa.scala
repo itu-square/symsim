@@ -3,10 +3,10 @@ package concrete
 
 import symsim.examples.concrete.mountaincar.MountainCar
 
-class ConcreteSarsaIsSarsaSpec
+class BdlConcreteSarsaIsSarsaSpec
   extends SymSimSpec:
 
-  val csarsa = ConcreteSarsa (
+  val csarsa = BdlConcreteSarsa (
     agent = MountainCar,
     alpha = 0.1,
     gamma = 1.0,

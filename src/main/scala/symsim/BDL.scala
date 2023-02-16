@@ -2,7 +2,13 @@ package symsim
 package concrete
 
 import cats.Foldable
+import cats.Monad
+import cats.syntax.flatMap.*
 import cats.syntax.foldable.*
+import cats.syntax.functor.*
+
+// To allow arithmetic on reward values
+import symsim.Arith.*
 
 /** A BDL term for an estimation step. */
 enum Est: 
@@ -28,10 +34,13 @@ case class Update (est: List[Est], alpha: Double, update: Est):
 /** A learning algorithm defined by a backup diagram (or in other
  *  words an interpreter for a BDL term.
  */
-trait BDLLearn[State, ObservableState, Action]
-  extends ConcreteExactRL[State, ObservableState, Action], 
-    ConcreteQTable[State, ObservableState, Action]:
+trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
+  extends ExactRL[State, ObservableState, Action, Reward, Scheduler], 
+    QTable[State, ObservableState, Action, Reward, Scheduler]:
  
+  import agent.instances.given
+  import agent.instances.*
+
   def epsilon: Probability
   def episodes: Int
   def bdl: Update 
@@ -47,31 +56,33 @@ trait BDLLearn[State, ObservableState, Action]
    *          reward difference (the size of the update performed)
    */
   def learningEpoch (q_t: VF, s_t: State, a_t: Action)
-    : Randomized[(VF, State, Action)] = bdl.update match 
+    : Scheduler[(VF, State, Action)] = bdl.update match 
   case Sample (γ) => 
     for 
-      (s_tk, a_tk, g_tk, γ_tk) <- sem (bdl.est) (q_t) (s_t, a_t, 0.0, 1.0)
-      (s_tkk, r_tkk)           <- agent.step (s_t) (a_t)
+      (s_tk, a_tk, g_tk, γ_tk) <- sem (bdl.est) (q_t) 
+                                    (s_t, a_t, arith[Reward].zero, 1.0)
+      (s_tkk, r_tkk)           <- agent.step (s_tk) (a_tk)
       (os_t, os_tkk)           =  (agent.observe (s_t), agent.observe (s_tkk))
       a_tkk                    <- chooseAction (q_t) (os_tkk)
-      g_tkk                    = g_tk + γ_tk * r_tkk 
-                               + γ * γ_tk * value (q_t) (os_tkk, a_tkk)
-      q_t_value                = value (q_t) (os_t, a_t)
-      q_tt_value               = q_t_value + bdl.α * (g_tkk - q_t_value)
-      q_tt                     = q_t.updated (os_t, a_t, q_tt_value)
+      g_tkk                    =  g_tk + γ_tk * r_tkk 
+                                  + γ * γ_tk * value (q_t) (os_tkk, a_tkk)
+      q_t_value                =  value (q_t) (os_t, a_t)
+      q_tt_value               =  q_t_value + bdl.α * (g_tkk - q_t_value)
+      q_tt                     =  q_t.updated (os_t, a_t, q_tt_value)
     yield (q_tt, s_tkk, a_tkk)
 
   case Expectation (γ) => 
     for 
-      (s_tk, a_tk, g_tk, γ_tk) <- sem (bdl.est) (q_t) (s_t, a_t, 0.0, 1.0)
-      (s_tkk, r_tkk)           <- agent.step (s_t) (a_t)
+      (s_tk, a_tk, g_tk, γ_tk) <- sem (bdl.est) (q_t) 
+                                    (s_t, a_t, arith[Reward].zero, 1.0)
+      (s_tkk, r_tkk)           <- agent.step (s_tk) (a_tk)
       (os_t, os_tkk)           =  (agent.observe (s_t), agent.observe (s_tkk))
       a_tkk                    <- chooseAction (q_t) (os_tkk)
-      expectation              = agent.instances.allActions
+      expectation              = allActions
                                   .map { a => 
-                                    probability (q_t) (os_tkk, a) 
+                                    probability (q_t) (os_tkk, a)
                                       * value (q_t) (os_tkk, a) }
-                                  .sum
+                                  .arithSum
       g_tkk                    = g_tk + γ_tk * r_tkk + γ * γ_tk * expectation
       q_t_value                = value (q_t) (os_t, a_t)
       q_tt_value               = q_t_value + bdl.α * (g_tkk - q_t_value)
@@ -81,10 +92,10 @@ trait BDLLearn[State, ObservableState, Action]
 
   /** Semantics of a sequence of estimation steps. */
   def sem (ests: List[Est]) (q_t: VF) 
-    (s_t: State, a_t: Action, g_t: Double, γ_t: Double)
-    : Randomized[(State, Action, Double, Double)]= 
+    (s_t: State, a_t: Action, g_t: Reward, γ_t: Double)
+    : Scheduler[(State, Action, Reward, Double)]= 
 
-    ests.foldM[Randomized, (State, Action, Double, Double)]
+    ests.foldM[Scheduler, (State, Action, Reward, Double)]
       (s_t, a_t, g_t, γ_t)
       { case ((s_t, a_t, g_t, γ_t), e) => sem (e) (q_t) (s_t, a_t, g_t, γ_t) }
 
@@ -102,8 +113,8 @@ trait BDLLearn[State, ObservableState, Action]
    *          factor.
    */
   def sem (est: Est) (q_t: VF) 
-    (s_t: State, a_t: Action, g_t: Double, γ_t: Double)
-    : Randomized[(State, Action, Double, Double)]= est match 
+    (s_t: State, a_t: Action, g_t: Reward, γ_t: Double)
+    : Scheduler[(State, Action, Reward, Double)]= est match 
 
     case Sample (γ) => 
       for 
@@ -118,11 +129,11 @@ trait BDLLearn[State, ObservableState, Action]
         (s_tt, r_tt) <- agent.step (s_t) (a_t)
         os_tt        = agent.observe (s_tt)
         a_tt         <- chooseAction (q_t) (os_tt)
-        expectation  = agent.instances.allActions
+        expectation  = allActions
                        .filter { _ != a_tt }
                        .map { a => 
                          probability (q_t) (os_tt, a) * value (q_t) (os_tt, a) }
-                       .sum
+                       .arithSum
         g_tt         = g_t + γ_t * (r_tt + expectation) 
         γ_tt         = γ_t * γ * probability (q_t) (os_tt, a_tt)
       yield (s_tt, a_tt, g_tt, γ_tt)

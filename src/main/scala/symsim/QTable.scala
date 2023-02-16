@@ -10,6 +10,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.typelevel.paiges.Doc
 import symsim.concrete.{ConcreteExactRL, Randomized}
 
+import symsim.Arith.*
 
 trait QTable[State, ObservableState, Action, Reward, Scheduler[_]]
   extends ValueFunction[ObservableState, Action, Reward, Scheduler]:
@@ -26,7 +27,7 @@ trait QTable[State, ObservableState, Action, Reward, Scheduler[_]]
     /** Allowing to access q(s, a) */
     def apply (s: ObservableState, a: Action): Reward = 
       q.getOrElse (s, Map[Action, Reward] ())
-       .getOrElse (a, agent.zeroReward)
+       .getOrElse (a, arith[Reward].zero)
 
     /** A copy of the Q-Table with a new entry for (s, a) */
     def updated (s: ObservableState, a: Action, v: Reward): Q = 

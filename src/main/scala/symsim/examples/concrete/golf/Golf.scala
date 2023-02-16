@@ -98,8 +98,6 @@ object Golf extends
   def initialize: Randomized[GolfState] =
     Randomized.const (StartState)
 
-  override def zeroReward: GolfReward = 0
-
   val instances = GolfInstances
 
 end Golf
