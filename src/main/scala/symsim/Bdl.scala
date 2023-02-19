@@ -1,11 +1,12 @@
 package symsim
-package concrete
 
 import cats.Foldable
 import cats.Monad
 import cats.syntax.flatMap.*
 import cats.syntax.foldable.*
 import cats.syntax.functor.*
+
+import symsim.concrete.Probability
 
 // To allow arithmetic on reward values
 import symsim.Arith.*
