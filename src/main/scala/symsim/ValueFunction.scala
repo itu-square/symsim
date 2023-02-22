@@ -15,13 +15,13 @@ trait ValueFunction[ObservableState, Action, Reward, Scheduler[_]]:
    *  For off-policy algorithms this probability is 1 for the best action (see
    *  below @bestAction) and 0 for all other actions.
    */
-  def probability (vf: VF) (s: ObservableState, a: Action): Probability
+  def probability (ε: Probability) (vf: VF) (s: ObservableState, a: Action): Probability
 
   /** argmax action selection */
   def bestAction (vf: VF) (s: ObservableState): Action
 
   /** On policy action selection */
-  def chooseAction (vf: VF) (s: ObservableState): Scheduler[Action]
+  def chooseAction (ε: Probability) (vf: VF) (s: ObservableState): Scheduler[Action]
 
   def initialize: VF
 

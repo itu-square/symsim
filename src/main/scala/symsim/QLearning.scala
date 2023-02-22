@@ -6,10 +6,10 @@ import cats.syntax.functor.*
 import symsim.Arith.*
 
 trait QLearning[State, ObservableState, Action, Reward, Scheduler[_]]
-  extends ExactRL[State, ObservableState, Action, Reward, Scheduler],
-    QTable[ObservableState, Action, Reward, Scheduler]:
+  extends ExactRL[State, ObservableState, Action, Reward, Scheduler]:
 
   import agent.instances.given
+  import vf.*
 
   def gamma: Double
 
@@ -36,5 +36,5 @@ trait QLearning[State, ObservableState, Action, Reward, Scheduler[_]]
       qval = old_entry + alpha * correction
 
       q1 = q.updated (ds_t, a_t, qval)
-      a_tt1 <- chooseAction (q1) (ds_tt)
+      a_tt1 <- chooseAction (ε) (q1) (ds_tt)
     yield (q1, s_tt, a_tt1)

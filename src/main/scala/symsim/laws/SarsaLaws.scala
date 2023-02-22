@@ -35,6 +35,7 @@ case class SarsaLaws[State, ObservableState, Action, Reward, Scheduler[_]]
 
    import sarsa.agent.instances.given
    import sarsa.agent.instances.*
+   import sarsa.vf.*
 
    def isStateTotal (q: sarsa.Q): Boolean =
      q.states.toSet == allObservableStates.toSet
@@ -68,7 +69,7 @@ case class SarsaLaws[State, ObservableState, Action, Reward, Scheduler[_]]
       forAll (sarsa.genVF) { (q: sarsa.Q) =>
         forAll { (s: State) =>
           val sa: Scheduler[Action] =
-            sarsa.chooseAction (q) (sarsa.agent.observe (s))
+            sarsa.chooseAction (sarsa.ε) (q) (sarsa.agent.observe (s))
           forAll (sa.toGen) { a => allActions.contains (a)
       } } },
     )

@@ -6,6 +6,8 @@ import cats.syntax.flatMap.*
 import cats.syntax.foldable.*
 import cats.syntax.option.*
 
+import symsim.concrete.Probability
+
 import org.typelevel.paiges.Doc
 
 /** An abstract representation of an ExactRL algorithm. By exact we mean
@@ -30,7 +32,9 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
   import vf.{VF, chooseAction}
 
   def alpha: Double
+  def epsilon: Probability
   def α: Double = this.alpha
+  def ε: Probability = this.epsilon
 
   /** A single step of the learning algorithm
     *
@@ -53,7 +57,7 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
   def learningEpisode (f: VF, s_t: State): Scheduler[VF] =
     def p (f: VF, s: State, a: Action): Boolean = agent.isFinal (s)
     for
-      a <- chooseAction (f) (agent.observe (s_t))
+      a <- chooseAction (ε) (f) (agent.observe (s_t))
       fin <- Monad[Scheduler].iterateUntilM (f, s_t, a) (learningEpoch) (p)
     yield fin._1
 

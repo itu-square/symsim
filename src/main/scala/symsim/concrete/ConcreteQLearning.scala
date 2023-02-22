@@ -14,8 +14,7 @@ case class ConcreteQLearning [
   val epsilon: Probability,
   val episodes: Int,
 ) extends QLearning[State, ObservableState, Action, Double, Randomized],
-  ConcreteExactRL[State, ObservableState, Action],
-  ConcreteQTable[ObservableState, Action]:
+  ConcreteExactRL[State, ObservableState, Action]:
 
   override def toString: String =
     s"Q-Learn(α=$alpha, 𝛾=$gamma, 𝜀=$epsilon, $episodes episodes)"
