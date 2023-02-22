@@ -18,15 +18,16 @@ import org.typelevel.paiges.Doc
   * implement (override) the missing elements, chiefly `learningEpoch`.
   */
 trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
-  extends RL[ObservableState, Action]:
+  extends RL[ObservableState, Action, Reward, Scheduler]: 
 
-  // TODO: this is likely a constraint on RL not on exact RL (perhaps some of
-  // the API functions, like learningEpoch should be promoted as well)
-  this: ValueFunction[ObservableState, Action, Reward, Scheduler] =>
+  /** A value function implementation */
+  override val vf: QTable[ObservableState, Action, Reward, Scheduler]
 
+  /** An agent to learn from */
   val agent: Agent[State, ObservableState, Action, Reward, Scheduler]
 
   import agent.instances.given
+  import vf.{VF, chooseAction}
 
   def alpha: Double
   def α: Double = this.alpha
@@ -44,7 +45,7 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
     * to the next iteration and stay properly on policy.  In Q-Learning this
     * introduces a small presentation complication, not more.
     */
-  def learningEpoch (f: VF, s_t: State, a_t: Action): Scheduler[(VF, State, Action)]
+  def learningEpoch (f: VF, s_t: State, a_t: Action): Scheduler[(vf.VF, State, Action)]
 
   /** Execute a full learning episode (until the final state of agent is
     * reached).

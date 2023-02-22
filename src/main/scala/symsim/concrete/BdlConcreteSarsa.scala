@@ -1,7 +1,6 @@
 package symsim
 package concrete
 
-import Est.*  
 import cats.kernel.BoundedEnumerable
 
 case class BdlConcreteSarsa [
@@ -15,7 +14,7 @@ case class BdlConcreteSarsa [
   val epsilon: Probability,
   val episodes: Int,
 ) extends BdlLearn[State, ObservableState, Action, Double, Randomized],
-  ConcreteExactRL[State, ObservableState, Action],
-  ConcreteQTable[ObservableState, Action]:
+  ConcreteExactRL[State, ObservableState, Action]:
 
+  import Est.*  
   val bdl = Update (Nil, alpha, Sample(gamma))

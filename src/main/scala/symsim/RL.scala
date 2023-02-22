@@ -4,9 +4,11 @@ import cats.kernel.BoundedEnumerable
 import cats.syntax.option.*
 import org.typelevel.paiges.Doc
 
-trait RL[ObservableState, Action]:
+trait RL[ObservableState, Action, Reward, Scheduler[_]]:
 
-  type Policy = Map[ObservableState,Action]
+  val vf: ValueFunction[ObservableState, Action, Reward, Scheduler]
+
+  type Policy = Map[ObservableState, Action]
 
   /** The actual reinforcement learning algortihm call. */
   def run: Policy

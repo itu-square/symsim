@@ -38,7 +38,7 @@ case class Update (est: List[Est], alpha: Double, update: Est):
 trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
   extends ExactRL[State, ObservableState, Action, Reward, Scheduler]:
 
-  this:  QTable[ObservableState, Action, Reward, Scheduler] =>
+  import vf.VF
  
   import agent.instances.given
   import agent.instances.*
@@ -65,10 +65,10 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
                                     (s_t, a_t, arith[Reward].zero, 1.0)
       (s_tkk, r_tkk)           <- agent.step (s_tk) (a_tk)
       (os_t, os_tkk)           =  (agent.observe (s_t), agent.observe (s_tkk))
-      a_tkk                    <- chooseAction (q_t) (os_tkk)
+      a_tkk                    <- vf.chooseAction (q_t) (os_tkk)
       g_tkk                    =  g_tk + γ_tk * r_tkk 
-                                  + γ * γ_tk * value (q_t) (os_tkk, a_tkk)
-      q_t_value                =  value (q_t) (os_t, a_t)
+                                  + γ * γ_tk * q_t (os_tkk, a_tkk)
+      q_t_value                =  q_t (os_t, a_t)
       q_tt_value               =  q_t_value + bdl.α * (g_tkk - q_t_value)
       q_tt                     =  q_t.updated (os_t, a_t, q_tt_value)
     yield (q_tt, s_tkk, a_tkk)
@@ -79,14 +79,14 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
                                     (s_t, a_t, arith[Reward].zero, 1.0)
       (s_tkk, r_tkk)           <- agent.step (s_tk) (a_tk)
       (os_t, os_tkk)           =  (agent.observe (s_t), agent.observe (s_tkk))
-      a_tkk                    <- chooseAction (q_t) (os_tkk)
+      a_tkk                    <- vf.chooseAction (q_t) (os_tkk)
       expectation              = allActions
                                   .map { a => 
-                                    probability (q_t) (os_tkk, a)
-                                      * value (q_t) (os_tkk, a) }
+                                    vf.probability (q_t) (os_tkk, a)
+                                      * q_t (os_tkk, a) }
                                   .arithSum
       g_tkk                    = g_tk + γ_tk * r_tkk + γ * γ_tk * expectation
-      q_t_value                = value (q_t) (os_t, a_t)
+      q_t_value                = q_t (os_t, a_t)
       q_tt_value               = q_t_value + bdl.α * (g_tkk - q_t_value)
       q_tt                     = q_t.updated (os_t, a_t, q_tt_value)
     yield (q_tt, s_tkk, a_tkk)
@@ -121,7 +121,7 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
     case Sample (γ) => 
       for 
         (s_tt, r_tt) <- agent.step (s_t) (a_t)
-        a_tt         <- chooseAction (q_t) (agent.observe (s_tt))
+        a_tt         <- vf.chooseAction (q_t) (agent.observe (s_tt))
         g_tt         = g_t + γ_t * r_tt
         γ_tt         = γ_t * γ
       yield (s_tt, a_tt, g_tt, γ_tt)
@@ -130,12 +130,12 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
       for 
         (s_tt, r_tt) <- agent.step (s_t) (a_t)
         os_tt        = agent.observe (s_tt)
-        a_tt         <- chooseAction (q_t) (os_tt)
+        a_tt         <- vf.chooseAction (q_t) (os_tt)
         expectation  = allActions
                        .filter { _ != a_tt }
                        .map { a => 
-                         probability (q_t) (os_tt, a) * value (q_t) (os_tt, a) }
+                         vf.probability (q_t) (os_tt, a) * q_t (os_tt, a) }
                        .arithSum
         g_tt         = g_t + γ_t * (r_tt + expectation) 
-        γ_tt         = γ_t * γ * probability (q_t) (os_tt, a_tt)
+        γ_tt         = γ_t * γ * vf.probability (q_t) (os_tt, a_tt)
       yield (s_tt, a_tt, g_tt, γ_tt)
