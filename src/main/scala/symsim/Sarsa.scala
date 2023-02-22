@@ -7,7 +7,7 @@ import symsim.Arith.*
 
 trait Sarsa[State, ObservableState, Action, Reward, Scheduler[_]]
   extends ExactRL[State, ObservableState, Action, Reward, Scheduler],
-    QTable[State, ObservableState, Action, Reward, Scheduler]:
+    QTable[ObservableState, Action, Reward, Scheduler]:
 
   import agent.instances.given
 

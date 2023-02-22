@@ -30,7 +30,7 @@ import scala.util.Try
  */
 case class SarsaLaws[State, ObservableState, Action, Reward, Scheduler[_]]
    (sarsa: ExactRL[State, ObservableState, Action, Reward, Scheduler] 
-     & QTable[State, ObservableState, Action, Reward, Scheduler])
+     & QTable[ObservableState, Action, Reward, Scheduler])
    extends org.typelevel.discipline.Laws:
 
    import sarsa.agent.instances.given

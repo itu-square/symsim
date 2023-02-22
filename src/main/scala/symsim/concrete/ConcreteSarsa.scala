@@ -1,7 +1,13 @@
 package symsim
 package concrete
 
-case class ConcreteSarsa[State, ObservableState, Action] (
+import cats.kernel.BoundedEnumerable
+
+case class ConcreteSarsa [
+  State,
+  ObservableState: BoundedEnumerable,
+  Action: BoundedEnumerable
+] (
   val agent: Agent[State, ObservableState, Action, Double, Randomized],
   val alpha: Double,
   val gamma: Double,
@@ -9,7 +15,7 @@ case class ConcreteSarsa[State, ObservableState, Action] (
   val episodes: Int,
 ) extends Sarsa[State, ObservableState, Action, Double, Randomized],
   ConcreteExactRL[State, ObservableState, Action],
-  ConcreteQTable[State, ObservableState, Action]:
+  ConcreteQTable[ObservableState, Action]:
 
   override def toString: String =
     s"SARSA(α=$alpha, 𝛾=$gamma, 𝜀=$epsilon, $episodes episodes)"

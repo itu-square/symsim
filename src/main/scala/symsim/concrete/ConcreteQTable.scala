@@ -1,53 +1,38 @@
 package symsim
 package concrete
 
+import cats.kernel.BoundedEnumerable
 import cats.syntax.option.*
+
 import org.typelevel.paiges.Doc
 import symsim.QTable
 
-trait ConcreteQTable[State, ObservableState, Action]
-  extends QTable[State, ObservableState, Action, Double, Randomized]:
-  this: ConcreteExactRL[State, ObservableState, Action] =>
-
-  import agent.instances.*
+trait ConcreteQTable[ObservableState, Action: BoundedEnumerable]
+  extends QTable[ObservableState, Action, Double, Randomized]:
 
   def value (q: Q) (s: ObservableState, a: Action): Double = 
     q (s, a)
 
-  def probability (q: Q) (s: ObservableState, a: Action): Double = 
+  def probability (ε: Probability) (q: Q) (s: ObservableState, a: Action) : Double = 
     if a == bestAction (q) (s) 
-    then 1 - this.epsilon + this.epsilon / this.agent.instances.numberOfActions
-    else  this.epsilon / this.agent.instances.numberOfActions
+    then 1 - ε + ε / allActions.size
+    else  ε / allActions.size
 
 
   def bestAction (q: Q) (s: ObservableState): Action =
     val qs = q.actionValues (s).map { _.swap }
     if qs.isEmpty 
-      then agent.instances.allActions.head
+      then allActions.head
       else qs (qs.keys.max)
 
 
-  def chooseAction (q: Q) (s: ObservableState): Randomized[Action] = for
-    explore <- Randomized.coin (this.epsilon)
-    action  <- if explore
-               then Randomized.oneOf (allActions*)
-               else Randomized.const (bestAction (q) (s))
-  yield action
-
-
-  def runQ: Q =
-    val initials = Randomized.repeat (agent.initialize).take (episodes)
-    val schedule = learn (this.initialize, initials)
-    schedule.head
-
-
-  override def run: Policy =
-    qToPolicy (this.runQ)
-
-
-  /** Convert the matrix Q after training into a Policy map. */
-  def qToPolicy (q: Q) (using Ordering[Double]): Policy =
-    q.states.map { s => (s, bestAction (q) (s)) }.to (Map)
+  def chooseAction (ε: Probability) (q: Q) (s: ObservableState)
+    : Randomized[Action] = for
+      explore <- Randomized.coin (ε)
+      action  <- if explore
+                 then Randomized.oneOf (allActions*)
+                 else Randomized.const (bestAction (q) (s))
+    yield action
 
 
   /** We assume that all values define the same set of actions valuations.  */

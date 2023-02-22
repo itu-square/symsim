@@ -18,14 +18,19 @@ import symsim.concrete.Randomized
  *
  * TODO: Why is this just for Concrete? Does it have to?
  */
-case class ConcreteSarsaLaws[State, ObservableState, Action]
+case class ConcreteSarsaLaws[State, ObservableState, Action] 
   (sarsa: ConcreteExactRL[State, ObservableState, Action] 
-    & ConcreteQTable[State, ObservableState, Action],
+    & ConcreteQTable[ObservableState, Action],
    gamma: Double)
   extends org.typelevel.discipline.Laws:
 
   import sarsa.*
-  import agent.instances.given
+  import sarsa.agent.instances.given
+
+  // A shortcut for instantiating the interpreter with the right term for SARSA
+  val bdl: ConcreteExactRL[State, ObservableState, Action] 
+    & ConcreteQTable[ObservableState, Action] = 
+    symsim.concrete.BdlConcreteSarsa (agent, alpha, gamma, epsilon, episodes)
 
   given Arbitrary[Q] = Arbitrary (sarsa.genVF)
   
@@ -59,7 +64,7 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
               |    #total trials: $episodes""".stripMargin
     },
 
-    "The update distribution produced by an update function follows Eq. 14 (BDL)" ->
+    "The update distribution produced by an update follows Eq. 14 (BDL)" ->
        forAllNoShrink { (q_t: Q, s_t: State, a_t: Action) =>
          
          // #samples for the distribution test
@@ -67,26 +72,13 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
 
          val os_t = agent.observe (s_t)
 
-         // call monolithic implementation
+         // call the tested implementation
          val sut: Randomized[(Q, State, Action)] = 
            sarsa.learningEpoch (q_t, s_t, a_t)
 
-         // Construct the result compositionally (inlined manually here, 
-         // but in general this is an interpreter)
-         //
-         // Now this test looks essentially the same as learning Epoch, but if
-         // we have an interpreter for BDL, it allows to test detailed
-         // implementations against high-level specs. This similarity
-         // is purely caused by us manually inlining the BDL semantics 
-         // here for Sarsa-1 (see paper).
-         val bdl = for 
-           (s_tt,r_tt) <- agent.step (s_t) (a_t)
-           os_tt        = agent.observe (s_tt)
-           a_tt         <- sarsa.chooseAction (q_t) (os_tt)
-           g_tt         = r_tt + gamma * q_t (os_tt, a_tt)
-           u            = q_t (os_t, a_t) - alpha * (g_tt - q_t (os_t, a_t))
-           q_tt         = q_t.updated (os_tt, a_t, u)
-         yield (q_tt, s_tt, a_tt)
+         // call the spec interpreter
+         val spec: Randomized[(Q, State, Action)] = 
+           bdl.learningEpoch (q_t, s_t, a_t)
 
          // We do this test by assuming that both distributions are normal 
          // (A generalized test with StudentT would be even better).
@@ -102,10 +94,10 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
          // Extract a univariate distributions over updates
         
          val sutUpdates = sut.map { (q_tt, _, _) => q_tt (os_t, a_t) }.take (n)
-         val bdlUpdates = bdl.map { (q_tt, _, _) => q_tt (os_t, a_t) }.take (n)
+         val specUpdates = spec.map { (q_tt, _, _) => q_tt (os_t, a_t) }.take (n)
 
          val sutMean = sutUpdates.sum / n.toDouble
-         val bdlMean = bdlUpdates.sum / n.toDouble
+         val specMean = specUpdates.sum / n.toDouble
 
          // Prior, we assume zero reward, with large standard deviation
          // It would be nice to know something about the range of possible rewards
@@ -129,11 +121,11 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
          val μ_post_sut = μ_post (n, sutMean)
          val σ2_post_sut = 1.0 / τ_post (n)
 
-         val μ_post_bdl = μ_post (n, bdlMean)
-         val σ2_post_bdl = 1.0 / τ_post (n)
+         val μ_post_spec = μ_post (n, specMean)
+         val σ2_post_spec = 1.0 / τ_post (n)
 
-         val μ_diff = μ_post_sut - μ_post_bdl
-         val σ_diff = σ2_post_sut + σ2_post_bdl
+         val μ_diff = μ_post_sut - μ_post_spec
+         val σ_diff = σ2_post_sut + σ2_post_spec
 
          val cdfDiff = Gaussian (μ_diff, σ_diff).cdf (0.02) 
 

@@ -1,23 +1,31 @@
 package symsim
 
 import cats.Monad
+import cats.kernel.BoundedEnumerable
 import cats.syntax.functor.*
 import cats.syntax.flatMap.*
 import cats.syntax.foldable.*
 import cats.syntax.option.*
 import org.scalacheck.Gen
+import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.arbitrary
 import org.typelevel.paiges.Doc
 import symsim.concrete.{ConcreteExactRL, Randomized}
 
 import symsim.Arith.*
 
-trait QTable[State, ObservableState, Action, Reward, Scheduler[_]]
-  extends ValueFunction[ObservableState, Action, Reward, Scheduler]:
-  this: ExactRL[State, ObservableState, Action, Reward, Scheduler] =>
+trait QTable [
+    ObservableState: BoundedEnumerable,
+    Action: BoundedEnumerable,
+    Reward: Arith: Arbitrary,
+    Scheduler[_]
+  ] extends ValueFunction[ObservableState, Action, Reward, Scheduler]:
 
-  import agent.instances.*
-  import agent.instances.given
+  protected lazy val allActions = 
+    summon[BoundedEnumerable[Action]].membersAscending.toList
+
+  protected lazy val allObservableStates = 
+    summon[BoundedEnumerable[ObservableState]].membersAscending.toList
 
   opaque type Q = Map[ObservableState, Map[Action, Reward]]
   type VF = Q
