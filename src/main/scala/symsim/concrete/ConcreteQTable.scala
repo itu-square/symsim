@@ -13,7 +13,7 @@ trait ConcreteQTable[ObservableState, Action: BoundedEnumerable]
   def value (q: Q) (s: ObservableState, a: Action): Double = 
     q (s, a)
 
-  def probability (ε: Probability) (q: Q) (s: ObservableState, a: Action) : Double = 
+  def probability (ε: Probability) (q: Q) (s: ObservableState, a: Action): Double = 
     if a == bestAction (q) (s) 
     then 1 - ε + ε / allActions.size
     else  ε / allActions.size

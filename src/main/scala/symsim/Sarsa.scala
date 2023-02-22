@@ -6,8 +6,9 @@ import cats.syntax.functor.*
 import symsim.Arith.*
 
 trait Sarsa[State, ObservableState, Action, Reward, Scheduler[_]]
-  extends ExactRL[State, ObservableState, Action, Reward, Scheduler],
-    QTable[ObservableState, Action, Reward, Scheduler]:
+  extends ExactRL[State, ObservableState, Action, Reward, Scheduler]:
+
+  import vf.VF
 
   import agent.instances.given
 
@@ -26,7 +27,7 @@ trait Sarsa[State, ObservableState, Action, Reward, Scheduler[_]]
       sa_tt <- agent.step (s_t) (a_t)
       (s_tt, r_tt) = sa_tt
       // SARSA: on-policy (p.844 in Russel & Norvig)
-      a_tt <- chooseAction (q) (agent.observe (s_tt))
+      a_tt <- vf.chooseAction (q) (agent.observe (s_tt))
 
       ds_t = agent.observe (s_t)
       ds_tt = agent.observe (s_tt)
