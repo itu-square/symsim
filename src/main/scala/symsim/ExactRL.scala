@@ -18,8 +18,11 @@ import org.typelevel.paiges.Doc
   * implement (override) the missing elements, chiefly `learningEpoch`.
   */
 trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
-  extends RL[ObservableState, Action],
-    ValueFunction[ObservableState, Action, Reward, Scheduler]:
+  extends RL[ObservableState, Action]:
+
+  // TODO: this is likely a constraint on RL not on exact RL (perhaps some of
+  // the API functions, like learningEpoch should be promoted as well)
+  this: ValueFunction[ObservableState, Action, Reward, Scheduler] =>
 
   val agent: Agent[State, ObservableState, Action, Reward, Scheduler]
 

@@ -1,9 +1,14 @@
 package symsim
 package concrete
 
-import Est.* 
+import Est.*  
+import cats.kernel.BoundedEnumerable
 
-case class BdlConcreteSarsa[State, ObservableState, Action] (
+case class BdlConcreteSarsa [
+  State, 
+  ObservableState: BoundedEnumerable,
+  Action: BoundedEnumerable
+] (
   val agent: Agent[State, ObservableState, Action, Double, Randomized],
   val alpha: Double,
   val gamma: Double,
@@ -11,6 +16,6 @@ case class BdlConcreteSarsa[State, ObservableState, Action] (
   val episodes: Int,
 ) extends BdlLearn[State, ObservableState, Action, Double, Randomized],
   ConcreteExactRL[State, ObservableState, Action],
-  ConcreteQTable[State, ObservableState, Action]:
+  ConcreteQTable[ObservableState, Action]:
 
   val bdl = Update (Nil, alpha, Sample(gamma))
