@@ -11,7 +11,7 @@ trait ConcreteExactRL[State, ObservableState, Action]
 
   /** A value function implementation */
   override val vf = new ConcreteQTable[ObservableState, Action]
-  import vf.Q
+  import vf.*
 
   def epsilon: Probability
 

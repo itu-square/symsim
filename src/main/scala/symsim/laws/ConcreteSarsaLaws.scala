@@ -24,27 +24,25 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
 
   import sarsa.*
   import sarsa.agent.instances.given
+  import sarsa.vf.*
 
   // A shortcut for instantiating the interpreter with the right term for SARSA
   val bdl: ConcreteExactRL[State, ObservableState, Action] = 
     symsim.concrete.BdlConcreteSarsa[State, ObservableState, Action] 
       (agent, alpha, gamma, epsilon, episodes)
 
-  val t1: sarsa.vf.Q = bdl.vf.initialize
-  val t2: bdl.vf.Q = sarsa.vf.initialize
-
-  given Arbitrary[vf.VF] = Arbitrary (vf.genVF)
+  given Arbitrary[Q] = Arbitrary (genVF)
   
   val laws: RuleSet = SimpleRuleSet (
     "concreteSarsa",
 
     "probability of not choosing the best action is smaller than ε" ->
-      forAllNoShrink { (q: vf.VF, a_t: Action) =>
+      forAllNoShrink { (q: Q, a_t: Action) =>
         
         val trials = for 
           s_t  <- agent.initialize
-          a_tt <- vf.chooseAction (q) (agent.observe (s_t))
-        yield a_tt != vf.bestAction (q) (agent.observe (s_t))
+          a_tt <- chooseAction (ε) (q) (agent.observe (s_t))
+        yield a_tt != bestAction (q) (agent.observe (s_t))
 
         // We implement this as a bayesian test, checking whether htere is
         // 0.95 belief that the probability of suboptimal action is ≤ ε.
@@ -66,7 +64,7 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
     },
 
     "The update distribution produced by an update follows Eq. 14 (BDL)" ->
-       forAllNoShrink { (q_t: vf.VF, s_t: State, a_t: Action) =>
+       forAllNoShrink { (q_t: Q, s_t: State, a_t: Action) =>
          
          // #samples for the distribution test
          val n = 40000 
@@ -74,11 +72,11 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
          val os_t = agent.observe (s_t)
 
          // call the tested implementation
-         val sut: Randomized[(vf.VF, State, Action)] = 
+         val sut: Randomized[(Q, State, Action)] = 
            sarsa.learningEpoch (q_t, s_t, a_t)
 
          // call the spec interpreter
-         val spec: Randomized[(vf.VF, State, Action)] = 
+         val spec: Randomized[(Q, State, Action)] = 
            bdl.learningEpoch (q_t, s_t, a_t)
 
          // We do this test by assuming that both distributions are normal 

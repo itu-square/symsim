@@ -7,7 +7,7 @@ import cats.syntax.option.*
 import org.typelevel.paiges.Doc
 import symsim.QTable
 
-trait ConcreteQTable[ObservableState, Action: BoundedEnumerable]
+class ConcreteQTable[ObservableState: BoundedEnumerable, Action: BoundedEnumerable]
   extends QTable[ObservableState, Action, Double, Randomized]:
 
   def value (q: Q) (s: ObservableState, a: Action): Double = 

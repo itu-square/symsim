@@ -27,7 +27,7 @@ trait QTable [
   protected lazy val allObservableStates = 
     summon[BoundedEnumerable[ObservableState]].membersAscending.toList
 
-  opaque type Q = Map[ObservableState, Map[Action, Reward]]
+  type Q = Map[ObservableState, Map[Action, Reward]]
   type VF = Q
 
   extension (q: Q) 
