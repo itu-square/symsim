@@ -6,6 +6,7 @@ class Experiments
 
   // Import evidence that states and actions can be enumerated
   import WindyGrid.*
+  import WindyGrid.instances.given
 
   val sarsa = symsim.concrete.ConcreteSarsa (
     agent = WindyGrid,

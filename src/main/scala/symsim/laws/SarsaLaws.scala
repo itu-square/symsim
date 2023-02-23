@@ -29,18 +29,17 @@ import scala.util.Try
  * Same comment in AgentLaws.scala
  */
 case class SarsaLaws[State, ObservableState, Action, Reward, Scheduler[_]]
-   (sarsa: ExactRL[State, ObservableState, Action, Reward, Scheduler] 
-     & QTable[ObservableState, Action, Reward, Scheduler])
+   (sarsa: ExactRL[State, ObservableState, Action, Reward, Scheduler])
    extends org.typelevel.discipline.Laws:
 
    import sarsa.agent.instances.given
    import sarsa.agent.instances.*
    import sarsa.vf.*
 
-   def isStateTotal (q: sarsa.Q): Boolean =
+   def isStateTotal (q: sarsa.vf.Q): Boolean =
      q.states.toSet == allObservableStates.toSet
 
-   def isActionTotal (q: sarsa.Q): Boolean =
+   def isActionTotal (q: sarsa.vf.Q): Boolean =
      q.states.forall { s =>
        q.actionValues (s).keySet == allActions.toSet }
 
@@ -49,8 +48,8 @@ case class SarsaLaws[State, ObservableState, Action, Reward, Scheduler[_]]
 
       /* Law: All values in Q matrix are zero initially */
       "initQ contains only zeroes" -> {
-         import sarsa.apply
-         val q = sarsa.initialize
+         import sarsa.vf.apply
+         val q = sarsa.vf.initialize
          val props = for
            s <- allObservableStates
            a <- allActions
@@ -59,17 +58,17 @@ case class SarsaLaws[State, ObservableState, Action, Reward, Scheduler[_]]
       },
 
       "generated Q matrices are total for finite state space" ->
-      forAll (sarsa.genVF) { (q: sarsa.Q) => isStateTotal (q) },
+      forAll (sarsa.vf.genVF) { (q: sarsa.vf.Q) => isStateTotal (q) },
 
       "generated Q matrices are total for action state space" ->
-      forAll (sarsa.genVF) { (q: sarsa.Q) => isActionTotal (q) },
+      forAll (sarsa.vf.genVF) { (q: sarsa.vf.Q) => isActionTotal (q) },
 
       /* Law: chooseAction gives one of the enumerable actions */
       "chooseAction (q) (s) ∈ Action for all q and s" ->
-      forAll (sarsa.genVF) { (q: sarsa.Q) =>
+      forAll (sarsa.vf.genVF) { (q: sarsa.vf.Q) =>
         forAll { (s: State) =>
           val sa: Scheduler[Action] =
-            sarsa.chooseAction (sarsa.ε) (q) (sarsa.agent.observe (s))
+            sarsa.vf.chooseAction (sarsa.ε) (q) (sarsa.agent.observe (s))
           forAll (sa.toGen) { a => allActions.contains (a)
       } } },
     )

@@ -1,6 +1,8 @@
 package symsim
 package examples.concrete.simplemaze
 
+import Maze.instances.given
+
 class Experiments
    extends ExperimentSpec[MazeState,MazeState,MazeAction]:
 

@@ -3,6 +3,8 @@ package concrete
 
 import symsim.examples.concrete.mountaincar.MountainCar
 
+import MountainCar.instances.given
+
 class ConcreteSarsaIsSarsaSpec
   extends SymSimSpec:
 

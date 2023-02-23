@@ -3,6 +3,11 @@ package concrete
 
 import symsim.examples.concrete.mountaincar.MountainCar
 
+import MountainCar.instances.given
+
+/** This test is just a sanity check - it mostly tests Bdl against
+ *  itself (so an equality check).
+ */
 class BdlConcreteSarsaIsSarsaSpec
   extends SymSimSpec:
 

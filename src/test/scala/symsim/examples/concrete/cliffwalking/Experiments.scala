@@ -1,6 +1,8 @@
 package symsim
 package examples.concrete.cliffWalking
 
+import CliffWalking.instances.given
+
 class Experiments
   extends ExperimentSpec[CWState, CWObservableState, CWAction]:
 

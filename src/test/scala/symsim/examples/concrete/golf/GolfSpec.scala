@@ -14,10 +14,12 @@ import scala.language.adhocExtensions
 class GolfSpec
   extends org.scalacheck.Properties ("Golf"):
 
-  import Golf.instances.{arbitraryState, arbitraryAction}
+  import Golf.instances.{arbitraryState, arbitraryAction, enumState, enumAction}
 
   // The number of episodes set to zero, as it is ignored in tests below
   val sarsa = ConcreteSarsa (Golf, 0.1, 0.1, 0.1, 0)
+
+  import sarsa.vf.apply
 
   property ("There is no action that leads agent to initial state") =
     forAll { (s: GolfState, a: GolfAction) =>
@@ -33,11 +35,11 @@ class GolfSpec
 
   property ("Q-table values are non-positive") =
     forAll { (s: GolfState, a: GolfAction) =>
-      for Q <- sarsa.learningEpisode (sarsa.initialize, s)
-      yield Q (s, a) <= 0
+      for q <- sarsa.learningEpisode (sarsa.vf.initialize, s)
+      yield q (s, a) <= 0
     }
 
   property ("Using club D in the sand is the best trained action after 100 episodes") =
     val initials = Randomized.repeat(Randomized.const(Golf.StartState)).take(200)
-    val Q = sarsa.learn (sarsa.initialize, initials)
-    Q.take(50).forall { Q => sarsa.bestAction (Q) (Golf.SandState)._1 == Club.D }
+    val q = sarsa.learn (sarsa.vf.initialize, initials)
+    q.take(50).forall { q => sarsa.vf.bestAction (q) (Golf.SandState)._1 == Club.D }
