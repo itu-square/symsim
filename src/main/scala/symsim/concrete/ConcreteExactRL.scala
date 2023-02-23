@@ -10,7 +10,8 @@ trait ConcreteExactRL[State, ObservableState, Action]
   import agent.instances.given
 
   /** A value function implementation */
-  override val vf = new ConcreteQTable[ObservableState, Action]
+  override val vf: ConcreteQTable[ObservableState, Action] = 
+    new ConcreteQTable[ObservableState, Action]
   import vf.*
 
   def epsilon: Probability

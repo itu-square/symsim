@@ -8,7 +8,7 @@ import symsim.concrete.ConcreteSarsa
 import symsim.concrete.Randomized
 import symsim.concrete.Randomized.given
 
-import WindyGrid.instances.{arbitraryAction, arbitraryState}
+import WindyGrid.instances.{arbitraryAction, arbitraryState, enumState, enumAction}
 
 // Eliminate the warning on WindyGridSpec until scalacheck makes Properties open
 import scala.language.adhocExtensions
@@ -41,8 +41,9 @@ object WindyGridSpec
   // to rerun training multiple times (if it is put inside the property)
   val sarsa = ConcreteSarsa (WindyGrid, 0.1, 0.5, 0.1, 1)
   val initials = Randomized.eachOf(WindyGrid.instances.allObservableStates*)
-  val Qs = sarsa.learn (sarsa.initialize, initials).take(5).toList
+  val qs = sarsa.learn (sarsa.vf.initialize, initials).take(5).toList
+  import sarsa.vf.apply
 
   property ("Q-table values are non-positive") =
     forAll { (s: GridState, a: GridAction) => 
-      Qs.forall { Q => Q (s, a) <= 0 } }
+      qs.forall { q => q (s, a) <= 0 } }

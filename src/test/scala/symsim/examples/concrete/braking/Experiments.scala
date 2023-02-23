@@ -6,6 +6,7 @@ class Experiments
 
   // Import evidence that states and actions can be enumerated
   import Car.*
+  import Car.instances.given
 
   val sarsa = symsim.concrete.ConcreteSarsa (
      agent = Car,

@@ -5,6 +5,7 @@ class Experiments
   extends ExperimentSpec[GolfState, GolfState, GolfAction]:
 
   import Golf.*
+  import Golf.instances.given
 
   val sarsa = symsim.concrete.ConcreteSarsa (
     agent = Golf,

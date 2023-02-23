@@ -6,7 +6,7 @@ import org.typelevel.paiges.Doc
 
 trait RL[ObservableState, Action, Reward, Scheduler[_]]:
 
-  val vf: ValueFunction[ObservableState, Action, Reward, Scheduler]
+  def vf: ValueFunction[ObservableState, Action, Reward, Scheduler]
 
   type Policy = Map[ObservableState, Action]
 
