@@ -26,7 +26,11 @@ class ConcreteSarsaSpec
 
   "learnN shouldn't overflow stack (learnN is tailrec, each episode tailrec)" in {
     val initials: Randomized[UnitState] = Randomized.repeat (UnitAgent.initialize)
-    val result: Randomized[sarsa.Q] = sarsa.learn (sarsa.initialize, initials.take (C))
+    val q_r = sarsa.learn ((sarsa.initialize, 0.0), initials.take (C))
+    val result: Randomized[sarsa.Q] =
+      for
+        (q, r) <- q_r
+      yield q
     try result.size == 1
     catch case e =>
        fail (s"Forcing result of learning overflows (${e.toString})")
@@ -41,7 +45,7 @@ class ConcreteSarsaSpec
   // but at least checks for crash
   // also with the immediate final state 'learn' is not really tested here
   "learn is tail recursive, no stack overflow (regression)"  in {
-    val result = sarsa.learningEpisode (sarsa.initialize, ())
+    val result = sarsa.learningEpisode ((sarsa.initialize, 0.0), ())
     result.head
   }
 

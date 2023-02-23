@@ -37,7 +37,11 @@ trait ConcreteQTable[State, ObservableState, Action]
 
   def runQ: Q =
     val initials = Randomized.repeat (agent.initialize).take (episodes)
-    val schedule = learn (this.initialize, initials)
+    val q_r = learn ((this.initialize, 0.0), initials)
+    val schedule =
+      for
+        (q, r) <- q_r
+      yield q
     schedule.head
 
 
