@@ -14,7 +14,7 @@ class BdlConcreteSarsaIsSarsaSpec
   val csarsa = BdlConcreteSarsa (
     agent = MountainCar,
     alpha = 0.1,
-    gamma = 1.0,
+    gamma = 0.2,
     epsilon = 0.5,
     episodes = 1000,
   )

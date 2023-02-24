@@ -1,6 +1,7 @@
 package symsim
 
 import org.scalacheck.Gen
+import org.scalacheck.Arbitrary
 
 import symsim.concrete.Probability 
 
@@ -25,4 +26,4 @@ trait ValueFunction[ObservableState, Action, Reward, Scheduler[_]]:
 
   def initialize: VF
 
-  def genVF: Gen[VF]
+  def genVF (using Arbitrary[Reward]): Gen[VF]

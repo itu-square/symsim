@@ -11,7 +11,7 @@ class ConcreteSarsaIsSarsaSpec
   val csarsa = ConcreteSarsa (
     agent = MountainCar,
     alpha = 0.1,
-    gamma = 1.0,
+    gamma = 0.2,
     epsilon = 0.5,
     episodes = 1000,
   )
