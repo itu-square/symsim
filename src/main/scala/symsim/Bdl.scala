@@ -61,9 +61,12 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
     : Scheduler[(VF, State, Action)] = bdl.update match 
   case Sample (γ) => 
     for 
-      (s_tk, a_tk, g_tk, γ_tk) <- sem (bdl.est) (q_t) 
+      sagγ                     <-  sem (bdl.est) (q_t)  // intermediate name needed for stryker which fails with -source:future
                                     (s_t, a_t, arith[Reward].zero, 1.0)
-      (s_tkk, r_tkk)           <- agent.step (s_tk) (a_tk)
+      (s_tk, a_tk, g_tk, γ_tk) =  sagγ
+                                 
+      sr                       <- agent.step (s_tk) (a_tk) // intermediate name needed for stryker which fails with -source:future
+      (s_tkk, r_tkk)           =  sr
       (os_t, os_tkk)           =  (agent.observe (s_t), agent.observe (s_tkk))
       a_tkk                    <- vf.chooseAction (epsilon) (q_t) (os_tkk)
       g_tkk                    =  g_tk + γ_tk * r_tkk 
@@ -75,9 +78,11 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
 
   case Expectation (γ) => 
     for 
-      (s_tk, a_tk, g_tk, γ_tk) <- sem (bdl.est) (q_t) 
+      sagγ                     <- sem (bdl.est) (q_t)  // intermediate name needed for stryker which fails with -source:future
                                     (s_t, a_t, arith[Reward].zero, 1.0)
-      (s_tkk, r_tkk)           <- agent.step (s_tk) (a_tk)
+      (s_tk, a_tk, g_tk, γ_tk) =  sagγ
+      sr                       <- agent.step (s_tk) (a_tk) // intermediate name needed for stryker which fails with -source:future
+      (s_tkk, r_tkk)           =  sr
       (os_t, os_tkk)           =  (agent.observe (s_t), agent.observe (s_tkk))
       a_tkk                    <- vf.chooseAction (epsilon) (q_t) (os_tkk)
       expectation              = allActions
@@ -120,7 +125,8 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
 
     case Sample (γ) => 
       for 
-        (s_tt, r_tt) <- agent.step (s_t) (a_t)
+        sr           <- agent.step (s_t) (a_t) // intermediate name needed for stryker which fails with -source:future
+        (s_tt, r_tt) =  sr
         a_tt         <- vf.chooseAction (epsilon) (q_t) (agent.observe (s_tt))
         g_tt         =  g_t + γ_t * r_tt
         γ_tt         =  γ_t * γ
@@ -128,7 +134,8 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
 
     case Expectation (γ) => 
       for 
-        (s_tt, r_tt) <- agent.step (s_t) (a_t)
+        sr           <- agent.step (s_t) (a_t) // intermediate name needed for stryker which fails with -source:future
+        (s_tt, r_tt) =  sr
         os_tt        =  agent.observe (s_tt)
         a_tt         <- vf.chooseAction (epsilon) (q_t) (os_tt)
         expectation  =  allActions

@@ -10,7 +10,7 @@ scalacOptions ++= Seq (
   "-deprecation",
   "-feature",
   "-Yindent-colons",
-  "-source:future",
+  // "-source:future", Disabled for stryker
 )
 
 
