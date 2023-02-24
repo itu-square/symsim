@@ -28,72 +28,71 @@ type Probability = Double
   **/
 object Randomized:
 
-   /** Create a generator that produces a single 'a'. Used to create
-     * deterministic values when a scheduler/randomized type is
-     * expected.
-     */
-   def const[A] (a: =>A): Randomized[A] =
-     LazyList (a)
+  /** Create a generator that produces a single 'a'. Used to create
+    * deterministic values when a scheduler/randomized type is
+    * expected.
+    */
+  def const[A] (a: =>A): Randomized[A] =
+    LazyList (a)
 
-   def prob: Randomized[Probability] =
-      LazyList (SecureRandom ().nextDouble)
-
-
-   /** Produce a single random number between the bounds, 
-     * right exclusive 
-     **/
-   def between (minInclusive: Int, maxExclusive: Int): Randomized[Int] =
-      LazyList (SecureRandom ()
-         .ints (minInclusive, maxExclusive)
-         .findAny
-         .getAsInt)
+  def prob: Randomized[Probability] =
+    LazyList (SecureRandom ().nextDouble)
 
 
-   def between (minInclusive: Double, maxExclusive: Double): Randomized[Double] =
-      LazyList (SecureRandom ()
-         .doubles (minInclusive, maxExclusive)
-         .findAny
-         .getAsDouble)
+  /** Produce a single random number between the bounds, 
+    * right exclusive 
+    **/
+  def between (minInclusive: Int, maxExclusive: Int): Randomized[Int] =
+    LazyList (SecureRandom ()
+      .ints (minInclusive, maxExclusive)
+      .findAny
+      .getAsInt)
 
-   def gaussian (mean: Double = 0.0, stddev: Double = 1.0): Randomized[Double] =
-     LazyList (SecureRandom ().nextGaussian * stddev + mean)
 
-   /** Toss a coing biased towards true with probabilty 'bias' */
-   def coin (bias: Probability): Randomized[Boolean] =
-      LazyList (SecureRandom ().nextDouble <= bias)
+  def between (minInclusive: Double, maxExclusive: Double): Randomized[Double] =
+    LazyList (SecureRandom ()
+      .doubles (minInclusive, maxExclusive)
+      .findAny
+      .getAsDouble)
 
-   def oneOf[A] (choices: A*): Randomized[A] =
-      between (0, choices.size)
-         .map { i => choices (i) }
+  def gaussian (mean: Double = 0.0, stddev: Double = 1.0): Randomized[Double] =
+    LazyList (SecureRandom ().nextGaussian * stddev + mean)
 
-   def eachOf[A] (choices: A*): Randomized[A] = 
-     LazyList(choices*)
+  /** Toss a coing biased towards true with probabilty 'bias' */
+  def coin (bias: Probability): Randomized[Boolean] =
+    LazyList (SecureRandom ().nextDouble <= bias)
 
-   def repeat[A] (ra: =>Randomized[A]): Randomized[A] =
-      LazyList.continually (ra).flatten
+  def oneOf[A] (choices: A*): Randomized[A] =
+    between (0, choices.size)
+      .map { i => choices (i) }
 
-   given randomizedIsMonad: cats.Monad[Randomized] =
-      cats.instances.lazyList.catsStdInstancesForLazyList
+  def eachOf[A] (choices: A*): Randomized[A] = 
+    LazyList(choices*)
 
-   given randomizedIsFoldable: cats.Foldable[Randomized] =
-      cats.instances.lazyList.catsStdInstancesForLazyList
+  def repeat[A] (ra: =>Randomized[A]): Randomized[A] =
+    LazyList.continually (ra).flatten
 
-   given canTestInRandomized: symsim.CanTestIn[Randomized] =
-      new symsim.CanTestIn[Randomized] {
+  given randomizedIsMonad: cats.Monad[Randomized] =
+    cats.instances.lazyList.catsStdInstancesForLazyList
 
-         @targetName ("toPropBoolean")
-         def toProp (rProp: Randomized[Boolean]) =
-            Prop.forAllNoShrink (toGen (rProp)) (identity[Boolean])
+  given randomizedIsFoldable: cats.Foldable[Randomized] =
+    cats.instances.lazyList.catsStdInstancesForLazyList
 
-         // This is a nasty hack that costs as a lot on memory in tests (but
-         // probably not in experiments).  Unfortunately, I do not see an easy way
-         // to add a completely new generator for scalacheck that encapsulates
-         // Randomized.  The Gen class appears to be sealed and pimping cannot add
-         // state to objects?
-         def toGen[A] (ra: => Randomized[A]): Gen[A] =
-            require (ra.nonEmpty)
-            val stream = repeat (ra)
-            Gen.choose(0, 1000)
-               .map { i => stream (i) }
+  given canTestInRandomized: symsim.CanTestIn[Randomized] =
+    new symsim.CanTestIn[Randomized] {
 
-      }
+      @targetName ("toPropBoolean")
+      def toProp (rProp: Randomized[Boolean]) =
+        Prop.forAllNoShrink (toGen (rProp)) (identity[Boolean])
+
+      // This is a nasty hack that costs as a lot on memory in tests (but
+      // probably not in experiments).  Unfortunately, I do not see an easy way
+      // to add a completely new generator for scalacheck that encapsulates
+      // Randomized.  The Gen class appears to be sealed and pimping cannot add
+      // state to objects?
+      def toGen[A] (ra: => Randomized[A]): Gen[A] =
+        require (ra.nonEmpty)
+        val stream = repeat (ra)
+        Gen.choose(0, 1000)
+          .map { i => stream (i) }
+    }
