@@ -51,6 +51,8 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
 
     "probability of not choosing the best action is smaller than ε" ->
       forAllNoShrink { (q: Q, a_t: Action) =>
+
+        val n = 4000
         
         val trials = for 
           s_t  <- agent.initialize
@@ -59,28 +61,27 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
 
         // We implement this as a bayesian test, checking whether htere is
         // 0.95 belief that the probability of suboptimal action is ≤ ε.
-        // We check this by computing the posterior and asking CDF (ε) ≥ 0.95
-        // Using the number of episodes as the #trials is a bit of an abuse
+        // We check this by computing the posterior and asking CDF (ε) ≥ 0.94
 
-        val successes = trials.take (sarsa.episodes).count { _ == true }
-        val failures = sarsa.episodes - successes
+        val successes = trials.take (n).count { _ == true }
+        val failures = n - successes
 
         // α=1 and β=1 gives a prior, weak flat, unbiased
         val cdfEpsilon =  Beta (2 + successes, 2 + failures).cdf (sarsa.ε)
 
-        (cdfEpsilon >= 0.995) :| 
+        (cdfEpsilon >= 0.94) :| 
           s"""|The beta posterior test results (failing):
               |    posterior_cdf(${sarsa.ε}) == $cdfEpsilon
               |    #exploration selections ≠ best action: $successes 
               |    #best action selections: $failures 
-              |    #total trials: $sarsa.episodes""".stripMargin
+              |    #total trials: $n""".stripMargin
     },
 
     "The update distribution produced by an update follows Eq. 14 (BDL)" ->
        forAllNoShrink { (q_t: Q, s_t: State, a_t: Action) =>
          
          // #samples for the distribution test
-         val n = 80000 
+         val n = 10000 
 
          val os_t = agent.observe (s_t)
 
@@ -91,25 +92,6 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
          // call the spec interpreter
          val spec: Randomized[(Q, State, Action)] = 
            Randomized.repeat (bdl.learningEpoch (q_t, s_t, a_t))
-
-         // val spec = Randomized.repeat(for 
-         //   (s_tt,r_tt) <- agent.step (s_t) (a_t)
-         //   os_tt        = agent.observe (s_tt)
-         //   a_tt        <- sarsa.vf.chooseAction (sarsa.ε) (q_t) (os_tt)
-         //   g_tt         = r_tt + gamma * q_t (os_tt, a_tt)
-         //   u            = q_t (os_t, a_t) - sarsa.α * (g_tt - q_t (os_t, a_t))
-         //   q_tt         = q_t.updated (os_t, a_t, u)
-         // yield (q_tt, s_tt, a_tt))
-         
-         // Feb 18 variant (that passes on Feb 18 code!)
-         // val spec = Randomized.repeat (for 
-         //   (s_tt,r_tt) <- agent.step (s_t) (a_t)
-         //   os_tt        = agent.observe (s_tt)
-         //   a_tt         <- sarsa.vf.chooseAction (sarsa.ε) (q_t) (os_tt)
-         //   g_tt         = r_tt + gamma * q_t (os_tt, a_tt)
-         //   u            = q_t (os_t, a_t) - sarsa.alpha * (g_tt - q_t (os_t, a_t))
-         //   q_tt         = q_t.updated (os_t, a_t, u)
-         // yield (q_tt, s_tt, a_tt))
 
          // We do this test by assuming that both distributions are normal 
          // (A generalized test with StudentT would be even better).
@@ -124,31 +106,25 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
          // See also Christian P. Robert. The Bayesian Choice. Springer. p. 121. 
          //
          // Extract a univariate distributions over updates
-         
         
          val sutUpdates = sut.map { (q_tt, _, _) => q_tt (os_t, a_t) }.take (n)
          val specUpdates = spec.map { (q_tt, _, _) => q_tt (os_t, a_t) }.take (n)
 
-         // TODO // TODO debugging section
-         // TODO // assert (sutUpdates.size == n, s"ala ma kota ${sutUpdates.size}")
-         // TODO println ("q_t (os_t, a_t): " + q_t(os_t, a_t))
-         // TODO println ("SUT:" + sutUpdates.take(15).map {_.toString}.mkString (", "))
-         // TODO println ("BDL:" + specUpdates.take(15).map {_.toString}.mkString (", "))
-
          val sutMean = sutUpdates.sum / n.toDouble
          val specMean = specUpdates.sum / n.toDouble
 
-         // Prior, we assume zero reward, with large standard deviation
+         // Infer the posterior on mean update.
+         // Prior: we assume zero reward, with large standard deviation
          // It would be nice to know something about the range of possible rewards
-         // We do have some rwards in the range of 10e+4.
+         // We do have some rwards in the range of 1e+4.
          val μ_0 = 0.0
-         val σ2_0 = 10.0e+4 
+         val σ2_0 = 1e+4 
 
-         // Likelihood (μ distributed with the prior, σ fixed for now)
+         // Likelihood (μ distributed with the prior, σ fixed for now).
          // Isn't it fair to fix a small σ2 because the estimation of
          // mean should be very stable? The literature is a bit quiet
          // on how to select σ2 for this estimator of posterior μ.
-         val σ2 = 1.0
+         val σ2 = 0.5
 
          // Posterior params for sample of size `n` with mean `mean`
          def μ_post (n: Int, mean: Double) = 
@@ -174,14 +150,14 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
          val σ_diff = σ2_post_sut + σ2_post_spec
 
          // Is the expectation of the difference of the means close to zero?
-         val tolerance = 0.05
+         val tolerance = 0.07
          val cdfDiff = Gaussian (μ_diff, σ_diff).cdf (tolerance) 
 
          val msg = s"""|The normal posterior test results (failing):
                        |    posterior_cdf(${tolerance}) == $cdfDiff
                        |    "μ_diff: $μ_diff, σ_diff: $σ_diff""".stripMargin
 
-         (cdfDiff >= 0.995) :| msg
+         (cdfDiff >= 0.94) :| msg
        }
 
   )

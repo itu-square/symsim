@@ -38,12 +38,11 @@ case class Update (est: List[Est], alpha: Double, update: Est):
 trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
   extends ExactRL[State, ObservableState, Action, Reward, Scheduler]:
 
-  import vf.*
+  import vf.{VF, apply, updated}
  
   import agent.instances.given
   import agent.instances.*
 
-  def epsilon: Probability
   def episodes: Int
   def bdl: Update 
 
@@ -68,7 +67,7 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
       sr                      <- agent.step (s_tk) (a_tk) // intermediate name needed for stryker which fails with -source:future
       (s_tkk, r_tkk)           = sr
       (os_t, os_tkk)           = (agent.observe (s_t), agent.observe (s_tkk))
-      a_tkk                   <- vf.chooseAction (epsilon) (q_t) (os_tkk)
+      a_tkk                   <- vf.chooseAction (ε) (q_t) (os_tkk)
       g_tkk                    = g_tk + γ_tk * r_tkk 
                                  + γ * γ_tk * q_t (os_tkk, a_tkk)
       q_t_value                = q_t (os_t, a_t)
@@ -84,10 +83,10 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
       sr                      <- agent.step (s_tk) (a_tk) // intermediate name needed for stryker which fails with -source:future
       (s_tkk, r_tkk)           = sr
       (os_t, os_tkk)           = (agent.observe (s_t), agent.observe (s_tkk))
-      a_tkk                   <- vf.chooseAction (epsilon) (q_t) (os_tkk)
+      a_tkk                   <- vf.chooseAction (ε) (q_t) (os_tkk)
       expectation              = allActions
                                   .map { a => 
-                                    vf.probability (epsilon) (q_t) (os_tkk, a)
+                                    vf.probability (ε) (q_t) (os_tkk, a)
                                       * q_t (os_tkk, a) }
                                   .arithSum
       g_tkk                    = g_tk + γ_tk * r_tkk + γ * γ_tk * expectation
@@ -127,7 +126,7 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
       for 
         sr           <- agent.step (s_t) (a_t) // intermediate name needed for stryker which fails with -source:future
         (s_tt, r_tt) =  sr
-        a_tt         <- vf.chooseAction (epsilon) (q_t) (agent.observe (s_tt))
+        a_tt         <- vf.chooseAction (ε) (q_t) (agent.observe (s_tt))
         g_tt         =  g_t + γ_t * r_tt
         γ_tt         =  γ_t * γ
       yield (s_tt, a_tt, g_tt, γ_tt)
@@ -137,12 +136,12 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
         sr           <- agent.step (s_t) (a_t) // intermediate name needed for stryker which fails with -source:future
         (s_tt, r_tt) =  sr
         os_tt        =  agent.observe (s_tt)
-        a_tt         <- vf.chooseAction (epsilon) (q_t) (os_tt)
+        a_tt         <- vf.chooseAction (ε) (q_t) (os_tt)
         expectation  =  allActions
                          .filter { _ != a_tt }
                          .map { a => 
-                           vf.probability (epsilon) (q_t) (os_tt, a) * q_t (os_tt, a) }
+                           vf.probability (ε) (q_t) (os_tt, a) * q_t (os_tt, a) }
                          .arithSum
         g_tt         =  g_t + γ_t * (r_tt + expectation) 
-        γ_tt         =  γ_t * γ * vf.probability (epsilon) (q_t) (os_tt, a_tt)
+        γ_tt         =  γ_t * γ * vf.probability (ε) (q_t) (os_tt, a_tt)
       yield (s_tt, a_tt, g_tt, γ_tt)
