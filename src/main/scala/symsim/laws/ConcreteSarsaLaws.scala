@@ -81,8 +81,8 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
 
          // We do this test by assuming that both distributions are normal 
          // (A generalized test with StudentT would be even better).
-         // We fir a Bayesian posterior (analytically) on the difference of
-         // their means, and checking whether we believe the difference of
+         // We find a Bayesian posterior (analytically) for the difference of
+         // their means, and checking whether we believe the difference
          // is close to zero with small standard deviation.
          //
          // I followed this note for the conjugate prior update:
