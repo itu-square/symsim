@@ -14,8 +14,6 @@ trait ConcreteExactRL[State, ObservableState, Action]
     new ConcreteQTable[ObservableState, Action]
   import vf.*
 
-  def epsilon: Probability
-
   // TODO: unclear if this is general (if it turns out to be the same im
   // symbolic or approximate algos we should promote this to the trait
 

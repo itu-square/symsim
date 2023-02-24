@@ -17,7 +17,7 @@ import symsim.Arith.*
 trait QTable [
     ObservableState: BoundedEnumerable,
     Action: BoundedEnumerable,
-    Reward: Arith: Arbitrary,
+    Reward: Arith,
     Scheduler[_]
   ] extends ValueFunction[ObservableState, Action, Reward, Scheduler]:
 
@@ -69,8 +69,8 @@ trait QTable [
     * Reward]]] will return random Q-tables, but not guaranteeing that they are
     * total (for instance, by default an empty Map will be produced). 
     **/
-  val genVF: Gen[Q] =
-    val l1 = List.fill (allActions.size) (arbitrary[Reward]) 
+  def genVF (using arbReward: Arbitrary[Reward]): Gen[Q] =
+    val l1 = List.fill (allActions.size) (arbReward.arbitrary) 
     val genActionRewardMap = 
       for rs <- Gen.sequence[List[Reward], Reward] (l1)
       yield Map (allActions zip rs*)

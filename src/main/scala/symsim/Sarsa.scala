@@ -26,11 +26,11 @@ trait Sarsa[State, ObservableState, Action, Reward, Scheduler[_]]
       sa_tt        <- agent.step (s_t) (a_t)
       (s_tt, r_tt)  = sa_tt
                       // SARSA: on-policy (p.844 in Russel & Norvig)
-      a_tt         <- vf.chooseAction (ε) (q_t) (agent.observe (s_tt))
       os_t          = agent.observe (s_t)
       os_tt         = agent.observe (s_tt)
-      old_entry     = q_t (os_t, a_t)
-      correction    = r_tt + gamma * q_t (os_tt, a_tt) - old_entry
-      qval          = old_entry + alpha * correction
-      q_tt          = q_t.updated (os_t, a_t, qval)
+      a_tt         <- vf.chooseAction (ε) (q_t) (os_tt)
+      q_t_value     = q_t (os_t, a_t)
+      correction    = r_tt + gamma * q_t (os_tt, a_tt) - q_t_value
+      q_tt_value    = q_t_value + alpha * correction
+      q_tt          = q_t.updated (os_t, a_t, q_tt_value)
     yield (q_tt, s_tt, a_tt)

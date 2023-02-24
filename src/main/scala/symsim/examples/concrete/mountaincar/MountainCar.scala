@@ -118,7 +118,12 @@ object MountainCarInstances
 
   given eqCarState: Eq[CarState] = Eq.fromUniversalEquals
 
-  given arbitraryReward: Arbitrary[CarReward] = Arbitrary (Gen.double)
+  /** This is useful to limit as it is used in tests and
+    * initialization of Q tables. If these values are unreasonably
+    * large they will break statistical tests.
+    */
+  given arbitraryReward: Arbitrary[CarReward] = 
+    Arbitrary (Gen.choose (-200.0, 200.0))
 
   given rewardArith: Arith[CarReward] = Arith.arithDouble
 
