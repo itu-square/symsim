@@ -15,7 +15,7 @@ class BdlConcreteSarsaIsSarsaSpec
     agent = MountainCar,
     alpha = 0.1,
     gamma = 0.2,
-    epsilon = 0.5,
+    epsilon = 0.05,
     episodes = 1000,
   )
 
