@@ -11,7 +11,7 @@ class BdlExperiments
      alpha = 0.2,
      gamma = 1,
      epsilon = 0.05,
-     episodes = 50000,
+     episodes = 60000,
    )
 
    s"SimpleMaze experiment with ${sarsa}" in {
