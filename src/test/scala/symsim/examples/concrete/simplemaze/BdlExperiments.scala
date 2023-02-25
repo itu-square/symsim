@@ -8,7 +8,7 @@ class BdlExperiments
 
    val sarsa = symsim.concrete.BdlConcreteSarsa (
      agent = Maze,
-     alpha = 0.1,
+     alpha = 0.2,
      gamma = 1,
      epsilon = 0.05,
      episodes = 50000,

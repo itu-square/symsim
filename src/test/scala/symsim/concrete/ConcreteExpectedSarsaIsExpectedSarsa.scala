@@ -5,10 +5,10 @@ import symsim.examples.concrete.mountaincar.MountainCar
 
 import MountainCar.instances.given
 
-class ConcreteSarsaIsSarsaSpec
+class ConcreteExpectedSarsaIsSarsaSpec
   extends SymSimSpec:
 
-  val csarsa = ConcreteSarsa (
+  val csarsa = ConcreteExpectedSarsa (
     agent = MountainCar,
     alpha = 0.1,
     gamma = 0.2,
@@ -16,7 +16,7 @@ class ConcreteSarsaIsSarsaSpec
     episodes = -1, // Not used in this test
   )
 
-  checkAll ("concrete.ConcreteSarsa is Sarsa", 
+  checkAll ("concrete.ConcreteExpectedSarsa is Sarsa", 
     symsim.laws.SarsaLaws (csarsa).laws)
-  checkAll ("concrete.ConcreteSarsa is ConcreteSarsa",
-    symsim.laws.ConcreteSarsaLaws (csarsa, csarsa.gamma).laws)
+  checkAll ("concrete.ConcreteExpectedSarsa is ConcreteExpectedSarsa",
+    symsim.laws.ConcreteExpectedSarsaLaws (csarsa, csarsa.gamma).laws)
