@@ -1,12 +1,13 @@
 package symsim
 package laws
 
-import breeze.stats.distributions.{Rand, Beta}
-import breeze.stats.distributions.Rand.VariableSeed.*
 import scala.language.postfixOps
 
 import org.scalacheck.Prop.*
 import org.scalacheck.Arbitrary
+
+import breeze.stats.distributions.{Rand, Beta, Gaussian}
+import breeze.stats.distributions.Rand.VariableSeed.*
 
 import symsim.concrete.ConcreteExactRL
 import symsim.concrete.ConcreteQTable
@@ -31,7 +32,7 @@ import symsim.concrete.Randomized
  *              implementations,  which is  a convenient  sanity check
  *              (the test of bdl against bdl should pass).
  */
-case class ConcreteSarsaLaws[State, ObservableState, Action] 
+case class ConcreteExpectedSarsaLaws[State, ObservableState, Action] 
   (sarsa: ConcreteExactRL[State, ObservableState, Action], 
    gamma: Double
   ) extends org.typelevel.discipline.Laws:
@@ -42,17 +43,23 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
 
   val γ = gamma
 
-  // A shortcut for instantiating the interpreter with the right term for SARSA
+  /** Instantiate the interpreter with the right term for Expected SARSA.
+   * 
+   * For the BDL test we do not want exploration, to make the udpates
+   * more predictable. 
+   */
   val bdl =  
-    symsim.concrete.BdlConcreteSarsa[State, ObservableState, Action] 
+    symsim.concrete.BdlConcreteExpectedSarsa[State, ObservableState, Action] 
       (agent, sarsa.α, this.γ, sarsa.ε, -1)
 
   given Arbitrary[Q] = 
     Arbitrary (vf.genVF (using agent.instances.arbitraryReward))
   
   val laws: RuleSet = SimpleRuleSet (
-    "concreteSarsa",
+    "concreteExpectedSarsa",
 
+    // TODO: this test is now repeated from ConcreteSarsaLaws. There
+    // is some taxonomy error in the laws hierarchy. Needs refactoring
     "probability of not choosing the best action is smaller than ε" ->
       forAllNoShrink { (q: Q, a_t: Action) =>
 
@@ -83,11 +90,11 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
               |    #total trials: $n""".stripMargin
     },
 
-    // TODO: this test is alsmost the same as for ConcreteExpectedSarsaLaws.
+    // TODO: this test is almost the same as for ConcreteSarsaLaws.
     // It only differs in the spec. There is an opportunity for
     // parameterizing with the spec, and possibly also for extracting
     // the distribution difference test to a separate function.
-    "The update distribution produced by an update follows Eq. 15 (BDL)" ->
+    "The update distribution produced by an update follows Eq. 16 (BDL)" ->
        forAllNoShrink { (q_t: Q, s_t: State, a_t: Action) =>
          
          // #samples for the distribution test
@@ -103,13 +110,20 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
          val spec: Randomized[(Q, State, Action)] = 
            Randomized.repeat (bdl.learningEpoch (q_t, s_t, a_t))
 
-         // We find a Bayesian posterior (analytically) for the mean
-         // difference between them means, and checking whether we
-         // believe the difference is close to zero with small
-         // standard deviation.
-         
+         // We do this test by assuming that both distributions are normal 
+         // (A generalized test with StudentT would be even better).
+         // We find a Bayesian posterior (analytically) for the difference of
+         // their means, and checking whether we believe the difference
+         // is close to zero with small standard deviation.
+         //
+         // I followed this note for the conjugate prior update:
+         // https://people.eecs.berkeley.edu/~jordan/courses/260-spring10/lectures/lecture5.pdf
+         // also John Kruschke, Doing Bayesian Data Analysis, 2nd Ed.
+         // p. 453 (the formulation below is from there).
+         // See also Christian P. Robert. The Bayesian Choice. Springer. p. 121. 
+         //
          // Extract a univariate distributions over updates
-         
+        
          val sutUpdates = sut.map { (q_tt, _, _) => q_tt (os_t, a_t) }
          val specUpdates = spec.map { (q_tt, _, _) => q_tt (os_t, a_t) }
 
@@ -118,7 +132,7 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
          val diffs = (sutUpdates zip specUpdates)
            .map { _ - _ }
            .take (n)
-          
+
          // Infer the posterior on mean update.
          // Prior: we assume zero reward, with large standard deviation
          // It would be nice to know something about the range of possible rewards
@@ -148,5 +162,4 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
 
          (ci_mass >= 0.95) :| msg
        }
-
   )

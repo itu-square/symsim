@@ -123,7 +123,7 @@ object MountainCarInstances
     * large they will break statistical tests.
     */
   given arbitraryReward: Arbitrary[CarReward] = 
-    Arbitrary (Gen.choose (-200.0, 200.0))
+    Arbitrary (Gen.choose (-300.0, 300.0))
 
   given rewardArith: Arith[CarReward] = Arith.arithDouble
 
