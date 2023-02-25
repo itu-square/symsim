@@ -6,10 +6,13 @@ import cats.syntax.functor.*
 import symsim.Arith.*
 
 trait ExpectedSarsa[State, ObservableState, Action, Reward, Scheduler[_]]
-  extends ExactRL[State, ObservableState, Action, Reward, Scheduler],
-    QTable[State, ObservableState, Action, Reward, Scheduler] :
+  extends ExactRL[State, ObservableState, Action, Reward, Scheduler]:
 
   import agent.instances.given
+  import vf.{Q, apply, updated}
+
+  def gamma: Double
+  def γ: Double = gamma
 
   /** A single step of the learning algorithm
     *
@@ -36,5 +39,5 @@ trait ExpectedSarsa[State, ObservableState, Action, Reward, Scheduler[_]]
       correction = r_tt + gamma * expectedQ.foldLeft ((0.0).asInstanceOf[Reward])( _ + _ ) - old_entry
       qval = old_entry + alpha * correction
       q1 = q.updated (ds_t, a_t, qval)
-      a_tt1 <- chooseAction (q1) (ds_tt)
+      a_tt1 <- vf.chooseAction (ε) (q1) (ds_tt)
     yield (q1, s_tt, a_tt1)
