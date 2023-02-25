@@ -14,40 +14,40 @@ import symsim.concrete.ConcreteQTable
 import symsim.concrete.Randomized
 
 /**
- * Laws that have to be obeyed by any refinement of symsim.ConcreetSarsa
+ * Laws that have to be obeyed by any refinement of symsim.ConcreetQ-Learning
  *
  * The gamma argument needs to be provided separately, because
  * ConcreteExactRL might be an algorithm that does not have a single
  * gamma (this interface is quite abstract). We presently do not have
  * an interface for algorithms with a single discount factor, so we
- * have to use ConcreteExactRL or Sarsa/ConcreteSarsa. The latter is
+ * have to use ConcreteExactRL or QLearning/ConcreteQLearning. The latter is
  * too concrete, as it would disallow running the testsuite on the
  * BDL-based implementations, which is a convenient sanity check (the
  * test of bdl against bdl should pass).
  *
  * TODO: Why is this just for Concrete? Does it have to?
  */
-case class ConcreteSarsaLaws[State, ObservableState, Action] 
-  (sarsa: ConcreteExactRL[State, ObservableState, Action], 
+case class ConcreteQLearningLaws[State, ObservableState, Action]
+  (qlearning: ConcreteExactRL[State, ObservableState, Action],
    gamma: Double
   ) extends org.typelevel.discipline.Laws:
 
-  import sarsa.{agent,vf}
-  import sarsa.agent.instances.given
-  import sarsa.vf.{Q, apply, updated}
+  import qlearning.{agent,vf}
+  import qlearning.agent.instances.given
+  import qlearning.vf.{Q, apply, updated}
 
   val γ = gamma
 
-  // A shortcut for instantiating the interpreter with the right term for SARSA
+  // A shortcut for instantiating the interpreter with the right term for Q-Learning
   val bdl =  
-    symsim.concrete.BdlConcreteSarsa[State, ObservableState, Action]
-      (agent, sarsa.α, this.γ, sarsa.ε, sarsa.episodes)
+    symsim.concrete.BdlConcreteQLearning[State, ObservableState, Action]
+      (agent, qlearning.α, this.γ, qlearning.ε, qlearning.episodes)
 
   given Arbitrary[Q] = 
     Arbitrary (vf.genVF (using agent.instances.arbitraryReward))
   
   val laws: RuleSet = SimpleRuleSet (
-    "concreteSarsa",
+    "concreteQ-Learning",
 
     "probability of not choosing the best action is smaller than ε" ->
       forAllNoShrink { (q: Q, a_t: Action) =>
@@ -56,7 +56,7 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
         
         val trials = for 
           s_t  <- agent.initialize
-          a_tt <- vf.chooseAction (sarsa.ε) (q) (agent.observe (s_t))
+          a_tt <- vf.chooseAction (qlearning.ε) (q) (agent.observe (s_t))
         yield a_tt != vf.bestAction (q) (agent.observe (s_t))
 
         // We implement this as a bayesian test, checking whether htere is
@@ -67,11 +67,11 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
         val failures = n - successes
 
         // α=1 and β=1 gives a prior, weak flat, unbiased
-        val cdfEpsilon =  Beta (2 + successes, 2 + failures).cdf (sarsa.ε)
+        val cdfEpsilon =  Beta (2 + successes, 2 + failures).cdf (qlearning.ε)
 
         (cdfEpsilon >= 0.94) :| 
           s"""|The beta posterior test results (failing):
-              |    posterior_cdf(${sarsa.ε}) == $cdfEpsilon
+              |    posterior_cdf(${qlearning.ε}) == $cdfEpsilon
               |    #exploration selections ≠ best action: $successes 
               |    #best action selections: $failures 
               |    #total trials: $n""".stripMargin
@@ -87,7 +87,7 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
 
          // call the tested implementation
          val sut: Randomized[(Q, State, Action)] = 
-           Randomized.repeat (sarsa.learningEpoch (q_t, s_t, a_t))
+           Randomized.repeat (qlearning.learningEpoch (q_t, s_t, a_t))
 
          // call the spec interpreter
          val spec: Randomized[(Q, State, Action)] = 
