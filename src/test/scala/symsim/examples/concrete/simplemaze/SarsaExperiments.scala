@@ -11,7 +11,7 @@ class SarsaExperiments
      alpha = 0.1,
      gamma = 1,
      epsilon = 0.05,
-     episodes = 40000,
+     episodes = 50000,
    )
 
    s"SimpleMaze experiment with ${sarsa}" in {
