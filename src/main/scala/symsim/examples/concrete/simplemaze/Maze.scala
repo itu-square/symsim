@@ -67,7 +67,7 @@ object Maze
   // gives to unstable learning results
   private def mazeReward (s: MazeState): MazeReward = s match
     case (4, 3) => +0.0     // Good final state
-    case (4, 2) => -100.0   // Bad final state (dead)
+    case (4, 2) => -1000.0   // Bad final state (dead)
     case (_, _) => -1.0
 
 
