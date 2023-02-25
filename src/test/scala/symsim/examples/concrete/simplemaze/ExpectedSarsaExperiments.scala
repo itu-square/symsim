@@ -3,10 +3,10 @@ package examples.concrete.simplemaze
 
 import Maze.instances.given
 
-class BdlExperiments
+class ExpectedSarsaExperiments
    extends ExperimentSpec[MazeState,MazeState,MazeAction]:
 
-   val sarsa = symsim.concrete.BdlConcreteSarsa (
+   val sarsa = symsim.concrete.ConcreteExpectedSarsa (
      agent = Maze,
      alpha = 0.1,
      gamma = 1,

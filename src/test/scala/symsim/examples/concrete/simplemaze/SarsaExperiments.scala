@@ -3,7 +3,7 @@ package examples.concrete.simplemaze
 
 import Maze.instances.given
 
-class Experiments
+class SarsaExperiments
    extends ExperimentSpec[MazeState,MazeState,MazeAction]:
 
    val sarsa = symsim.concrete.ConcreteSarsa (
@@ -11,7 +11,7 @@ class Experiments
      alpha = 0.1,
      gamma = 1,
      epsilon = 0.05,
-     episodes = 140000,
+     episodes = 40000,
    )
 
    s"SimpleMaze experiment with ${sarsa}" in {

@@ -63,10 +63,12 @@ object Maze
   // Maze is discrete
   def observe (s: MazeState): MazeObservableState =  s
 
+  // We are not using the original reward function from AIAMA as it
+  // gives to unstable learning results
   private def mazeReward (s: MazeState): MazeReward = s match
-    case (4, 3) => 1.0   // Good final state
-    case (4, 2) => -1.0  // Bad final state
-    case (_, _) => -0.02
+    case (4, 3) => +0.0     // Good final state
+    case (4, 2) => -100.0   // Bad final state (dead)
+    case (_, _) => -1.0
 
 
   def distort (a: MazeAction): Randomized[MazeAction] = a match
