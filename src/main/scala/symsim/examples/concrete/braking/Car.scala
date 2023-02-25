@@ -61,7 +61,7 @@ object Car
       // Stop moving when velecity is zero, braking is not moving backwards
       val t1 = Math.min (- s.v / a, t)
       val p1 = Math.min (s.p + s.v*t1 + 0.5*a*t1*t1, 10.0)
-      val v1 = if p1 >= 10 then 0
+      val v1 = if p1 == 10 then 0
                else Math.max(s.v + a * t1, 0.0)
       val s1 = CarState (v = v1, p = p1)
       Randomized.const (s1, carReward (s1) (a))
