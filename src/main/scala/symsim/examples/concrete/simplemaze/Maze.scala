@@ -34,11 +34,7 @@ import symsim.concrete.Randomized
  *
  */
 
-type MazeState = (Int,Int)
-
-extension (s: MazeState)
-  inline def x: Int = s._1
-  inline def y: Int = s._2
+type MazeState = (Int, Int)
 
 type MazeObservableState = MazeState
 type MazeReward = Double
@@ -61,7 +57,7 @@ object Maze
     s == (4, 3) || s == (4, 2)
 
   // Maze is discrete
-  def observe (s: MazeState): MazeObservableState =  s
+  def observe (s: MazeState): MazeObservableState = s
 
   // We are not using the original reward function from AIAMA as it
   // gives to unstable learning results

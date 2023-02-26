@@ -16,25 +16,25 @@ object MazeSpec
 
   property ("Agent near to left wall, cannot go left") =
     forAll { (s: MazeState) =>
-      for (s1, r) <- Maze.step (1, s.y) (Left)
+      for (s1, r) <- Maze.step (1, s._2) (Left)
       yield s1._1 == 1
     }
 
   property ("Agent near to right wall, cannot go right") =
     forAll { (s: MazeState) =>
-      for (s1, r) <- Maze.step (4, s.y) (Right)
+      for (s1, r) <- Maze.step (4, s._2) (Right)
       yield s1._1 == 4
     }
 
   property ("Agent near to up wall, cannot go up") =
     forAll { (s: MazeState) =>
-      for (s1, r) <- Maze.step (s.x, 3) (Up)
+      for (s1, r) <- Maze.step (s._1, 3) (Up)
       yield s1._2 == 3
     }
 
   property ("Agent near to down wall, cannot go down") =
     forAll { (s: MazeState) =>
-      for (s1, r) <- Maze.step (s.x, 1) (Down)
+      for (s1, r) <- Maze.step (s._1, 1) (Down)
       yield s1._2 == 1
     }
 
