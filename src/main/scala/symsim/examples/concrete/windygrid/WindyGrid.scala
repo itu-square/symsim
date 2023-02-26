@@ -35,23 +35,23 @@ object WindyGrid extends
     case GridState (_, _) => -1.0
 
   def stepRight (s: GridState): GridState =
-    val x1 = (s.x + 1) min 10
-    val y1 = (s.y+WindSpec(s.x-1)) min 7
+    val x1 = (s.x + 1).min (10)
+    val y1 = (s.y+WindSpec(s.x-1)).min (7)
     GridState (x1, y1)
 
   def stepLeft (s: GridState): GridState =
-    val x1 = (s.x - 1) max 1
-    val y1 = (s.y + WindSpec (s.x - 1)) min 7
+    val x1 = (s.x - 1).max (1)
+    val y1 = (s.y + WindSpec (s.x - 1)).min (7)
     GridState (x1, y1)
 
   def stepUp (s: GridState): GridState =
     val x1 = s.x
-    val y1 = (s.y + 1 + WindSpec (s.x - 1)) min 7
+    val y1 = (s.y + 1 + WindSpec (s.x - 1)).min (7)
     GridState (x1, y1)
 
   def stepDown (s: GridState): GridState =
     val x1 = s.x
-    val y1 = ((s.y - 1 + WindSpec (s.x - 1)) max 1) min 7
+    val y1 = ((s.y - 1 + WindSpec (s.x - 1)).max (1)).min (7)
     GridState (x1, y1)
 
   def step (s: GridState) (a: GridAction): Randomized[(GridState, GridReward)] =
