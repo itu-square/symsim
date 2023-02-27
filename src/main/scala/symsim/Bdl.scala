@@ -64,36 +64,29 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
                                    (s_t, a_t, arith[Reward].zero, 1.0)
       (s_tk, a_tk, g_tk, γ_tk) = sagγ
                                  
-      sr                      <- agent.step (s_tk) (a_tk) // intermediate name needed for stryker which fails with -source:future
-      (s_tkk, r_tkk)           = sr
-      (os_t, os_tkk)           = (agent.observe (s_t), agent.observe (s_tkk))
-      a_tkk                   <- vf.chooseAction (ε) (q_t) (os_tkk)
-      g_tkk                    = g_tk + γ_tk * r_tkk 
-                                 + γ * γ_tk * q_t (os_tkk, a_tkk)
+      (os_t, os_tk)            = (agent.observe (s_t), agent.observe (s_tk))
+      g_tkk                    = g_tk + γ_tk * q_t (os_tk, a_tk)
       q_t_value                = q_t (os_t, a_t)
       q_tt_value               = q_t_value + bdl.α * (g_tkk - q_t_value)
       q_tt                     = q_t.updated (os_t, a_t, q_tt_value)
-    yield (q_tt, s_tkk, a_tkk)
+    yield (q_tt, s_tk, a_tk)
 
   case Expectation (γ) => 
     for 
       sagγ                    <- sem (bdl.est) (q_t)  // intermediate name needed for stryker which fails with -source:future
                                    (s_t, a_t, arith[Reward].zero, 1.0)
       (s_tk, a_tk, g_tk, γ_tk) = sagγ
-      sr                      <- agent.step (s_tk) (a_tk) // intermediate name needed for stryker which fails with -source:future
-      (s_tkk, r_tkk)           = sr
-      (os_t, os_tkk)           = (agent.observe (s_t), agent.observe (s_tkk))
-      a_tkk                   <- vf.chooseAction (ε) (q_t) (os_tkk)
+      (os_t, os_tk)            = (agent.observe (s_t), agent.observe (s_tk))
       expectation              = allActions
                                   .map { a => 
-                                    vf.probability (ε) (q_t) (os_tkk, a)
-                                      * q_t (os_tkk, a) }
+                                    vf.probability (ε) (q_t) (os_tk, a)
+                                      * q_t (os_tk, a) }
                                   .arithSum
-      g_tkk                    = g_tk + γ_tk * r_tkk + γ * γ_tk * expectation
+      g_tkk                    = g_tk + γ_tk * expectation
       q_t_value                = q_t (os_t, a_t)
       q_tt_value               = q_t_value + bdl.α * (g_tkk - q_t_value)
       q_tt                     = q_t.updated (os_t, a_t, q_tt_value)
-    yield (q_tt, s_tkk, a_tkk)
+    yield (q_tt, s_tk, a_tk)
       
 
   /** Semantics of a sequence of estimation steps. */
