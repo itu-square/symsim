@@ -147,6 +147,16 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
                        |    "μ_diff: $μ_post_diff, σ2_diff: $σ2_post_diff""".stripMargin
 
          (ci_mass >= 0.95) :| msg
-       }
+       },
 
+       "The value of variables in the Q table are not NaN after learning (divergence)" -> 
+       forAllNoShrink { (q_t: Q, s_t: State) =>
+          val initials = Randomized.repeat (agent.initialize).take (10)
+          val schedule = sarsa.learn (q_t, initials)
+          val q = schedule.head
+          val os_t = agent.observe (s_t)
+          vf.actionValues (q) (os_t)
+            .values
+            .forall { x => !x.isNaN && !x.isInfinity}
+       },
   )
