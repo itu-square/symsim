@@ -65,7 +65,7 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
           a_tt <- vf.chooseAction (ε) (q) (agent.observe (s_t))
         yield a_tt != vf.bestAction (q) (agent.observe (s_t))
 
-        // We implement this as a bayesian test, checking whether htere is
+        // We implement this as a Bayesian test, checking whether htere is
         // 0.95 belief that the probability of suboptimal action is ≤ ε.
         // We check this by computing the posterior and asking CDF (ε) ≥ 0.94
 
