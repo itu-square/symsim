@@ -17,4 +17,4 @@ case class BdlConcreteExpectedSarsa [
   ConcreteExactRL[State, ObservableState, Action]:
 
   import Est.*  
-  val bdl = Update (Nil, alpha, Expectation (gamma))
+  val bdl = Update (List(Sample (gamma)), alpha, Expectation (gamma))
