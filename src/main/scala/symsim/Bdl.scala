@@ -20,7 +20,10 @@ enum Est:
     case Sample (gamma) => gamma
     case Expectation (gamma) => gamma
 
-import Est.*
+enum Upd: 
+  case SampleU, ExpectationU
+
+import Est.*, Upd.*
 
 /** A BDL term corresponding to an entire back-up diagram 
  *
@@ -28,7 +31,7 @@ import Est.*
  *  @param alpha the learning rate parameter of a RL update 
  *  @param update the final update --- the last step in the diagram
  */
-case class Update (est: List[Est], alpha: Double, update: Est):
+case class Update (est: List[Est], alpha: Double, update: Upd):
   def α: Double = this.alpha
 
 
@@ -58,7 +61,7 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
    */
   def learningEpoch (q_t: VF, s_t: State, a_t: Action)
     : Scheduler[(VF, State, Action)] = bdl.update match 
-  case Sample (γ) => 
+  case SampleU => 
     for 
       sagγ                    <- sem (bdl.est) (q_t)  // intermediate name needed for stryker which fails with -source:future
                                    (s_t, a_t, arith[Reward].zero, 1.0)
@@ -71,7 +74,7 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
       q_tt                     = q_t.updated (os_t, a_t, q_tt_value)
     yield (q_tt, s_tk, a_tk)
 
-  case Expectation (γ) => 
+  case ExpectationU => 
     for 
       sagγ                    <- sem (bdl.est) (q_t)  // intermediate name needed for stryker which fails with -source:future
                                    (s_t, a_t, arith[Reward].zero, 1.0)
