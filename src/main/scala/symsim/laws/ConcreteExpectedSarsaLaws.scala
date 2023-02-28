@@ -60,31 +60,39 @@ case class ConcreteExpectedSarsaLaws[State, ObservableState, Action]
 
     // TODO: this test is now repeated from ConcreteSarsaLaws. There
     // is some taxonomy error in the laws hierarchy. Needs refactoring
-    "probability of not choosing the best action is smaller than ε" ->
+    "probability of not choosing the best action is ε(1-|Action|^-1)" ->
       forAllNoShrink { (q: Q, a_t: Action) =>
 
-        val n = 4000
-        val ε = 0.1 // Ignore ε in the problem as it might be zero for
-                    // the sake of the other test
+        val n = 3000
+        val ε = 0.5 // Ignore ε in the problem as it might be zero for
+                    // the sake of the other test. 
+                    // Also a central ε makes the Bernouli test much stronger
+                    // (testing extremely small or large ε's requires extremely
+                    // many trials to achieve the desired confidence)
+        val εd = ε*(1 - 1.0 / agent.instances.numberOfActions)
         
         val trials = for 
           s_t  <- agent.initialize
           a_tt <- vf.chooseAction (ε) (q) (agent.observe (s_t))
         yield a_tt != vf.bestAction (q) (agent.observe (s_t))
 
-        // We implement this as a bayesian test, checking whether htere is
-        // 0.95 belief that the probability of suboptimal action is ≤ ε.
-        // We check this by computing the posterior and asking CDF (ε) ≥ 0.94
+        // We implement this as a Bayesian test, checking whether a small ROPE
+        // εd ± 0.005 attracts more than 0.95 belief.
 
         val successes = trials.take (n).count { _ == true }
         val failures = n - successes
 
         // α=1 and β=1 gives a prior, weak flat, unbiased
-        val cdfEpsilon =  Beta (2 + successes, 2 + failures).cdf (ε)
+        val posterior =  Beta (1 + successes, 1 + failures)
+        val ropeHalf = 0.05
+        val (ropeL, ropeR) = (εd - ropeHalf, εd + ropeHalf)
+        val ropePMF = posterior.cdf (ropeR) - posterior.cdf (ropeL)
 
-        (cdfEpsilon >= 0.94) :| 
-          s"""|The beta posterior test results (failing):
-              |    posterior_cdf(${ε}) == $cdfEpsilon
+        (ropePMF >= 0.94) :| 
+          f"""|The beta posterior test results (failing):
+              |    posterior(${εd}) == ${posterior.cdf(εd)}
+              |    ROPE of ${2*ropeHalf} around εd == (${ropeL};${ropeR})
+              |    PMF of ROPE == ${ropePMF}
               |    #exploration selections ≠ best action: $successes 
               |    #best action selections: $failures 
               |    #total trials: $n""".stripMargin
