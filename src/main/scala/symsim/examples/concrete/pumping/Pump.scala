@@ -15,7 +15,7 @@ val c3: Double = 0.1 / (12 * 24 * 365)
 val c4: Double = 0.05
 
 /** Size of the history window for the head-level */
-val k: Int = 5
+val MemoryWindowSize: Int = 5
 
 
 /** Complete state of a pump, both observable and unobservable. */
@@ -130,10 +130,9 @@ object Pump extends
 
 
   def reward (source: PumpState) (target: PumpState) (a: PumpAction): Double =
-    if target.h < HeadMin || target.tl < TankMin || target.tl > TankMax 
-    then -9999
+    if isFinal (target) then -9999.0
     else 
-      val flowReward = if target.f != source.f then -0.5 else 0
+      val flowReward = if target.f != source.f then -0.5 else 0.0
       val headCost = (1 + (target.h - target.hm).abs) * (1 + (target.h - target.hm).abs)
       flowReward - headCost
 
@@ -147,18 +146,18 @@ object Pump extends
     : Randomized[(PumpState, PumpReward)] =
     require (instances.enumAction.membersAscending.contains (a))
     for
-      nf   <- Randomized.gaussian (0.0, 1.0)
-      f1   =  a + nf
-      nd   <- Randomized.gaussian (0.1, 0.01)
-      cd   <- getDemand (s.t%24 + 1)
-      d    =  cd + nd
+      nf  <- Randomized.gaussian (0.0, 1.0)
+      f1   = a + nf
+      nd  <- Randomized.gaussian (0.1, 0.01)
+      cd  <- getDemand (s.t%24 + 1)
+      d    = cd + nd
       tl1  = s.tl + c1 * (f1 - d)
-      h1   = s.h + c4 * (s.w + (c1*f1 / math.Pi))
-      nw   <- Randomized.gaussian (0.0, 1.0)
-      w1   = s.w - c2*(c1*f1) + c3 + 
-             (Amp * math.sin (2 * math.Pi*(s.t + Phase) / Freq)) + nw
-      hm1  = (1.0 / k)*s.phm.sum
-      phm1 = (s.hm:: s.phm).slice (0, k)
+      h1   = s.h + c4 * (s.w + (c1 * f1 / math.Pi))
+      nw  <- Randomized.gaussian (0.0, 1.0)
+      w1   = s.w - c2 * c1 * f1 + c3 + 
+             (Amp * math.sin (2 * math.Pi * (s.t + Phase) / Freq)) + nw
+      hm1  = (1.0/MemoryWindowSize) * s.phm.sum
+      phm1 = (s.hm:: s.phm).slice (0, MemoryWindowSize)
       s1   = PumpState (f1, h1, hm1, tl1, s.t + 1, w1, phm1)
       pr   = reward (s) (s1) (a)
     yield (s1, pr)
