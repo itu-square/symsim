@@ -4,7 +4,8 @@ package examples.concrete.cartpole
 import symsim.concrete.Randomized
 
 
-/** The state of the CartPole (as in the simulation, so continuous).
+/** The state of the CartPole, an abstract type shared by the continuous state
+ *  of the environment, and the observable state type.
  *
  *  @constructor Tags the tuple as a CartPoleState
  *  @param cp the cart's position (1D)
@@ -12,7 +13,13 @@ import symsim.concrete.Randomized
  *  @param pa the pole's angle 
  *  @param pv the pole's angular velocity
  */
-case class CartPoleState (cp: Double, cv: Double, pa: Double, pv: Double):
+abstract class CartPoleAbstractState (
+  val cp: Double,
+  val cv: Double,
+  val pa: Double,
+  val pv: Double
+):
+
   require (cp >= CpMin, "cp too low")
   require (cp <= CpMax, "cp too high")
   require (cv >= CvMin, "cv too low")
@@ -26,10 +33,24 @@ case class CartPoleState (cp: Double, cv: Double, pa: Double, pv: Double):
     s"[cart position=$cp, cart velocity=$cv,"
       + s"pole angle=$pa, pole angular velocity=$pv]"
 
-/** The observable state is "physically the same" as the state, but it
- *  is discretized to concrete values.
+/** The environment state. All its invariants are in the superclass. */
+class CartPoleState (cp: Double, cv: Double, pa: Double, pv: Double)
+  extends CartPoleAbstractState (cp, cv, pa, pv)
+
+
+
+/** Observable state separated from the continuous state, even though
+ *  structurally identical, to allow specifying different invariants for the
+ *  constructor.
  */
-type CartPoleObservableState = CartPoleState
+class CartPoleObservableState (cp: Double, cv: Double, pa: Double, pv: Double)
+  extends CartPoleAbstractState (cp, cv, pa, pv):
+  require (CpCutPoints.contains (cp), "Cart position is not discrete")
+  require (CvCutPoints.contains (cv), "Cart linear velocity is not discrete")
+  require (PaCutPoints.contains (pa), "Pole angle is not discrete")
+  require (PvCutPoints.contains (pv), "Pole angular velocity is not discrete")
+
+  
 type CartPoleAction = Int
 type CartPoleReward = Double
 
@@ -94,7 +115,7 @@ object CartPole
       val dcv = closest (s.cv) (CvCutPoints)
       val dpa = closest (s.pa) (PaCutPoints)
       val dpv = closest (s.pv) (PvCutPoints)
-      CartPoleState (dcp, dcv, dpa, dpv)
+      CartPoleObservableState (dcp, dcv, dpa, dpv)
 
     private def cartPoleReward (s: CartPoleState) (a: CartPoleAction)
       : CartPoleReward = 1.0
@@ -155,7 +176,7 @@ object CartPoleInstances
       cv <- CvCutPoints
       pa <- PaCutPoints
       pv <- PvCutPoints
-    yield CartPoleState (cp, cv, pa, pv)
+    yield CartPoleObservableState (cp, cv, pa, pv)
     BoundedEnumerableFromList (ss*)
 
   given schedulerIsMonad: Monad[Randomized] =
