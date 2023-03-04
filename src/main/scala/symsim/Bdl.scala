@@ -12,13 +12,9 @@ import symsim.concrete.Probability
 import symsim.Arith.*
 
 /** A BDL term for an estimation step. */
-enum Est: 
-  case Sample (gamma: Double)
-  case Expectation (gamma: Double)
-
-  def γ: Double = this match 
-    case Sample (gamma) => gamma
-    case Expectation (gamma) => gamma
+enum Est (γ: Double): 
+  case Sample (gamma: Double) extends Est (gamma)
+  case Expectation (gamma: Double) extends Est (gamma)
 
 enum Upd: 
   case SampleU, ExpectationU
@@ -95,7 +91,7 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
   /** Semantics of a sequence of estimation steps. */
   def sem (ests: List[Est]) (q_t: VF) 
     (s_t: State, a_t: Action, g_t: Reward, γ_t: Double)
-    : Scheduler[(State, Action, Reward, Double)]= 
+    : Scheduler[(State, Action, Reward, Double)] = 
 
     ests.foldM[Scheduler, (State, Action, Reward, Double)]
       (s_t, a_t, g_t, γ_t)
