@@ -13,14 +13,15 @@ import symsim.concrete.Randomized
  *  @param pv the pole's angular velocity
  */
 case class CartPoleState (cp: Double, cv: Double, pa: Double, pv: Double):
-  require (cp >= CpMin)
-  require (cp <= CpMax)
-  require (cv >= CvMin)
-  require (cv <= CvMax)
-  require (pa >= PaMin)
-  require (pa <= PaMax)
-  require (pv >= PvMin)
-  require (pv <= PvMin)
+  require (cp >= CpMin, "cp too low")
+  require (cp <= CpMax, "cp too high")
+  require (cv >= CvMin, "cv too low")
+  require (cv <= CvMax, "cv too high")
+  require (pa >= PaMin, "pa too low")
+  require (pa <= PaMax, "pa too high")
+  require (pv >= PvMin, "pv too low")
+  require (pv <= PvMin, "pv too high")
+
   override def toString: String = 
     s"[cart position=$cp, cart velocity=$cv,"
       + s"pole angle=$pa, pole angular velocity=$pv]"
@@ -80,7 +81,7 @@ object CartPole
     val TotalMass      = PoleMass + CartMass
     val PoleLength     = 0.5
     val ForceMagnitude = 10.0
-    val τ              = 0.02
+    val τ              = 0.02                   // time granularity in seconds
     val θThreshold     = 12 * 2 * Math.PI / 360 // in radians
     val xThreshold     = 2.4
 
