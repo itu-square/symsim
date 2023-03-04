@@ -2,8 +2,8 @@ package symsim
 package examples.concrete.pumping
 
 import symsim.concrete.Randomized.given
-import CanTestIn.given
-import CanTestIn.*
+import symsim.CanTestIn.given
+import symsim.CanTestIn.*
 
 import org.scalacheck.{Arbitrary, Gen, Prop}
 import org.scalacheck.Arbitrary.*
@@ -19,13 +19,13 @@ class PumpSpec
   extends org.scalacheck.Properties ("Pumping"):
 
     // Generators of test data
-    val flow = Gen.choose[Double] (FLOW_MIN, FLOW_MAX)
-    val head = Gen.choose[Double] (HEAD_MIN, HEAD_MAX)
-    val head_mean = Gen.choose[Double] (HEAD_MIN, HEAD_MAX)
-    val tank = Gen.choose[Double] (TANK_MIN, TANK_MAX)
+    val flow = Gen.choose[Double] (FlowMin, FlowMax)
+    val head = Gen.choose[Double] (HeadMin, HeadMax)
+    val head_mean = Gen.choose[Double] (HeadMin, HeadMax)
+    val tank = Gen.choose[Double] (TankMin, TankMax)
     val time = Gen.choose[Int] (0, 24)
-    val water = Gen.choose[Double] (WATER_MIN, WATER_MAX)
-    val past_head_mean = Gen.listOfN (5, Gen.choose (HEAD_MIN, HEAD_MAX))
+    val water = Gen.choose[Double] (WaterMin, WaterMax)
+    val past_head_mean = Gen.listOfN (5, Gen.choose (HeadMin, HeadMax))
     val actions = Gen.oneOf (Pump.instances.enumAction.membersAscending)
     val obsStates = Gen.oneOf (Pump.instances.allObservableStates)
 
@@ -36,7 +36,7 @@ class PumpSpec
       forAll (flow, head, head_mean, tank, time, water, past_head_mean, actions) {
         (f, h, hm, tl, t, w, phm, a) =>
         for (s1, r) <- Pump.step (PumpState (f, h, hm, tl, t, w, phm)) (a)
-        yield s1.tl >= TANK_MIN
+        yield s1.tl >= TankMin
       }
     }
 
@@ -48,9 +48,9 @@ class PumpSpec
       }
     }
 
-    property ("The time can be more than TANK_MAX (comparing is not correct)") = {
+    property ("The time can be more than TankMax (comparing is not correct)") = {
       exists (time) { t =>
-        t > TANK_MAX
+        t > TankMax
       }
     }
 
@@ -65,7 +65,7 @@ class PumpSpec
         (f, h, hm, tl, t, w, phm) =>
           exists(actions) { a =>
             for (s1, r) <- Pump.step(PumpState(f, h, hm, tl, t, w, phm))(a)
-              yield (s1.tl <= TANK_MAX)
+              yield (s1.tl <= TankMax)
           }
       }
     }
