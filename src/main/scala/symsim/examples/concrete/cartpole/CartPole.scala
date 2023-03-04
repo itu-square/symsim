@@ -3,7 +3,10 @@ package examples.concrete.cartpole
 
 import symsim.concrete.Randomized
 
-/**
+/** A balancing cartpole example agent (with discretization)
+ *
+ * Based on: Razvan V. Florian.
+ * Correct equations for the dynamics of the cart-pole system.
  * https://coneural.org/florian/papers/05_cart_pole.pdf
  */
 
