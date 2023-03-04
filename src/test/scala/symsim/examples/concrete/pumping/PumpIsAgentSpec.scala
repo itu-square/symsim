@@ -1,8 +1,8 @@
 package symsim
 package examples.concrete.pumping
 
-import laws.AgentLaws
-import laws.EpisodicLaws
+import symsim.laws.AgentLaws
+import symsim.laws.EpisodicLaws
 
 class PumpIsAgentSpec
   extends SymSimSpec:
