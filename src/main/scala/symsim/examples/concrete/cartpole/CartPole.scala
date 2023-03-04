@@ -3,118 +3,133 @@ package examples.concrete.cartpole
 
 import symsim.concrete.Randomized
 
-/** A balancing cartpole example agent (with discretization)
+
+/** The state of the CartPole (as in the simulation, so continuous).
  *
- * Based on: Razvan V. Florian.
- * Correct equations for the dynamics of the cart-pole system.
- * https://coneural.org/florian/papers/05_cart_pole.pdf
+ *  @constructor Tags the tuple as a CartPoleState
+ *  @param cp the cart's position (1D)
+ *  @param cv the cart's linear velocity
+ *  @param pa the pole's angle 
+ *  @param pv the pole's angular velocity
  */
-
 case class CartPoleState (cp: Double, cv: Double, pa: Double, pv: Double):
-  override def toString: String = s"[cart position=$cp, cart velocity=$cv," +
-          s"pole angle=$pa, pole angular velocity=$pv]"
+  require (cp >= CpMin)
+  require (cp <= CpMax)
+  require (cv >= CvMin)
+  require (cv <= CvMax)
+  require (pa >= PaMin)
+  require (pa <= PaMax)
+  require (pv >= PvMin)
+  require (pv <= PvMin)
+  override def toString: String = 
+    s"[cart position=$cp, cart velocity=$cv,"
+      + s"pole angle=$pa, pole angular velocity=$pv]"
 
+/** The observable state is "physically the same" as the state, but it
+ *  is discretized to concrete values.
+ */
 type CartPoleObservableState = CartPoleState
 type CartPoleAction = Int
 type CartPoleReward = Double
 
+/** A discretization of a continuous state components to selected cutpoints */
 def closest (value: Double) (cutPoints: List[Double]): Double =
   cutPoints
     .find { value <= _ }
     .getOrElse (cutPoints.last)
 
-val CP_MIN = -4.8
-val CP_MAX = 4.8
-val CV_MIN = -Double.MaxValue
-val CV_MAX = Double.MaxValue
-val PA_MIN = -0.418
-val PA_MAX = 0.418
-val PV_MIN = -Double.MaxValue
-val PV_MAX = Double.MaxValue
+val CpMin = -4.8
+val CpMax =  4.8
+val CvMin = -Double.MaxValue
+val CvMax =  Double.MaxValue
+val PaMin = -0.418
+val PaMax =  0.418
+val PvMin = -Double.MaxValue
+val PvMax =  Double.MaxValue
 
-val cPCutPoints = List (CP_MIN, -2.4, -1.0, -0.5,-0.2, -0.1, 0, 0.1, 0.2, 0.5, 1.0, 2.4, CP_MAX)
-val cVCutPoints = List (CV_MIN, -2, -1.5, -1.0, -0.7, -0.5, 0, 0.5, 0.7, 1.0, 1.5, 2, CV_MAX)
-val pACutPoints = List (PA_MIN, -0.2, -0.15, -0.1, -0.05, 0, 0.05, 0.1, 0.15, 0.2, PA_MAX)
-val pVCutPoints = List (PV_MIN, -2, -1.5, -1.0, -0.7, -0.5, 0, 0.5, 0.7, 1.0, 1.5, 2, PV_MAX)
+val CpCutPoints =
+  List (CpMin, -2.4, -1.0, -0.5,-0.2, -0.1, 0, 0.1, 0.2, 0.5, 1.0, 2.4, CpMax)
+val CvCutPoints = 
+  List (CvMin, -2, -1.5, -1.0, -0.7, -0.5, 0, 0.5, 0.7, 1.0, 1.5, 2, CvMax)
+val PaCutPoints = 
+  List (PaMin, -0.2, -0.15, -0.1, -0.05, 0, 0.05, 0.1, 0.15, 0.2, PaMax)
+val PvCutPoints = 
+  List (PvMin, -2, -1.5, -1.0, -0.7, -0.5, 0, 0.5, 0.7, 1.0, 1.5, 2, PvMax)
 
-object CartPole
-  extends Agent[CartPoleState, CartPoleObservableState, CartPoleAction, CartPoleReward, Randomized]
-  with Episodic:
+/** A balancing cartpole example agent (with discretization)
+ *
+ *  Based on: Razvan V. Florian.
+ *  Correct equations for the dynamics of the cart-pole system.
+ *  https://coneural.org/florian/papers/05_cart_pole.pdf
+ */
+object CartPole 
+  extends Agent[CartPoleState, CartPoleObservableState, CartPoleAction, 
+    CartPoleReward, Randomized],
+    Episodic:
 
-    /** The episode should be guaranteed to terminate after
-      * TimeHorizon steps. This is used *only* *for* testing. It does
-      * not actually termintae the episodes. It is a bug if they run
-      * longer.
-      */
+    /** The episode guarantees to terminate after TimeHorizon steps. 
+     *
+     *  This is used *only* *for* testing. It does not actually terminate the
+     *  episodes. It is a bug in the step function if they run longer.
+     */
     val TimeHorizon: Int = 2000
 
-    val gravity = 9.8
-    val masscart = 1.0
-    val masspole = 0.1
-    val total_mass = masspole + masscart
-    val length = 0.5
-    val polemass_length = masspole * length
-    val force_mag = 10.0
-    val tau = 0.02
-    val theta_threshold_radians = 12 * 2 * Math.PI / 360
-    val x_threshold = 2.4
+    val Gravity        = 9.81
+    val CartMass       = 1.0
+    val PoleMass       = 0.1
+    val TotalMass      = PoleMass + CartMass
+    val PoleLength     = 0.5
+    val ForceMagnitude = 10.0
+    val τ              = 0.02
+    val θThreshold     = 12 * 2 * Math.PI / 360 // in radians
+    val xThreshold     = 2.4
+
+    def isFinal (s: CartPoleState): Boolean =
+      s.cp < - xThreshold || s.cp > xThreshold || s.pa < - θThreshold 
+        || s.pa > θThreshold
+
+    def observe (s: CartPoleState): CartPoleObservableState =
+      val dcp = closest (s.cp) (CpCutPoints)
+      val dcv = closest (s.cv) (CvCutPoints)
+      val dpa = closest (s.pa) (PaCutPoints)
+      val dpv = closest (s.pv) (PvCutPoints)
+      CartPoleState (dcp, dcv, dpa, dpv)
+
+    private def cartPoleReward (s: CartPoleState) (a: CartPoleAction)
+      : CartPoleReward = 1.0
+
+    def step (s: CartPoleState) (a: CartPoleAction)
+      : Randomized[(CartPoleState, CartPoleReward)] =
+      require (instances.enumAction.membersAscending.contains (a))
+      val cos_τ = Math.cos (s.pa)
+      val sin_τ = Math.sin (s.pa)
+
+      val temp = 
+        (a * ForceMagnitude + PoleMass * PoleLength * s.pv * s.pv * sin_τ) 
+        / TotalMass
+      val τAcc = (Gravity * sin_τ - cos_τ * temp) 
+        / (PoleLength * (4.0/3.0 - PoleMass * cos_τ * cos_τ / TotalMass))
+      val xAcc = 
+        temp - PoleMass * PoleLength * PoleMass * PoleLength * τAcc * cos_τ 
+        / TotalMass
+
+      val cp1 = s.cp + τ * s.cv
+      val cv1 = s.cv + τ * xAcc
+      val pa1 = s.pa + τ * s.pv
+      val pv1 = s.pv + τ * τAcc
+      val s1  = CartPoleState (cp1, cv1, pa1, pv1)
+      Randomized.const (s1, cartPoleReward (s1) (a))
+
+    def initialize: Randomized[CartPoleState] = for
+      cp <- Randomized.repeat (Randomized.between (-0.05, 0.05))
+      cv <- Randomized.repeat (Randomized.between (-0.05, 0.05))
+      pa <- Randomized.repeat (Randomized.between (-0.05, 0.05))
+      pv <- Randomized.between(-0.05, 0.05)
+      s = CartPoleState (cp, cv, pa, pv) if !isFinal (s)
+    yield s
 
     /** Evidence of type class membership for this agent. */
     val instances = CartPoleInstances
-
-    override val zeroReward: CartPoleReward = 0.0
- 
-
-    def isFinal (s: CartPoleState): Boolean =
-      s.cp < -x_threshold || s.cp > x_threshold ||
-        s.pa < -theta_threshold_radians || s.pa > theta_threshold_radians
-
-
-    def observe (s: CartPoleState): CartPoleObservableState =
-      val dcp = closest (s.cp) (cPCutPoints)
-      val dcv = closest (s.cv) (cVCutPoints)
-      val dpa = closest (s.pa) (pACutPoints)
-      val dpv = closest (s.pv) (pVCutPoints)
-
-      CartPoleState (dcp, dcv, dpa, dpv)
-
-
-    private def cartPoleReward (s: CartPoleState) (a: CartPoleAction): CartPoleReward =
-      1
-
-
-    // TODO: this is now deterministic but eventually needs to be randomized
-    def step (s: CartPoleState) (a: CartPoleAction): Randomized[(CartPoleState, CartPoleReward)] =
-      require (instances.enumAction.membersAscending.contains (a))
-      val costheta = Math.cos(s.pa)
-      val sintheta = Math.sin(s.pa)
-
-      val temp = (
-        a * force_mag + polemass_length * Math.pow(s.pv, 2) * sintheta
-        ) / total_mass
-      val thetaacc = (gravity * sintheta - costheta * temp) / (
-        length * (4.0 / 3.0 - masspole * Math.pow(costheta, 2) / total_mass)
-        )
-      val xacc = temp - polemass_length * thetaacc * costheta / total_mass
-
-      val cp1 = s.cp + tau * s.cv
-      val cv1 = s.cv + tau * xacc
-      val pa1 = s.pa + tau * s.pv
-      val pv1 = s.pv + tau * thetaacc
-
-
-      val s1 = CartPoleState (cp = cp1, cv = cv1, pa = pa1, pv = pv1)
-      Randomized.const (s1, cartPoleReward (s1) (a))
-
-
-    def initialize: Randomized[CartPoleState] =
-      for
-        cp <- Randomized.repeat (Randomized.between (-0.05, 0.05))
-        cv <- Randomized.repeat (Randomized.between (-0.05, 0.05))
-        pa <- Randomized.repeat (Randomized.between (-0.05, 0.05))
-        pv <- Randomized.between(-0.05, 0.05)
-        s = CartPoleState (cp, cv, pa, pv) if !isFinal (s)
-      yield s
 
 end CartPole
 
@@ -123,26 +138,24 @@ end CartPole
   * needs to be able to do to work in the framework.
   */
 object CartPoleInstances
-  extends AgentConstraints[CartPoleState, CartPoleObservableState, CartPoleAction, CartPoleReward, Randomized]:
+  extends AgentConstraints[CartPoleState, CartPoleObservableState, 
+    CartPoleAction, CartPoleReward, Randomized]:
 
   import cats.{Eq, Monad, Foldable}
   import cats.kernel.BoundedEnumerable
-
-  import org.scalacheck.Gen
-  import org.scalacheck.Arbitrary
-  import org.scalacheck.Arbitrary.arbitrary
+  import org.scalacheck.{Gen, Arbitrary}
 
   given enumAction: BoundedEnumerable[CartPoleAction] =
     BoundedEnumerableFromList (-1, 1)
 
   given enumState: BoundedEnumerable[CartPoleObservableState] =
     val ss: List[CartPoleObservableState] = for
-      cp <- cPCutPoints
-      cv <- cVCutPoints
-      pa <- pACutPoints
-      pv <- pVCutPoints
+      cp <- CpCutPoints
+      cv <- CvCutPoints
+      pa <- PaCutPoints
+      pv <- PvCutPoints
     yield CartPoleState (cp, cv, pa, pv)
-    BoundedEnumerableFromList(ss *)
+    BoundedEnumerableFromList (ss*)
 
   given schedulerIsMonad: Monad[Randomized] =
     concrete.Randomized.randomizedIsMonad
@@ -154,18 +167,15 @@ object CartPoleInstances
     concrete.Randomized.canTestInRandomized
 
   lazy val genCartPoleState: Gen[CartPoleState] = for
-    cp <- Gen.choose[Double] (CP_MIN, CP_MAX)
-    cv <- Gen.choose[Double] (CV_MIN, CV_MIN)
-    pa <- Gen.choose[Double] (PA_MIN, PA_MAX)
-    pv <- Gen.choose[Double] (PV_MIN, PV_MAX)
+    cp <- Gen.choose[Double] (CpMin, CpMax)
+    cv <- Gen.choose[Double] (CvMin, CvMax)
+    pa <- Gen.choose[Double] (PaMin, PaMax)
+    pv <- Gen.choose[Double] (PvMin, PvMax)
   yield CartPoleState (cp, cv, pa, pv)
 
   given arbitraryState: Arbitrary[CartPoleState] = Arbitrary (genCartPoleState)
-
   given eqCartPoleState: Eq[CartPoleState] = Eq.fromUniversalEquals
-
   given arbitraryReward: Arbitrary[CartPoleReward] = Arbitrary (Gen.double)
-
   given rewardArith: Arith[CartPoleReward] = Arith.arithDouble
 
 end CartPoleInstances
