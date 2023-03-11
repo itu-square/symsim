@@ -1,7 +1,7 @@
 package symsim
 package laws
 
-import breeze.stats.distributions.{Rand, Beta}
+import breeze.stats.distributions.{Rand, Beta, Gaussian}
 import breeze.stats.distributions.Rand.VariableSeed.*
 import scala.language.postfixOps
 
@@ -147,8 +147,8 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
 
          // Is the expected difference of the updates close to zero?
          val tolerance = 0.025
-         val ci_mass = symsim.concrete.GaussianMass (μ_post_diff, σ2_post_diff) 
-           (-tolerance, +tolerance)
+         val ci_mass = Gaussian (μ_post_diff, σ2_post_diff)
+           .probability (-tolerance, +tolerance)
 
          val msg = s"""|The normal posterior test results (failing):
                        |    ci mass == ${ci_mass}

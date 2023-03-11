@@ -40,18 +40,6 @@ def GaussianPosterior (prior_μ: Double, prior_σ2: Double, likelihood_σ2: Doub
   (post_μ, post_σ2)
 
 
-
-/** Probability mass between two points in a Gaussian distribution 
- *
- *  TODO: check if this is not provided by breeze already; if so
- *  remove
- */
-def GaussianMass (μ: Double, σ2: Double) (left: Double, right: Double)
-  : Probability =
-  val mass_right  = Gaussian (μ, σ2).cdf (right)
-  val mass_left = Gaussian (μ, σ2).cdf (left) 
-  mass_right - mass_left
-
 /** Numerically finds a minimum of the function f, using x0 as a seed
  *  (starting point).
  *
