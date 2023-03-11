@@ -50,7 +50,6 @@ def GaussianPosterior (prior_μ: Double, prior_σ2: Double, likelihood_σ2: Doub
 def minimize (f: Double => Double, x0: Double): Double =
   import breeze.optimize.*
   import breeze.linalg.DenseVector
-  import breeze.stats.distributions.*
   
   // I am wrapping it into vector of size 1, because I do not
   // understand how to force breeze to optimize a function directly on
