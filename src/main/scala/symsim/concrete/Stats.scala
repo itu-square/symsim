@@ -57,8 +57,9 @@ def minimize (f: Double => Double, x0: Double): Double =
   val differrentiableF = 
     ApproximateGradientFunction { (x: DenseVector[Double]) => f(x(0)) }
 
-  val lbfgs = new LBFGS[DenseVector[Double]] (maxIter = 100, m = 4) 
-  lbfgs.minimize(differrentiableF, DenseVector(x0)) (0)
+  val lbfgs = new LBFGS[DenseVector[Double]] (maxIter = 500, m = 4) 
+  val xMin = lbfgs.minimize(differrentiableF, DenseVector(x0))
+  xMin (0)
 
 /** Compute an highest density interval of mass p for density Beta(α, β).
  *
@@ -103,7 +104,7 @@ def betaHdi (α: Double, β: Double, p: Double): (Double, Double) =
     val pl = if l <= 0 then 0.0
              else if l < 1.0 then distr.cdf (l)
              else 1.0
-    val r = distr.inverseCdf ((pl+p) min 1.0)
+    val r = distr.inverseCdf ((pl + p) min 1.0)
     val pr = if r <= 0 then 0.0
              else if r < 1.0 then distr.cdf (r)
              else 1.0
@@ -111,6 +112,10 @@ def betaHdi (α: Double, β: Double, p: Double): (Double, Double) =
     val penalty = pr - pl - p // penalty if the interval is too small
     diff * diff + penalty * penalty
 
-  assert { 0 <= l0 && l0 <= 1.0 }
+  assert (0 <= l0 && l0 <= 1.0, s"the initial value $l0 illegal for Beta")
   val l = minimize (f, l0)
-  (l, distr.inverseCdf (distr.cdf (l) + p))
+  assert (0 <= l && l <= 1.0, s"the optimized left point $l illegal for Beta")
+  val r = distr.inverseCdf (distr.cdf (l) + p)
+  assert (0 <= r && r <= 1.0, s"the optimized right point $r illegal for Beta")
+  assert (l < r, s"the right HDI point $r is smaller than the left point $l")
+  (l, r).ensuring (0 <= l && l <= r && r <= 1.0, s"HDI: $l, $r")
