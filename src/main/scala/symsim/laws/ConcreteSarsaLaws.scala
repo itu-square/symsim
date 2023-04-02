@@ -62,10 +62,10 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
         assert (n >= 100 && n < 3100)
 
         val ε = 0.5 // Ignore ε in the problem as it might be zero for
-                     // the sake of the other test. 
+                    // the sake of the other test. 
 
-        // the probability of choosing an exploring (suboptimal) action should be
-        val εd = ε*(1 - 1.0 / agent.instances.numberOfActions)
+        // The probability of choosing an exploring (suboptimal) action 
+        val εd = ε * (1 - 1.0 / agent.instances.numberOfActions)
         
         val trials = for 
           s_t  <- agent.initialize
