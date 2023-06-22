@@ -54,11 +54,11 @@ with a bunch of simple examples.
 
    Edit this file from top eliminating the Car example and introducing the TicTacToe example. There are two parts: in the class in the top we give all the logics of the agent, and in the instances/constraints part in the bottom we use the type system to prove that our types have all the necessary properties for the machinery to work.  It might be useful to consult the interface definition (which also has comments at plenty): `src/main/scala/symsim/Agent.scala`.
 
-7. Working with git and PRs.
+6. Working with git and PRs.
 
    Throughout the process you can commit as normally.  The first time you try to push, observe what git tells you to do, to push to the remote branch. Follow the instruction, and then read the message from git again after the succesful push, to find the link to create a pull request.  Open that link and create a pull request `Adding Tic Tac Toe`.  You can mark it as work in progress (create a 'draft pull request' instead of `pull request`) if you are not done.  After this you can continue pushing as normally from your branch, if you make new commits, and others in the project, will be able to track and discuss your progress easily.
 
-8. Compiling
+7. Compiling
 
    To compile your code you can open `sbt` in the root directory (`sbt` is the only tool you have to install, you do not need to install `scala`):
 
@@ -67,10 +67,43 @@ with a bunch of simple examples.
    ...>compile
    ```
 
-9. Running the learning
+8. Running the learning
 
    There is a corresponding test tree (to the `main` source tree).  Under `concrete/examples/braking/` you will find the file `Experiments.scala` that shows how the braking car learning is executed.  So far, we disguise it as a test.  You can copy this file to the corresponding directory for `tictactoe` and adjust it to instantiate the tic-tac-toe learning.
 
+## Adding tests for a new agent
+
+1. There is a corresponding test tree, which you will find under `src/test/scala/symsim/examples/concrete/`. 
+Create a new branch (the repo is configured not to allow to push to main).  Let our example be tic-tac-toe
+
+   ```sh
+   git checkout -b tic-tac-toe-tests
+   ```
+2. Create a new package in `src/test/scala/symsim/examples/concrete/` for the new agent (here we continue with `tictactoe`).
+
+   ```sh
+   mkdir -pv src/test/scala/symsim/examples/concrete/tictactoe
+   ```
+
+3. Inside the new directory create a file `TicTacToeSpec.scala`.
+   ```
+   cp -iv src/test/scala/symsim/examples/concrete/braking/CarSpec.scala src/test/scala/symsim/examples/concrete/tictactoe/TicTacToeSpec.scala
+   edit src/test/scala/symsim/examples/concrete/tictactoe/TicTacToeSpec.scala
+   ```
+   Adjust the name of the package object from braking to `tictactoe`, and import the new agent instances `import TicTacToe.instances`.
+
+4. Then, you can add your preferred tests by just adding the following line for each test and replacing the property with `???`.
+   
+   `property("TITLE THAT YOU PREFER TO SHOW IN THE TERMINAL") = ???`
+
+5. Test
+
+   To test your code you can open `sbt` in the root directory:
+
+   ```bash
+   sbt
+   ...>testOnly symsim/examples/concrete/braking/TicTacToeSpec
+   ```
 ## Credits
 
 Symsim is developed at the [SQUARE](https://square.itu.dk) group at [IT
