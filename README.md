@@ -95,7 +95,7 @@ with a bunch of simple examples.
    ```
    Adjust the name of the package object from braking to `tictactoe`, and import the new agent instances `import TicTacToe.instances`.
 
-4. Then, you can add your preferred tests by just adding the following line for each test and replacing the property with `???`.
+4. Then, you can add your preferred tests by just adding the following line for each test and replacing question marks with the boolean property.
    
    `property ("TITLE THAT YOU PREFER TO SHOW IN THE TERMINAL") = ???`
 
