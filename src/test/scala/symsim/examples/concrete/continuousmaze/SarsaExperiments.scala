@@ -14,6 +14,6 @@ class SarsaExperiments
      episodes = 50000,
    )
 
-   s"SimpleMaze experiment with ${sarsa}" in {
+   s"ContinuousMaze experiment with ${sarsa}" in {
       val policy = learnAndLog (sarsa)
    }
