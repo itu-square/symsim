@@ -23,7 +23,6 @@ enum Move:
 
 type MAMazeAction = (Move, Move)
 
-
 object MAMaze
   extends 
     Agent[MAMazeState, MAMazeObservableState, MAMazeAction, MAMazeReward, Randomized],
@@ -81,7 +80,7 @@ object MAMaze
     newState = successor (s) (action)
   yield (newState, mazeReward (newState))
 
-  def initialize: Randomized[MAMazeState] = Randomized.const(MAMazeState((1, 1), (4, 1)))
+  def initialize: Randomized[MAMazeState] = Randomized.const(MAMazeState((1, 1), (3, 1)))
 
   val instances = MAMazeInstances
 
