@@ -18,12 +18,6 @@ case class MAMazeState (pos1: Position, pos2: Position)
 type MAMazeObservableState = MAMazeState
 type MAMazeReward = Double
 
-//sealed trait Move
-//case object Left extends Move
-//case object Right extends Move
-//case object Up extends Move
-//case object Down extends Move
-
 enum Move:
   case Up, Down, Right, Left
 
@@ -40,7 +34,7 @@ object MAMaze
   def isFinal (s: MAMazeState): Boolean =
     s.pos1 == s.pos2
 
-  // Maze is discrete
+  // MAMaze is discrete
   def observe (s: MAMazeState): MAMazeObservableState = s
 
 
@@ -50,8 +44,8 @@ object MAMaze
     case MAMazeState (_, _) => -1.0
 
   def distort(m: Move): Randomized[Move] = m match
-    case Move.Up | Move.Down => Randomized.oneOf(Move.Left, Move.Right)
-    case Move.Left | Move.Right => Randomized.oneOf(Move.Up, Move.Down)
+    case Move.Up | Move.Down => Randomized.oneOf (Move.Left, Move.Right)
+    case Move.Left | Move.Right => Randomized.oneOf (Move.Up, Move.Down)
 
   def successor (s: MAMazeState) (a: MAMazeAction): MAMazeState =
     require (valid (s.pos1))
@@ -72,9 +66,7 @@ object MAMaze
     MAMazeState (pos1, pos2)
 
   def valid (p: Position): Boolean =
-    p._1 >= 1 && p._1 <= 5 && p._2 >= 1 && p._2 <= 4
-//     s.pos1._1 >= 1 && s.pos1._1 <= 5 && s.pos1._2 >= 1 && s.pos1._2 <= 4 &&
-//       s.pos2._1 >= 1 && s.pos2._1 <= 5 && s.pos2._2 >= 1 && s.pos2._2 <= 4
+    p._1 >= 1 && p._1 <= 3 && p._2 >= 1 && p._2 <= 3
 
   val attention = 0.8
 
