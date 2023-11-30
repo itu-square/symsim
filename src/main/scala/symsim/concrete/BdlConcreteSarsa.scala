@@ -16,5 +16,5 @@ case class BdlConcreteSarsa [
 ) extends BdlLearn[State, ObservableState, Action, Double, Randomized],
   ConcreteExactRL[State, ObservableState, Action]:
 
-  import Est.*  
-  val bdl = Update (Nil, alpha, Sample(gamma))
+  import Est.*, Upd.*  
+  val bdl = Update (List(Sample (gamma)), alpha, SampleU)

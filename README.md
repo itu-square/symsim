@@ -27,20 +27,24 @@ with a bunch of simple examples.
 
 ## Adding a new agent (A new example)
 
-1. `Git clone` the repo or `git pull` to have the fresh version
-2. Create a new branch (the repo is configured not to allow to push to main).  Let our example be tic-tac-toe
+1. `Git clone` the repo or `git pull` (in this case you can skip step 2) to have the fresh version
+2. Change directory to the cloned repo:
+   ```sh
+   cd symsim
+   ```
+3. Create a new branch (the repo is configured not to allow to push to main).  Let our example be tic-tac-toe
 
    ```sh
    git checkout -b tic-tac-toe
    ```
-3. Create a new package in `src/main/scala/symsim/examples/concrete/`. The existing one is called `braking`, let's call the new one `tictactoe`
+4. Create a new package in `src/main/scala/symsim/examples/concrete/`. The existing one is called `braking`, let's call the new one `tictactoe`
 
    ```sh
    mkdir -pv src/main/scala/symsim/examples/concrete/tictactoe
    ```
    The package goes under `examples` and `concrete` for "concrete execution RL".
 
-4. Inside the new directory create a file `TicTacToe.scala`.
+5. Inside the new directory create a file `TicTacToe.scala`.
    ```
    cp -iv src/main/scala/symsim/examples/concrete/braking/Car.scala src/main/scala/symsim/examples/concrete/tictactoe/TicTacToe.scala
    edit src/main/scala/symsim/examples/concrete/tictactoe/TicTacToe.scala
@@ -50,7 +54,7 @@ with a bunch of simple examples.
    `TicObservableState` - this might be just a renaming because the Tic Tac Toe state space is finite
    `TicAction` - possible moves
 
-5. Implement the TicTacToe agent.
+6. Implement the TicTacToe agent.
 
    Edit this file from top eliminating the Car example and introducing the TicTacToe example. There are two parts: in the class in the top we give all the logics of the agent, and in the instances/constraints part in the bottom we use the type system to prove that our types have all the necessary properties for the machinery to work.  It might be useful to consult the interface definition (which also has comments at plenty): `src/main/scala/symsim/Agent.scala`.
 
@@ -71,6 +75,38 @@ with a bunch of simple examples.
 
    There is a corresponding test tree (to the `main` source tree).  Under `concrete/examples/braking/` you will find the file `Experiments.scala` that shows how the braking car learning is executed.  So far, we disguise it as a test.  You can copy this file to the corresponding directory for `tictactoe` and adjust it to instantiate the tic-tac-toe learning.
 
+## Adding tests for a new agent
+
+1. Create a new branch (the repo is configured not to allow to push to main).  Let continue with tic-tac-toe example.
+
+   ```sh
+   git checkout -b tic-tac-toe-tests
+   ```
+2. Create a new package in `src/test/scala/symsim/examples/concrete/` for the new agent.
+
+   ```sh
+   mkdir -pv src/test/scala/symsim/examples/concrete/tictactoe
+   ```
+
+3. Inside the new directory create a file `TicTacToeSpec.scala`.
+   ```
+   cp -iv src/test/scala/symsim/examples/concrete/braking/CarSpec.scala src/test/scala/symsim/examples/concrete/tictactoe/TicTacToeSpec.scala
+   edit src/test/scala/symsim/examples/concrete/tictactoe/TicTacToeSpec.scala
+   ```
+   Adjust the name of the package object from braking to `tictactoe`, and import the new agent instances `import TicTacToe.instances`.
+
+4. Then, you can add your preferred tests by just adding the following line for each test and replacing question marks with the boolean property.
+   
+   `property ("TITLE THAT YOU PREFER TO SHOW IN THE TERMINAL") = ???`
+
+5. Test
+
+   To test your code you can open `sbt` in the root directory:
+
+   ```bash
+   sbt
+   ...>testOnly symsim/examples/concrete/braking/TicTacToeSpec
+   ```
 ## Credits
 
 Symsim is developed at the [SQUARE](https://square.itu.dk) group at [IT

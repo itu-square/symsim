@@ -12,15 +12,14 @@ import symsim.concrete.Probability
 import symsim.Arith.*
 
 /** A BDL term for an estimation step. */
-enum Est: 
-  case Sample (gamma: Double)
-  case Expectation (gamma: Double)
+enum Est (γ: Double): 
+  case Sample (gamma: Double) extends Est (gamma)
+  case Expectation (gamma: Double) extends Est (gamma)
 
-  def γ: Double = this match 
-    case Sample (gamma) => gamma
-    case Expectation (gamma) => gamma
+enum Upd: 
+  case SampleU, ExpectationU
 
-import Est.*
+import Est.*, Upd.*
 
 /** A BDL term corresponding to an entire back-up diagram 
  *
@@ -28,7 +27,7 @@ import Est.*
  *  @param alpha the learning rate parameter of a RL update 
  *  @param update the final update --- the last step in the diagram
  */
-case class Update (est: List[Est], alpha: Double, update: Est):
+case class Update (est: List[Est], alpha: Double, update: Upd):
   def α: Double = this.alpha
 
 
@@ -58,48 +57,41 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
    */
   def learningEpoch (q_t: VF, s_t: State, a_t: Action)
     : Scheduler[(VF, State, Action)] = bdl.update match 
-  case Sample (γ) => 
+  case SampleU => 
     for 
       sagγ                    <- sem (bdl.est) (q_t)  // intermediate name needed for stryker which fails with -source:future
                                    (s_t, a_t, arith[Reward].zero, 1.0)
       (s_tk, a_tk, g_tk, γ_tk) = sagγ
                                  
-      sr                      <- agent.step (s_tk) (a_tk) // intermediate name needed for stryker which fails with -source:future
-      (s_tkk, r_tkk)           = sr
-      (os_t, os_tkk)           = (agent.observe (s_t), agent.observe (s_tkk))
-      a_tkk                   <- vf.chooseAction (ε) (q_t) (os_tkk)
-      g_tkk                    = g_tk + γ_tk * r_tkk 
-                                 + γ * γ_tk * q_t (os_tkk, a_tkk)
+      (os_t, os_tk)            = (agent.observe (s_t), agent.observe (s_tk))
+      g_tkk                    = g_tk + γ_tk * q_t (os_tk, a_tk)
       q_t_value                = q_t (os_t, a_t)
       q_tt_value               = q_t_value + bdl.α * (g_tkk - q_t_value)
       q_tt                     = q_t.updated (os_t, a_t, q_tt_value)
-    yield (q_tt, s_tkk, a_tkk)
+    yield (q_tt, s_tk, a_tk)
 
-  case Expectation (γ) => 
+  case ExpectationU => 
     for 
       sagγ                    <- sem (bdl.est) (q_t)  // intermediate name needed for stryker which fails with -source:future
                                    (s_t, a_t, arith[Reward].zero, 1.0)
       (s_tk, a_tk, g_tk, γ_tk) = sagγ
-      sr                      <- agent.step (s_tk) (a_tk) // intermediate name needed for stryker which fails with -source:future
-      (s_tkk, r_tkk)           = sr
-      (os_t, os_tkk)           = (agent.observe (s_t), agent.observe (s_tkk))
-      a_tkk                   <- vf.chooseAction (ε) (q_t) (os_tkk)
+      (os_t, os_tk)            = (agent.observe (s_t), agent.observe (s_tk))
       expectation              = allActions
                                   .map { a => 
-                                    vf.probability (ε) (q_t) (os_tkk, a)
-                                      * q_t (os_tkk, a) }
+                                    vf.probability (ε) (q_t) (os_tk, a)
+                                      * q_t (os_tk, a) }
                                   .arithSum
-      g_tkk                    = g_tk + γ_tk * r_tkk + γ * γ_tk * expectation
+      g_tkk                    = g_tk + γ_tk * expectation
       q_t_value                = q_t (os_t, a_t)
       q_tt_value               = q_t_value + bdl.α * (g_tkk - q_t_value)
       q_tt                     = q_t.updated (os_t, a_t, q_tt_value)
-    yield (q_tt, s_tkk, a_tkk)
+    yield (q_tt, s_tk, a_tk)
       
 
   /** Semantics of a sequence of estimation steps. */
   def sem (ests: List[Est]) (q_t: VF) 
     (s_t: State, a_t: Action, g_t: Reward, γ_t: Double)
-    : Scheduler[(State, Action, Reward, Double)]= 
+    : Scheduler[(State, Action, Reward, Double)] = 
 
     ests.foldM[Scheduler, (State, Action, Reward, Double)]
       (s_t, a_t, g_t, γ_t)
