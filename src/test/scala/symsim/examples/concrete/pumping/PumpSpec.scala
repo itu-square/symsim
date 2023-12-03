@@ -56,7 +56,7 @@ class PumpSpec
 
     property ("Test getDemand") = {
       forAll (time) { t1 =>
-        exists (time) {t2 => Pump.getDemand (t1) != Pump.getDemand (t2)}
+        exists (time) {t2 => Pump.demand (t1) != Pump.demand (t2)}
       }
     }
 
