@@ -108,12 +108,7 @@ type PumpReward = Double
   * August 2021. (esp. Chapters 2 and 3)
   */
 object Pump extends 
-  Agent[PumpState, ObservablePumpState, PumpAction, PumpReward, Randomized],
-  Episodic:
-
-  /** An upper bound on episode duration. Used only in testing */
-  val TimeHorizon: Int = 20000
-
+  Agent[PumpState, ObservablePumpState, PumpAction, PumpReward, Randomized]:
 
   /** If isFinal is true in a state, then the episode is complete */
   def isFinal (s: PumpState): Boolean =
