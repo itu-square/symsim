@@ -146,11 +146,9 @@ object Pump extends
     : Randomized[(PumpState, PumpReward)] =
     require (instances.enumAction.membersAscending.contains (a))
     for
-      nf  <- Randomized.gaussian (0.0, 1.0)
-      f1   = a + nf
-      nd  <- Randomized.gaussian (0.1, 0.01)
-      cd  <- getDemand (s.t%24 + 1)
-      d    = cd + nd
+      f1  <- Randomized.gaussian (a, 1.0)
+      cd  <- demand (s.t % 24 + 1)
+      d   <- Randomized.gaussian (cd + 0.1, 0.01)
       tl1  = s.tl + c1 * (f1 - d)
       h1   = s.h + c4 * (s.w + (c1 * f1 / math.Pi))
       nw  <- Randomized.gaussian (0.0, 1.0)
