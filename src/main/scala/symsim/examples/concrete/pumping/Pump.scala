@@ -166,8 +166,8 @@ object Pump extends
   def getDemand (t: Int): Randomized[Double] =
     require (t >= 0 && t <= 24)
     if t < 5 then Randomized.between (5.0, 15.0)
-    if t < 12 then Randomized.between (15.0, 45.0)
-    if t < 22 then Randomized.between (20.0, 38.0)
+    else if t < 12 then Randomized.between (15.0, 45.0)
+    else if t < 22 then Randomized.between (20.0, 38.0)
     else Randomized.between (5.0, 20.0)
 
 
