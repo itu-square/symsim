@@ -103,8 +103,8 @@ case class ConcreteExpectedSarsaLaws[State, ObservableState, Action]
          val os_t = agent.observe (s_t)
 
          // call the tested implementation
-         val sut: Randomized[(Q, State, Action)] = 
-           Randomized.repeat (sarsa.learningEpoch (q_t, s_t, a_t))
+         val sut: Randomized[(Q, State, Action)] =
+           Randomized.repeat (sarsa.learningEpoch ((q_t, List[Double]()), s_t, a_t))
 
          // call the spec interpreter
          val spec: Randomized[(Q, State, Action)] = 

@@ -31,8 +31,8 @@ import symsim.concrete.Randomized
  *              implementations,  which is  a convenient  sanity check
  *              (the test of bdl against bdl should pass).
  */
-case class ConcreteSarsaLaws[State, ObservableState, Action] 
-  (sarsa: ConcreteExactRL[State, ObservableState, Action], 
+case class ConcreteSarsaLaws[State, ObservableState, Action]
+  (sarsa: ConcreteExactRL[State, ObservableState, Action],
    gamma: Double
   ) extends org.typelevel.discipline.Laws:
 
@@ -152,8 +152,8 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
        "The value of variables in the Q table are not NaN after learning (divergence)" -> 
        forAllNoShrink { (q_t: Q, s_t: State) =>
           val initials = Randomized.repeat (agent.initialize).take (10)
-          val schedule = sarsa.learn (q_t, initials)
-          val q = schedule.head
+          val schedule = sarsa.learn ((q_t, List[Double]()), initials)
+          val q = schedule.head._1
           val os_t = agent.observe (s_t)
           vf.actionValues (q) (os_t)
             .values
