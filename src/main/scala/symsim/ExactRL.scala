@@ -49,15 +49,15 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
     * to the next iteration and stay properly on policy.  In Q-Learning this
     * introduces a small presentation complication, not more.
     */
-  def learningEpoch (f: VF, s_t: State, a_t: Action): Scheduler[(vf.VF, State, Action)]
+  def learningEpoch (f: (VF, List[Reward]), s_t: State, a_t: Action): Scheduler[((vf.VF, List[Reward]), State, Action)]
 
   /** Execute a full learning episode (until the final state of agent is
     * reached).
     */
-  def learningEpisode (f: VF, s_t: State): Scheduler[VF] =
-    def p (f: VF, s: State, a: Action): Boolean = agent.isFinal (s)
+  def learningEpisode (f: (VF, List[Reward]), s_t: State): Scheduler[(VF, List[Reward])] =
+    def p (f: (VF, List[Reward]), s: State, a: Action): Boolean = agent.isFinal (s)
     for
-      a <- chooseAction (ε) (f) (agent.observe (s_t))
+      a <- chooseAction (ε) (f._1) (agent.observe (s_t))
       fin <- Monad[Scheduler].iterateUntilM (f, s_t, a) (learningEpoch) (p)
     yield fin._1
 
@@ -69,7 +69,7 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
     * Scheduler is lazy then the evaluation is not really doing more than just
     * formulating the thunk of that scheduler.
     */
-  final def learn (f: VF, ss: => Scheduler[State]): Scheduler[VF] =
-    ss.foldM[Scheduler, VF] (f) (learningEpisode)
+  final def learn (f: (VF, List[Reward]), ss: => Scheduler[State]): Scheduler[(VF, List[Reward])] =
+    ss.foldM[Scheduler, (VF, List[Reward])] (f) (learningEpisode)
 
    

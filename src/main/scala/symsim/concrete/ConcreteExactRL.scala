@@ -24,8 +24,8 @@ trait ConcreteExactRL[State, ObservableState, Action]
 
   def runQ: Q =
     val initials = Randomized.repeat (agent.initialize).take (episodes)
-    val schedule = learn (vf.initialize, initials)
-    schedule.head
+    val schedule = learn ((vf.initialize, List[Double]()), initials)
+    schedule.head._1
 
   override def run: Policy =
     qToPolicy (this.runQ)
