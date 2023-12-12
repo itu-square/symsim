@@ -55,8 +55,8 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
    *  @return the updated matrix Q, the successor state, and a
    *          reward difference (the size of the update performed)
    */
-  def learningEpoch (q_t: VF, s_t: State, a_t: Action)
-    : Scheduler[(VF, State, Action)] = bdl.update match 
+  def learningEpoch (q_t: VF, r_l: List[Reward], s_t: State, a_t: Action)
+    : Scheduler[(VF, List[Reward], State, Action)] = bdl.update match
   case SampleU => 
     for 
       sagγ                    <- sem (bdl.est) (q_t)  // intermediate name needed for stryker which fails with -source:future
@@ -68,7 +68,7 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
       q_t_value                = q_t (os_t, a_t)
       q_tt_value               = q_t_value + bdl.α * (g_tkk - q_t_value)
       q_tt                     = q_t.updated (os_t, a_t, q_tt_value)
-    yield (q_tt, s_tk, a_tk)
+    yield (q_tt, r_l, s_tk, a_tk)
 
   case ExpectationU => 
     for 
@@ -85,7 +85,7 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
       q_t_value                = q_t (os_t, a_t)
       q_tt_value               = q_t_value + bdl.α * (g_tkk - q_t_value)
       q_tt                     = q_t.updated (os_t, a_t, q_tt_value)
-    yield (q_tt, s_tk, a_tk)
+    yield (q_tt, r_l, s_tk, a_tk)
       
 
   /** Semantics of a sequence of estimation steps. */

@@ -16,7 +16,8 @@ trait ExperimentSpec[State, ObservableState, Action]
     outputToFile: Option[String] = None
   ): setup.Policy =
 
-    val q = setup.runQ
+    val (q, r) = setup.runQ
+    println(r)
     val policy = setup.qToPolicy (q)
     val policyOutput = setup.pp_policy (policy)
     val qOutput = setup.vf.pp_Q (q)

@@ -20,21 +20,22 @@ trait QLearning[State, ObservableState, Action, Reward, Scheduler[_]]
     * @return the updated matrix Q, the successor state, and a
     * reward difference (the size of the update performed)
     */
-  override def learningEpoch (q: VF, s_t: State, a_t: Action)
-  : Scheduler[(VF, State, Action)] =
+  override def learningEpoch (q: VF, rL: List[Reward], s_t: State, a_t: Action)
+  : Scheduler[(VF, List[Reward], State, Action)] =
     for
-      sa_tt <- agent.step (s_t) (a_t)
+      sa_tt        <- agent.step (s_t) (a_t)
       (s_tt, r_tt) = sa_tt
+      rL_tt = r_tt :: rL
 
-      ds_t = agent.observe (s_t)
-      ds_tt = agent.observe (s_tt)
+      ds_t         = agent.observe (s_t)
+      ds_tt        = agent.observe (s_tt)
       
       // Q-learning is off-policy (p.844 in Russel & Norvig)
-      a_tt = bestAction (q) (ds_tt)
-      old_entry = q (ds_t, a_t)
-      correction = r_tt + gamma * q (ds_tt, a_tt) - old_entry
-      qval = old_entry + alpha * correction
+      a_tt         = bestAction (q) (ds_tt)
+      old_entry    = q (ds_t, a_t)
+      correction   = r_tt + gamma * q (ds_tt, a_tt) - old_entry
+      qval         = old_entry + alpha * correction
 
-      q1 = q.updated (ds_t, a_t, qval)
-      a_tt1 <- chooseAction (ε) (q1) (ds_tt)
-    yield (q1, s_tt, a_tt1)
+      q1           = q.updated (ds_t, a_t, qval)
+      a_tt1        <- chooseAction (ε) (q1) (ds_tt)
+    yield (q1, rL_tt, s_tt, a_tt1)
