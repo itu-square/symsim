@@ -1,6 +1,7 @@
 package symsim
 
 import java.nio.file.{Paths, Files}
+import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 
 import symsim.concrete.ConcreteQTable
@@ -17,7 +18,15 @@ trait ExperimentSpec[State, ObservableState, Action]
   ): setup.Policy =
 
     val (q, r) = setup.runQ
-    println(r)
+    val sums: List[Double] = r.map(_.sum)
+    val csvString: String = sums.mkString("\n")
+    val outputFile: String = "accumulative reward.csv"
+    val writer = new PrintWriter(outputFile)
+    try {
+      writer.println(csvString)
+    } finally {
+      writer.close()
+    }
     val policy = setup.qToPolicy (q)
     val policyOutput = setup.pp_policy (policy)
     val qOutput = setup.vf.pp_Q (q)
