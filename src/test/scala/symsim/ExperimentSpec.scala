@@ -18,8 +18,8 @@ trait ExperimentSpec[State, ObservableState, Action]
   ): setup.Policy =
 
     val (q, r) = setup.runQ
-    val sums: List[Double] = r.map(_.sum)
-    val csvString: String = sums.mkString("\n")
+//    val sums: List[Double] = r.map(_.sum)
+    val csvString: String = r.mkString("\n")
     val outputFile: String = "accumulative reward.csv"
     val writer = new PrintWriter(outputFile)
     try {

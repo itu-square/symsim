@@ -22,12 +22,12 @@ trait Sarsa[State, ObservableState, Action, Reward, Scheduler[_]]
     * @return the updated matrix Q, the successor state, and a
     * reward difference (the size of the update performed)
     */
-  override def learningEpoch (q_t: VF, rL: List[Reward], s_t: State, a_t: Action)
-    : Scheduler[(VF, List[Reward], State, Action)] =
+  override def learningEpoch (q_t: VF, r_t: Reward, s_t: State, a_t: Action)
+    : Scheduler[(VF, Reward, State, Action)] =
     for
       sa_tt        <- agent.step (s_t) (a_t)
       (s_tt, r_tt)  = sa_tt
-      rL_tt         = r_tt :: rL
+      r_acc         = r_tt + r_t
                       // SARSA: on-policy (p.844 in Russel & Norvig)
       (os_t, os_tt) = (agent.observe (s_t), agent.observe (s_tt))
       a_tt         <- vf.chooseAction (ε) (q_t) (os_tt)
@@ -35,4 +35,4 @@ trait Sarsa[State, ObservableState, Action, Reward, Scheduler[_]]
       g_tt          = r_tt + γ * q_t (os_tt, a_tt)
       q_tt_value    = q_t_value + α * (g_tt - q_t_value)
       q_tt          = q_t.updated (os_t, a_t, q_tt_value)
-    yield (q_tt, rL_tt, s_tt, a_tt)
+    yield (q_tt, r_acc, s_tt, a_tt)
