@@ -103,12 +103,12 @@ case class ConcreteExpectedSarsaLaws[State, ObservableState, Action]
          val os_t = agent.observe (s_t)
 
          // call the tested implementation
-         val sut: Randomized[(Q, List[Double], State, Action)] =
-           Randomized.repeat (sarsa.learningEpoch (q_t, List[Double](), s_t, a_t))
+         val sut: Randomized[(Q, Double, State, Action)] =
+           Randomized.repeat (sarsa.learningEpoch (q_t, 0.0, s_t, a_t))
 
          // call the spec interpreter
-         val spec: Randomized[(Q, List[Double], State, Action)] =
-           Randomized.repeat (bdl.learningEpoch (q_t, List[Double](), s_t, a_t))
+         val spec: Randomized[(Q, Double, State, Action)] =
+           Randomized.repeat (bdl.learningEpoch (q_t, 0.0, s_t, a_t))
 
          // We do this test by assuming that both distributions are normal 
          // (A generalized test with StudentT would be even better).
