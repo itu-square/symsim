@@ -54,16 +54,18 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
   /** Execute a full learning episode (until the final state of agent is
     * reached).
     */
-  def learningEpisode(fR: (VF, List[Reward]), s_t: State): Scheduler[(VF, List[Reward])] =
+  def learningEpisode(fR: (VF, List[Reward], List[VF]), s_t: State): Scheduler[(VF, List[Reward], List[VF])] =
     def p(f: VF, r_acc: Reward, s: State, a: Action): Boolean = agent.isFinal(s)
 
     val f = fR._1
     val r_acc = fR._2
+    val qL_t = fR._3
     for
       a <- chooseAction(ε)(f)(agent.observe(s_t))
       fin <- Monad[Scheduler].iterateUntilM(f, Arith.arith[Reward].zero, s_t, a)(learningEpoch)(p)
       rL = fin._2 :: r_acc
-    yield (fin._1, rL)
+      qL_tt = fin._1 :: qL_t
+    yield (fin._1, rL, qL_tt)
 
   /** Executes as many full learning episodes (until the final state of agent is
     * reached) as the given state scheduler generates.  For this method to work
@@ -73,7 +75,8 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
     * Scheduler is lazy then the evaluation is not really doing more than just
     * formulating the thunk of that scheduler.
     */
-  final def learn (f: VF, r_l: List[Reward], ss: => Scheduler[State]): Scheduler[(VF, List[Reward])] =
-    ss.foldM[Scheduler, (VF, List[Reward])] (f, r_l) (learningEpisode)
+  final def learn (f: VF, r_l: List[Reward], q_l: List[VF], ss: => Scheduler[State]):
+    Scheduler[(VF, List[Reward], List[VF])] =
+      ss.foldM[Scheduler, (VF, List[Reward], List[VF])] (f, r_l, q_l) (learningEpisode)
 
    
