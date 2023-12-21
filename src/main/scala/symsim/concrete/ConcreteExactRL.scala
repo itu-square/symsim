@@ -22,10 +22,10 @@ trait ConcreteExactRL[State, ObservableState, Action]
   // TODO: unclear if this is general (if it turns out to be the same im
   // symbolic or approximate algos we should promote this to the trait
 
-  def runQ: (Q, List[Double]) =
+  def runQ: (Q, List[Double], List[Q]) =
     val initials = Randomized.repeat (agent.initialize).take (episodes)
-    val schedule = learn (vf.initialize, List[Double](), initials)
-    (schedule.head._1, schedule.head._2)
+    val schedule = learn (vf.initialize, List[Double](), List[VF](), initials)
+    (schedule.head._1, schedule.head._2, schedule.head._3)
 
   override def run: Policy =
     qToPolicy (this.runQ._1)

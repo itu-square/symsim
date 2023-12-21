@@ -35,12 +35,12 @@ class GolfSpec
 
   property ("Q-table values are non-positive") =
     forAll { (s: GolfState, a: GolfAction) =>
-      for res <- sarsa.learningEpisode ((sarsa.vf.initialize, List[Double]()), s)
+      for res <- sarsa.learningEpisode ((sarsa.vf.initialize, List[Double](), List[sarsa.vf.Q]()), s)
         q = res._1
       yield q (s, a) <= 0
     }
 
   property ("Using club D in the sand is the best trained action after 100 episodes") =
     val initials = Randomized.repeat(Randomized.const(Golf.StartState)).take(200)
-    val q = sarsa.learn (sarsa.vf.initialize, List[Double](), initials)
-    q.take(50).forall { (q, _) => sarsa.vf.bestAction (q) (Golf.SandState)._1 == Club.D }
+    val q = sarsa.learn (sarsa.vf.initialize, List[Double](), List[sarsa.vf.Q](), initials)
+    q.take(50).forall { (q, _, _) => sarsa.vf.bestAction (q) (Golf.SandState)._1 == Club.D }
