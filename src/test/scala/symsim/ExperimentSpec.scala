@@ -18,15 +18,17 @@ trait ExperimentSpec[State, ObservableState, Action]
   ): setup.Policy =
 
     val (q, qL) = setup.runQ
-    val strQ: String = qL.mkString("\n")
-    val outputFileQ: String = "List of Q.txt"
-    val writerQ = new PrintWriter(outputFileQ)
-    try {
-      writerQ.println(strQ)
-    } finally {
-      writerQ.close()
-    }
     val policy = setup.qToPolicy (q)
+    val policies = qL.map (setup.qToPolicy)
+    val pEval = setup.policyEval (policies)
+    val strR: String = pEval.mkString("\n")
+    val outputR: String = "evaluation.csv"
+    val writerR = new PrintWriter(outputR)
+    try {
+      writerR.println(strR)
+    } finally {
+      writerR.close()
+    }
     val policyOutput = setup.pp_policy (policy)
     val qOutput = setup.vf.pp_Q (q)
 
