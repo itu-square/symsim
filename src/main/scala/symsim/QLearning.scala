@@ -20,12 +20,11 @@ trait QLearning[State, ObservableState, Action, Reward, Scheduler[_]]
     * @return the updated matrix Q, the successor state, and a
     * reward difference (the size of the update performed)
     */
-  override def learningEpoch (q: VF, r_t: Reward, s_t: State, a_t: Action)
-  : Scheduler[(VF, Reward, State, Action)] =
+  override def learningEpoch (q: VF, s_t: State, a_t: Action)
+  : Scheduler[(VF, State, Action)] =
     for
       sa_tt        <- agent.step (s_t) (a_t)
       (s_tt, r_tt) = sa_tt
-      r_acc        = r_tt + r_t
 
       ds_t         = agent.observe (s_t)
       ds_tt        = agent.observe (s_tt)
@@ -38,4 +37,4 @@ trait QLearning[State, ObservableState, Action, Reward, Scheduler[_]]
 
       q1           = q.updated (ds_t, a_t, qval)
       a_tt1        <- chooseAction (ε) (q1) (ds_tt)
-    yield (q1, r_acc, s_tt, a_tt1)
+    yield (q1, s_tt, a_tt1)

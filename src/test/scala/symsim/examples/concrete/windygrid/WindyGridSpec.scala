@@ -41,9 +41,9 @@ object WindyGridSpec
   // to rerun training multiple times (if it is put inside the property)
   val sarsa = ConcreteSarsa (WindyGrid, 0.1, 0.5, 0.1, 1)
   val initials = Randomized.eachOf(WindyGrid.instances.allObservableStates*)
-  val qs = sarsa.learn (sarsa.vf.initialize, List[Double](), List[sarsa.vf.Q](), initials).take(5).toList
+  val qs = sarsa.learn (sarsa.vf.initialize, List[sarsa.vf.Q](), initials).take(5).toList
   import sarsa.vf.apply
 
   property ("Q-table values are non-positive") =
     forAll { (s: GridState, a: GridAction) => 
-      qs.forall { (q, _, _) => q (s, a) <= 0 } }
+      qs.forall { (q, _) => q (s, a) <= 0 } }
