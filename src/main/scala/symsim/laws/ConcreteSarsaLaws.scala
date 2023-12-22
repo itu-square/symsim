@@ -96,12 +96,12 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
          val os_t = agent.observe (s_t)
 
          // call the tested implementation
-         val sut: Randomized[(Q, Double, State, Action)] =
-           Randomized.repeat (sarsa.learningEpoch (q_t, 0.0, s_t, a_t))
+         val sut: Randomized[(Q, State, Action)] =
+           Randomized.repeat (sarsa.learningEpoch (q_t, s_t, a_t))
 
          // call the spec interpreter
-         val spec: Randomized[(Q, Double, State, Action)] =
-           Randomized.repeat (bdl.learningEpoch (q_t, 0.0, s_t, a_t))
+         val spec: Randomized[(Q, State, Action)] =
+           Randomized.repeat (bdl.learningEpoch (q_t, s_t, a_t))
 
          // We find a Bayesian posterior (analytically) for the mean
          // difference between them means, and checking whether we
@@ -110,8 +110,8 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
          
          // Extract a univariate distributions over updates
          
-         val sutUpdates = sut.map { (q_tt, _, _, _) => q_tt (os_t, a_t) }
-         val specUpdates = spec.map { (q_tt, _, _, _) => q_tt (os_t, a_t) }
+         val sutUpdates = sut.map { (q_tt, _, _) => q_tt (os_t, a_t) }
+         val specUpdates = spec.map { (q_tt, _, _) => q_tt (os_t, a_t) }
 
          // A random variable representing differences between updates
 
@@ -152,7 +152,7 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
        "The value of variables in the Q table are not NaN after learning (divergence)" -> 
        forAllNoShrink { (q_t: Q, s_t: State) =>
           val initials = Randomized.repeat (agent.initialize).take (10)
-          val schedule = sarsa.learn (q_t, List[Double](), List[Q](), initials)
+          val schedule = sarsa.learn (q_t, List[Q](), initials)
           val q = schedule.head._1
           val os_t = agent.observe (s_t)
           vf.actionValues (q) (os_t)

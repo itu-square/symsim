@@ -17,15 +17,7 @@ trait ExperimentSpec[State, ObservableState, Action]
     outputToFile: Option[String] = None
   ): setup.Policy =
 
-    val (q, r, qL) = setup.runQ
-    val csvStrR: String = r.mkString("\n")
-    val outputFileR: String = "accumulative reward.csv"
-    val writerR = new PrintWriter(outputFileR)
-    try {
-      writerR.println(csvStrR)
-    } finally {
-      writerR.close()
-    }
+    val (q, qL) = setup.runQ
     val strQ: String = qL.mkString("\n")
     val outputFileQ: String = "List of Q.txt"
     val writerQ = new PrintWriter(outputFileQ)

@@ -49,23 +49,21 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
     * to the next iteration and stay properly on policy.  In Q-Learning this
     * introduces a small presentation complication, not more.
     */
-  def learningEpoch (f: VF, r_t: Reward, s_t: State, a_t: Action): Scheduler[(vf.VF, Reward, State, Action)]
+  def learningEpoch (f: VF, s_t: State, a_t: Action): Scheduler[(vf.VF, State, Action)]
 
   /** Execute a full learning episode (until the final state of agent is
     * reached).
     */
-  def learningEpisode(fR: (VF, List[Reward], List[VF]), s_t: State): Scheduler[(VF, List[Reward], List[VF])] =
-    def p(f: VF, r_acc: Reward, s: State, a: Action): Boolean = agent.isFinal(s)
+  def learningEpisode(fR: (VF, List[VF]), s_t: State): Scheduler[(VF, List[VF])] =
+    def p(f: VF, s: State, a: Action): Boolean = agent.isFinal(s)
 
     val f = fR._1
-    val r_acc = fR._2
-    val qL_t = fR._3
+    val qL_t = fR._2
     for
       a <- chooseAction(ε)(f)(agent.observe(s_t))
-      fin <- Monad[Scheduler].iterateUntilM(f, Arith.arith[Reward].zero, s_t, a)(learningEpoch)(p)
-      rL = fin._2 :: r_acc
+      fin <- Monad[Scheduler].iterateUntilM(f, s_t, a)(learningEpoch)(p)
       qL_tt = fin._1 :: qL_t
-    yield (fin._1, rL, qL_tt)
+    yield (fin._1, qL_tt)
 
   /** Executes as many full learning episodes (until the final state of agent is
     * reached) as the given state scheduler generates.  For this method to work
@@ -75,8 +73,8 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
     * Scheduler is lazy then the evaluation is not really doing more than just
     * formulating the thunk of that scheduler.
     */
-  final def learn (f: VF, r_l: List[Reward], q_l: List[VF], ss: => Scheduler[State]):
-    Scheduler[(VF, List[Reward], List[VF])] =
-      ss.foldM[Scheduler, (VF, List[Reward], List[VF])] (f, r_l, q_l) (learningEpisode)
+  final def learn (f: VF, q_l: List[VF], ss: => Scheduler[State]):
+    Scheduler[(VF, List[VF])] =
+      ss.foldM[Scheduler, (VF, List[VF])] (f, q_l) (learningEpisode)
 
    
