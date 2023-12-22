@@ -5,10 +5,9 @@ import cats.syntax.functor.*
 import cats.syntax.flatMap.*
 import cats.syntax.foldable.*
 import cats.syntax.option.*
-
 import symsim.concrete.Probability
-
 import org.typelevel.paiges.Doc
+import symsim.Arith.*
 
 /** An abstract representation of an ExactRL algorithm. By exact we mean
   * using an exact representation of the value function
@@ -77,4 +76,27 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
     Scheduler[(VF, List[VF])] =
       ss.foldM[Scheduler, (VF, List[VF])] (f, q_l) (learningEpisode)
 
-   
+  def evalEpoch(policy: Policy, s_t: State, a_t: Action, r_t: Reward):
+    Scheduler[(Policy, State, Action, Reward)] =
+      for
+        sa_tt        <- agent.step (s_t) (a_t)
+        (s_tt, r_tt)  = sa_tt
+        r_acc         = r_tt + r_t
+        a_tt          = policy.getOrElse (agent.observe (s_tt),
+                          agent.instances.allActions.head)
+      yield (policy, s_tt, a_tt, r_acc)
+
+  def evalEpisode(policy: Policy, s_t: State): Reward =
+    def p(pp: Policy, sp: State, ap: Action, rp: Reward): Boolean = agent.isFinal(sp)
+
+    for
+      i <- 0 to 10
+      a = policy.getOrElse(agent.observe(s_t),
+            agent.instances.allActions.head)
+      r <- Monad[Scheduler].iterateUntilM (
+        policy, s_t, a, Arith.arith[Reward].zero) (evalEpoch) (p)
+    yield r
+
+  final def evaluate (policy: Policy, ss: List[State]):
+    List[Reward] =
+      ss.map(s_0 => evalEpisode(policy, s_0))
