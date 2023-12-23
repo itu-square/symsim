@@ -8,6 +8,7 @@ import cats.syntax.option.*
 import symsim.concrete.Probability
 import org.typelevel.paiges.Doc
 import symsim.Arith.*
+import spire.syntax.action
 
 /** An abstract representation of an ExactRL algorithm. By exact we mean
   * using an exact representation of the value function
@@ -35,6 +36,9 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
   def α: Double = this.alpha
   def ε: Probability = this.epsilon
 
+
+  /* Policy Learning */
+
   /** A single step of the learning algorithm
     *
     * @param q the last Q-matrix
@@ -54,13 +58,12 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
     * reached).
     */
   def learningEpisode(fR: (VF, List[VF]), s_t: State): Scheduler[(VF, List[VF])] =
-    def p(f: VF, s: State, a: Action): Boolean = agent.isFinal(s)
-
+    def done (f: VF, s: State, a: Action): Boolean = agent.isFinal(s)
     val f = fR._1
     val qL_t = fR._2
     for
-      a <- chooseAction(ε)(f)(agent.observe(s_t))
-      fin <- Monad[Scheduler].iterateUntilM(f, s_t, a)(learningEpoch)(p)
+      a    <- chooseAction (ε) (f) (agent.observe (s_t))
+      fin  <- Monad[Scheduler].iterateUntilM (f, s_t, a) (learningEpoch) (done)
       qL_tt = fin._1 :: qL_t
     yield (fin._1, qL_tt)
 
@@ -76,27 +79,50 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
     Scheduler[(VF, List[VF])] =
       ss.foldM[Scheduler, (VF, List[VF])] (f, q_l) (learningEpisode)
 
-  def evalEpoch(policy: Policy, s_t: State, a_t: Action, r_t: Reward):
-    Scheduler[(Policy, State, Action, Reward)] =
-      for
-        sa_tt        <- agent.step (s_t) (a_t)
-        (s_tt, r_tt)  = sa_tt
-        r_acc         = r_tt + r_t
-        a_tt          = policy.getOrElse (agent.observe (s_tt),
-                          agent.instances.allActions.head)
-      yield (policy, s_tt, a_tt, r_acc)
 
-  def evalEpisode(policy: Policy, s_t: State): Reward =
-    def p(pp: Policy, sp: State, ap: Action, rp: Reward): Boolean = agent.isFinal(sp)
 
-    for
-      i <- 0 to 10
-      a = policy.getOrElse(agent.observe(s_t),
-            agent.instances.allActions.head)
-      r <- Monad[Scheduler].iterateUntilM (
-        policy, s_t, a, Arith.arith[Reward].zero) (evalEpoch) (p)
-    yield r
+  /* Policy Evaluation */
 
-  final def evaluate (policy: Policy, ss: List[State]):
-    List[Reward] =
-      ss.map(s_0 => evalEpisode(policy, s_0))
+  /** Evaluate a single epoch from state s_t, the action is selected according 
+   *  to the policy. 
+   *
+   *  @param p   The policy used to select an action
+   *  @param s_t The state we are moving from (source state)
+   *  @param r_t Reward accumulated so far
+   *
+   *  @return the target state rached and an updated reward
+   */
+  def evalEpoch (p: Policy) (s_t: State, r_t: Reward): Scheduler[(State, Reward)] =
+    val arbitraryAction = agent.instances.allActions.head
+    val a_t = p.getOrElse (agent.observe (s_t), arbitraryAction)
+    agent.step (s_t) (a_t)
+      .map { (s_tt, r_tt) => (s_tt, r_t + r_tt)}
+
+
+  /** Evaluate a single episode until a final state, following the policy p, and
+   *  starting in the state s_t.
+   *
+   *  @param p   The policy used to select actions
+   *  @param s_0 The starting state
+   *  @return the accumulated reward along the episode
+   */
+  def evalEpisode (p: Policy) (s_0: State): Scheduler[Reward] =
+    def done (s: State, r: Reward): Boolean = agent.isFinal (s)
+    Monad[Scheduler].iterateUntilM (s_0, Arith.arith[Reward].zero) (evalEpoch (p)) (done)
+      .map { _._2 }
+
+  /** Evaluate a policy p on the Schedule ss.  If you want to evaluate one state 
+   *  you can just create a singleton schedule. If you want to evaluate the same 
+   *  state several times (to assess variance/convregence in a randomized agent)
+   *  then just repeat the same state in the schedule several times. If you want to 
+   *  evaluate on many random states, just use a randomized scheduler producing 
+   *  random states. 
+   *
+   *  @param p   The policy to evaluate
+   *  @param ss  The schedule of initial states for subsequent episodes 
+   *
+   *  @return the schedule of obtained accumulated rewards. The returned
+   *          schedule has the same structure/size as ss.
+   */
+  final def evaluate (p: Policy, ss: Scheduler[State]): Scheduler[Reward] =
+      ss.flatMap { evalEpisode (p) }
