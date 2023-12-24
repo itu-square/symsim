@@ -34,25 +34,9 @@ trait ConcreteExactRL[State, ObservableState, Action]
   def qToPolicy (q: Q) (using Ordering[Double]): Policy =
     q.states.map { s => (s, vf.bestAction (q) (s)) }.to (Map)
 
-  def policyEval (policy: Policy): Randomized[Double] =
-    val initials = Randomized.repeat (agent.initialize).take (5)
-    evaluate (policy, initials)
-//    val rL = for
-//      s_t <- initials
-//    yield policies.map (policy => runEval (policy, s_t, 0.0))
-//    rL.toList
-
-
-//  def runEval(policy: Policy, s_t: State, r_acc: Double): Double =
-//    if agent.isFinal(s_t) then r_acc
-//    else
-//      val os_t = agent.observe (s_t)
-//      val a = if policy.get (os_t) != None then policy (os_t)
-//              else allActions.head
-//      val s_r = for
-//        sa_tt <- agent.step(s_t)(a)
-//        r_tacc = sa_tt._2 + r_acc
-//      yield (sa_tt._1, r_tacc)
-//      val s_tt = s_r.head._1
-//      val r_acc1 = s_r.head._2
-//      runEval(policy, s_tt, r_acc1)
+  /** Evaluate the policy `p` on `episodes` episodes generated using the
+   *  agent's initialization function.
+   */
+  def policyEval (p: Policy, episodes: Int = 5): Randomized[Double] =
+    val initials = Randomized.repeat (agent.initialize).take (episodes)
+    evaluate (p, initials)
