@@ -16,7 +16,7 @@ class UnitAgentExperiments
   )
 
   s"UnitAgent test run with $sarsa (should not crash)" in {
-    val p: sarsa.Policy = learnAndLog (sarsa) 
+    val p: sarsa.Policy = learnAndLog (sarsa).head
     (p.isEmpty || p (()) == ()) should be (true)
   }
 
@@ -29,6 +29,6 @@ class UnitAgentExperiments
   )
 
   s"UnitAgent test run with $qLearning (should not crash)" in {
-    val p: qLearning.Policy = learnAndLog (qLearning) 
-    (p.isEmpty || p (()) == ()) should be (true)
+    val p: qLearning.Policy = learnAndLog (qLearning).head
+    (p.isEmpty || p(()) == ()) should be (true)
   }
