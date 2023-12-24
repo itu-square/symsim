@@ -17,6 +17,7 @@ type Randomized[+A] = LazyList[A]
 
 type Probability = Double
 
+
 /** A purely functional wrapping of java.security.SecureRandom.  Presents
  *  generators as possibly finite streams (a source that dries out), which can
  *  be extended to continue producing infinitely with repeat (infinite).  There
@@ -96,3 +97,13 @@ object Randomized:
         Gen.choose(0, 1000)
           .map { i => stream (i) }
     }
+
+  extension (self: Randomized[Double])
+    /** Calculate a mean of this random variable. Assumes that this is a finite
+     *  number of samples. If not, tuncate it first meaningfully with _.take(n). 
+     */
+    def mean: Double = self.sum / self.length
+    def variance: Double = 
+      val μ = self.mean
+      self.map (x => (x - μ)*(x -μ)).mean
+
