@@ -9,13 +9,14 @@ class Experiments
   import Car.instances.given
 
   val sarsa = symsim.concrete.ConcreteSarsa (
-     agent = Car,
-     alpha = 0.1,
-     gamma = 0.1,
-     epsilon = 0.05,
-     episodes = 100000,
+    agent = Car,
+    alpha = 0.1,
+    gamma = 0.1,
+    epsilon = 0.05,
+    episodes = 100000,
   )
 
   s"Breaking Car experiment with $sarsa" in {
-    val policy = learnAndLog (sarsa)
+    val policies = learnAndLog (sarsa)
+    evalAndLog(sarsa, policies)
   }

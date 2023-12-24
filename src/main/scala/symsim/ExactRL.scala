@@ -125,4 +125,4 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
    *          schedule has the same structure/size as ss.
    */
   final def evaluate (p: Policy, ss: Scheduler[State]): Scheduler[Reward] =
-      ss.flatMap { evalEpisode (p) }
+    ss.flatMap { evalEpisode (p) }
