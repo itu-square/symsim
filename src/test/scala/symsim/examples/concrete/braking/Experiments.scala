@@ -18,5 +18,5 @@ class Experiments
 
   s"Breaking Car experiment with $sarsa" in {
     val policies = learnAndLog (sarsa)
-    evalAndLog(sarsa, policies)
+    evalAndLog(sarsa, policies, "breaking.csv")
   }
