@@ -92,11 +92,12 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
    *
    *  @return the target state rached and an updated reward
    */
-  def evalEpoch (p: Policy) (s_t: State, r_t: Reward): Scheduler[(State, Reward)] =
+  def evalEpoch (p: Policy) (s_t: State, r_t: Reward): List[(State, Reward)] =
     val arbitraryAction = agent.instances.allActions.head
     val a_t = p.getOrElse (agent.observe (s_t), arbitraryAction)
     agent.step (s_t) (a_t)
       .map { (s_tt, r_tt) => (s_tt, r_t + r_tt)}
+      .toList
 
 
   /** Evaluate a single episode until a final state, following the policy p, and
@@ -106,9 +107,9 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
    *  @param s_0 The starting state
    *  @return the accumulated reward along the episode
    */
-  def evalEpisode (p: Policy) (s_0: State): Scheduler[Reward] =
+  def evalEpisode (p: Policy) (s_0: State): List[Reward] =
     def done (s: State, r: Reward): Boolean = agent.isFinal (s)
-    Monad[Scheduler].iterateUntilM (s_0, Arith.arith[Reward].zero) (evalEpoch (p)) (done)
+    Monad[List].iterateUntilM (s_0, Arith.arith[Reward].zero) (evalEpoch (p)) (done)
       .map { _._2 }
 
   /** Evaluate a policy p on the Schedule ss.  If you want to evaluate one state 
@@ -124,5 +125,5 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
    *  @return the schedule of obtained accumulated rewards. The returned
    *          schedule has the same structure/size as ss.
    */
-  final def evaluate (p: Policy, ss: Scheduler[State]): Scheduler[Reward] =
+  final def evaluate (p: Policy, ss: List[State]): List[Reward] =
     ss.flatMap { evalEpisode (p) }

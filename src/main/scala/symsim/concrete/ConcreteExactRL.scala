@@ -37,11 +37,11 @@ trait ConcreteExactRL[State, ObservableState, Action]
   /** Evaluate the policy `p` on `episodes` episodes generated using the
    *  agent's initialization function.
    */
-  def evaluate (p: Policy, episodes: Int): Randomized[Double] =
-    val initials = Randomized.repeat (agent.initialize).take (episodes)
+  def evaluate (p: Policy, episodes: Int): List[Double] =
+    val initials = Randomized.repeat (agent.initialize).take (episodes) .toList
     evaluate (p, initials)
 
   /** Evaluate the policy `p` on 5 episodes generated using the
    *  agent's initialization function.
    */
-  def evaluate (p: Policy) : Randomized[Double] = evaluate (p, 5)
+  def evaluate (p: Policy) : List[Double] = evaluate (p, 5)
