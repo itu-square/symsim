@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets
 
 import symsim.concrete.ConcreteQTable
 import symsim.concrete.Randomized
-import symsim.concrete.Randomized.{mean, variance}
+//import symsim.concrete.Randomized.{mean, variance}
 
 trait ExperimentSpec[State, ObservableState, Action]
   extends org.scalatest.freespec.AnyFreeSpec,
@@ -54,14 +54,21 @@ trait ExperimentSpec[State, ObservableState, Action]
    *  @param filePath The name of the file were the results are to be stored,
    *  including path and extension.
    */
+
   def evalAndLog(
     setup: concrete.ConcreteExactRL [State, ObservableState, Action],
     policies: List[setup.Policy], 
     filePath: String 
   ): Unit = 
     val rewardSamples = policies.map { setup.evaluate }
-    val means         = rewardSamples.map{ r => r.mean }
-    val variances     = rewardSamples.map { r => r.variance }
+    val means = rewardSamples.map { r => r.sum/r.length}
+    val variances = rewardSamples.map { r =>
+      {
+        val μ  = r.sum/r.length
+        val μl = r.map (x => (x - μ) * (x - μ))
+        μl.sum/μl.length
+      }
+    }
     val μσσ: List[((Double, Double), Int)] = (means zip variances).zipWithIndex
     val output        = μσσ.map { case ((μ, σσ), i) => s"${i}, ${μ}, ${σσ}\n" }
                            .mkString
