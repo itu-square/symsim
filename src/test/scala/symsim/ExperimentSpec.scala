@@ -3,7 +3,6 @@ package symsim
 import java.nio.file.{Paths, Files}
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
-import Option.option2Iterable
 
 import symsim.concrete.ConcreteQTable
 import symsim.concrete.Randomized

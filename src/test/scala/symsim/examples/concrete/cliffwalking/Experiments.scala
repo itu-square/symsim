@@ -18,5 +18,6 @@ class Experiments
   )
 
   s"CliffWalking experiment with $sarsa" in {
-    val policy = learnAndLog (sarsa)
+    val policies = learnAndLog(sarsa)
+    evalAndLog(sarsa, policies, "cliffwalking.csv")
   }

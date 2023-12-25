@@ -17,5 +17,6 @@ class Experiments
   )
 
   s"WindyGrid experiment with $sarsa" in {
-    val policy = learnAndLog (sarsa)
+    val policies = learnAndLog(sarsa)
+    evalAndLog(sarsa, policies, "windygrid.csv")
   }
