@@ -17,5 +17,6 @@ class Experiments
   )
 
   s"Pumping experiment with $sarsa" in {
-    val policy = learnAndLog (sarsa, outputToFile = Some("pump"))
+    val policies = learnAndLog (sarsa, outputToFile = Some("pump"))
+    evalAndLog(sarsa, policies, "pumping.csv")
   }

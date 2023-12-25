@@ -15,4 +15,7 @@ class Experiments
     episodes = 20000,
   )
 
-  s"Golf experiment with ${sarsa}" in { val policy = learnAndLog (sarsa) }
+  s"Golf experiment with ${sarsa}" in {
+    val policies = learnAndLog(sarsa)
+    evalAndLog(sarsa, policies, "golf.csv")
+  }

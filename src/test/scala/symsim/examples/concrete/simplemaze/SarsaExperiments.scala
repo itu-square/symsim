@@ -16,7 +16,10 @@ class SarsaExperiments
 
    s"SimpleMaze experiment with ${sarsa}" in {
 
-      val policy = learnAndLog (sarsa).head
+     val policies = learnAndLog(sarsa)
+     evalAndLog(sarsa, policies, "simplemaze.csv")
+
+     val policy = policies.head
 
       withClue ("1,1") { policy (1, 1) should be (Up) }
       withClue ("1,2") { policy (1, 2) should be (Up) }
