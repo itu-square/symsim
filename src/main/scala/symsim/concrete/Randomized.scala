@@ -98,12 +98,57 @@ object Randomized:
           .map { i => stream (i) }
     }
 
-  extension (self: Randomized[Double])
-    /** Calculate a mean of this random variable. Assumes that this is a finite
-     *  number of samples. If not, tuncate it first meaningfully with _.take(n). 
+  /** This extensions should ideally be used at a  top-level of the program, 
+   *  as they loose the type annotation for the side effect of randomness.
+   */
+  extension [A] (self: Randomized[A])
+    /** Get one sample from randomized. Note that the sample will be random but
+     *  always the same if you call several times. 
+     *  (at least in the current implementation)
      */
-    def mean: Double = self.sum / self.length
-    def variance: Double = 
-      val μ = self.mean
-      self.map (x => (x - μ)*(x -μ)).mean
+    def sample (): A = sample(1).head
+
+    /** Get n samples from randomized. Note that the sample will be random but
+     *  always the same if you call several times. 
+     *  (at least in the current implementation)
+     *
+     *  Note: as long as we have not refactored the underlying implementation
+     *  of Randomized, this is unsafe. It is possible that randomized does 
+     *  not have n samples.
+     *
+     */
+    def sample (n: Int): List[A] = self.take(n).toList
+
+    /** Perform an imperative operation that depends on one sample from this
+     *  Randomized.  This is mostly meant for IO at this point.
+     */
+    def run (f: A => Unit): Unit = f(self.sample ())
+
+
+  extension (self: Randomized[Double])
+
+    /** Calculate a mean of this random variable. 
+     *  Note that calling mean might be very expensive, if obtaining each sample
+     *  is expensive. 
+     */
+    def mean (support: Int = 100): Double = 
+      val finite = self.take (support) 
+      finite.sum / support.toDouble
+
+    def variance (support: Int = 100): Double = 
+      val finite = self.take (support)
+      val μ = finite.mean (support)
+      self.map (x => (x - μ)*(x -μ))
+        .mean (support)
+
+    /** Calculate a mean and variance of a sample of size support. This is done
+     *  in one go, so it is more efficient than calling mean and variance
+     *  separately. 
+     */
+    def meanVar (support: Int = 100): (Double, Double) = 
+      val finite = self.take (support)
+      val μ = finite.mean (support)
+      val σσ = self.map (x => (x - μ)*(x -μ))
+                   .mean (support)
+      (μ, σσ)
 

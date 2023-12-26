@@ -36,12 +36,12 @@ trait ConcreteExactRL[State, ObservableState, Action]
 
   /** Evaluate the policy `p` on `episodes` episodes generated using the
    *  agent's initialization function.
+   *
+   *  @return A distribution of distributions of rewards. The structure is
+   *  deliberately kept nested so that you can distinguish between marginals
+   *  for each initial state. The outer distribution is over initial states,
+   *  the inner distribution is over randomness in the learning
+   *  process/environment.
    */
-  def evaluate (p: Policy, episodes: Int): List[Double] =
-    val initials = Randomized.repeat (agent.initialize).take (episodes) .toList
-    evaluate (p, initials)
-
-  /** Evaluate the policy `p` on 5 episodes generated using the
-   *  agent's initialization function.
-   */
-  def evaluate (p: Policy) : List[Double] = evaluate (p, 5)
+  def evaluate (p: Policy): Randomized[Randomized[Double]] =
+    evaluate (p, agent.initialize)

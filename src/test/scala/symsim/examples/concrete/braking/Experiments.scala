@@ -1,6 +1,8 @@
 package symsim
 package examples.concrete.braking
 
+import symsim.concrete.Randomized
+
 class Experiments
   extends ExperimentSpec[CarState, CarObservableState, CarAction]:
 
@@ -18,6 +20,12 @@ class Experiments
 
   s"Braking Car experiment with $sarsa" in {
     val policies = learnAndLog (sarsa)
-    val samplePolicies = policies.grouped(100).take(100).flatMap(_.headOption).toList
-    evalAndLog(sarsa, samplePolicies, "braking.csv")
+      .grouped (10)
+      .take (10)
+      .flatMap { _.headOption }
+      .toList
+    // FIXME: I tentatively just try from an adhoc state
+    val evalInitial = Randomized.const (CarState (10.0, 0.0))
+    eval (sarsa, policies, Some (evalInitial))
+      .save ("braking.csv")
   }
