@@ -14,7 +14,8 @@ class Experiments
 
    s"SimpleBandit experiment with ${sarsaConst}" in {
      val policies = learnAndLog(sarsaConst)
-     evalAndLog(sarsaConst, policies, "simplebandit.csv")
+     val samplePolicies = policies.grouped(10).take(10).flatMap(_.headOption).toList
+     evalAndLog(sarsaConst, samplePolicies, "simplebandit.csv")
    }
    
    val sarsaGaussian = symsim.concrete.ConcreteSarsa (
@@ -27,5 +28,6 @@ class Experiments
 
    s"SimpleBandit experiment with ${sarsaGaussian}" in {
      val policies = learnAndLog(sarsaGaussian)
-     evalAndLog(sarsaGaussian, policies, "simplebandit.csv")
+     val samplePolicies = policies.grouped(10).take(10).flatMap(_.headOption).toList
+     evalAndLog(sarsaGaussian, samplePolicies, "simplebandit.csv")
    }

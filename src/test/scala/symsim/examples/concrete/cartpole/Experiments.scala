@@ -17,5 +17,6 @@ class Experiments extends
 
   s"CartPole experiment with $sarsa" in {
     val policies = learnAndLog(sarsa)
-    evalAndLog(sarsa, policies, "cartpole.csv")
+    val samplePolicies = policies.grouped(10).take(10).flatMap(_.headOption).toList
+    evalAndLog(sarsa, samplePolicies, "cartpole.csv")
   }
