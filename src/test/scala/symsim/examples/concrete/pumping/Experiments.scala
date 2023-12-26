@@ -18,6 +18,10 @@ class Experiments
 
   s"Pumping experiment with $sarsa" in {
     val policies = learnAndLog (sarsa, outputToFile = Some("pump"))
-    val samplePolicies = policies.grouped(10).take(10).flatMap(_.headOption).toList
-    evalAndLog(sarsa, samplePolicies, "pumping.csv")
+      .grouped (10)
+      .take (10)
+      .flatMap { _.headOption }
+      .toList
+    val results = eval (sarsa, policies)
+    results.save ("pumping.csv")
   }

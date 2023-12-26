@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets
 
 import symsim.concrete.ConcreteQTable
 import symsim.concrete.Randomized
-//import symsim.concrete.Randomized.{mean, variance}
+import symsim.concrete.Randomized.sample
 
 trait ExperimentSpec[State, ObservableState, Action]
   extends org.scalatest.freespec.AnyFreeSpec,
@@ -45,56 +45,65 @@ trait ExperimentSpec[State, ObservableState, Action]
 
     policies
 
+  opaque type EvaluationResults = List[List[Double]]
 
 
-
-  /** Evaluate a list of policies and produce a single CSV file with index,
-   *  mean, and variance. 
-   *  
+  /** Evaluate a list of policies.
+   *  *  
    *  @param filePath The name of the file were the results are to be stored,
-   *  including path and extension.
+   *                  including path and extension.
+   *  @param initials An optional generator of initial states (if None
+   *                  setup.agent.initialize is used)
+   *  @param noOfEpisodes The number of episodes to be run. For each evaluation
+   *                  episode we first choose an initial state from (@link initials) 
+   *                  and then run an episode. Thus each of the samples might 
+   *                  be initiated in a different initial state if initials 
+   *                  is not a Dirac distribution.
    */
-
-  def evalAndLog(
+  def eval (
     setup: concrete.ConcreteExactRL [State, ObservableState, Action],
     policies: List[setup.Policy], 
-    filePath: String 
-  ): Unit = 
-    val rewardSamples = policies.map { setup.evaluate }
-    val means = rewardSamples.map { r => r.sum/r.length}
-    val variances = rewardSamples.map { r =>
-      {
-        val μ  = r.sum/r.length
-        val μl = r.map (x => (x - μ) * (x - μ))
-        μl.sum/μl.length
-      }
-    }
-    val μσσ: List[((Double, Double), Int)] = (means zip variances).zipWithIndex
-    val output        = μσσ.map { case ((μ, σσ), i) => s"${i}, ${μ}, ${σσ}\n" }
-                           .mkString
-    val writerR       = new PrintWriter (filePath)
-    try writerR.println (output)
-    finally writerR.close ()
+    initials: Option[Randomized[State]] = None,
+    noOfEpisodes: Int = 5
+  ):  EvaluationResults = 
+    val ss: Randomized[State] = initials.getOrElse (setup.agent.initialize)
+    println(policies.map {_.toString}.mkString("\n"))
+    for p <- policies
+        episodeRewards: Randomized[Randomized[Double]] = setup.evaluate (p, ss)
+        rewards: Randomized[Double] = episodeRewards.map { e => e.sample () }
+    yield rewards.take (noOfEpisodes).toList  
 
 
+  def mean(l: List[Double]): Double = 
+    l.sum / l.length.toDouble
 
-  /** Evaluate a list of policies and produce a single CSV for each policy
-   *  storing Reward and result for all episodes for each policy
-   *  
-   *  @param filePath The name of the file were the results are to be stored,
-   *  including path and extension. The file names created will have an
-   *  additional extension with the policy index.
-   */
-  def evalAndLogVerbose(
-    setup: concrete.ConcreteExactRL [State, ObservableState, Action],
-    policies: List[setup.Policy], 
-    filePath: String 
-  ): Unit = 
+  def meanStd (l: List[Double]): (Double, Double) = 
+    val μ  = mean (l)
+    val σσ = mean (l.map (x => (x - μ)*(x -μ)))
+    (μ, scala.math.sqrt (σσ))
 
-    for (p, i) <- policies.zipWithIndex do 
-      val rewards: List[Double] = setup.evaluate (p).toList
-      val output   = rewards.mkString ("\n")
-      val fileName =  filePath + ".$i"
-      val writerR  = new PrintWriter (fileName)
+
+  /** Extension methods for saving experiment results */
+  extension (results: EvaluationResults) 
+
+    /** Produce a single CSV file with index, mean, and variance per policy.
+     */
+    def save (filePath: String): Unit = 
+      val μσ: List[(Double, Double)]= results.map (meanStd)
+      val indexed: List[((Double, Double), Int)] = μσ.zipWithIndex
+      val output = indexed.map { case ((μ, σ), i) => s"${i}, ${μ}, ${σ}\n" }
+                          .mkString
+      val writerR = new PrintWriter (filePath)
       try writerR.println (output)
       finally writerR.close ()
+
+  /** Produce a CSV file for each policy storing Reward and result for all
+   *  episodes for each policy
+   */
+    def saveVerbose (filePath: String): Unit = 
+      for (r, i) <- results.zipWithIndex do 
+        val output   = r.mkString ("\n")
+        val fileName =  filePath + s".$i"
+        val writerR  = new PrintWriter (fileName)
+        try writerR.println (output)
+        finally writerR.close ()

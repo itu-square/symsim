@@ -17,7 +17,11 @@ class Experiments
   )
 
   s"WindyGrid experiment with $sarsa" in {
-    val policies = learnAndLog(sarsa)
-    val samplePolicies = policies.grouped(10).take(10).flatMap(_.headOption).toList
-    evalAndLog(sarsa, samplePolicies, "windygrid.csv")
+    val policies = learnAndLog (sarsa)
+      .grouped (10)
+      .take (10)
+      .flatMap { _.headOption }
+      .toList
+    val results = eval (sarsa, policies)
+    results.save ("windygrid.csv")
   }
