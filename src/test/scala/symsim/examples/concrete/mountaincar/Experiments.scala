@@ -18,5 +18,6 @@ class Experiments
 
   s"MountainCar experiment with $sarsa" in {
     val policies = learnAndLog(sarsa)
-    evalAndLog(sarsa, policies, "mountaincar.csv")
+    val samplePolicies = policies.grouped(10).take(10).flatMap(_.headOption).toList
+    evalAndLog(sarsa, samplePolicies, "mountaincar.csv")
   }

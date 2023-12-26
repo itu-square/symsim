@@ -18,5 +18,6 @@ class Experiments
 
   s"WindyGrid experiment with $sarsa" in {
     val policies = learnAndLog(sarsa)
-    evalAndLog(sarsa, policies, "windygrid.csv")
+    val samplePolicies = policies.grouped(10).take(10).flatMap(_.headOption).toList
+    evalAndLog(sarsa, samplePolicies, "windygrid.csv")
   }

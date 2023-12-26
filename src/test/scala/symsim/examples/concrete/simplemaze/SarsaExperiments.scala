@@ -17,7 +17,6 @@ class SarsaExperiments
    s"SimpleMaze experiment with ${sarsa}" in {
 
      val policies = learnAndLog(sarsa)
-     evalAndLog(sarsa, policies, "simplemaze.csv")
 
      val policy = policies.head
 
@@ -43,4 +42,7 @@ class SarsaExperiments
       withClue ("3,3") { policy (3,3) should (be (Up) or be (Right)) }
       // Left is faster, down is safer
       withClue ("4,1") { policy (4, 1) should (be (Down) or be (Left)) }
+
+     val samplePolicies = policies.grouped(10).take(10).flatMap(_.headOption).toList
+     evalAndLog(sarsa, samplePolicies, "simplemaze.csv")
    }
