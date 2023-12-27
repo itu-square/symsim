@@ -4,7 +4,7 @@ package examples.concrete.simplemaze
 import Maze.instances.given
 
 class SarsaExperiments
-   extends ExperimentSpec[MazeState, MazeState, MazeAction]:
+   extends ExperimentSpec[MazeState, MazeObservableState, MazeAction]:
 
    val sarsa = symsim.concrete.ConcreteSarsa (
      agent = Maze,
@@ -17,8 +17,8 @@ class SarsaExperiments
    s"SimpleMaze experiment with ${sarsa}" in {
 
      val policies = learnAndLog(sarsa)
-        .grouped (10)
-        .take (10)
+        .grouped (100)
+        .take (100)
         .flatMap { _.headOption }
         .toList
 
@@ -32,7 +32,7 @@ class SarsaExperiments
 
       // We leave 4,3 and 4,2 unconstrained (loosing and winning,
       // final states)
-      
+
       // Which of policy is optimal is a bit hard to
       // establish, and depends on the constants in the reward
       // function. We include several options to decrease flakiness of
