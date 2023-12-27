@@ -4,7 +4,7 @@ package examples.concrete.simplemaze
 import Maze.instances.given
 
 class ExpectedSarsaExperiments
-   extends ExperimentSpec[MazeState,MazeState,MazeAction]:
+   extends ExperimentSpec[MazeState,MazeObservableState,MazeAction]:
 
    val sarsa = symsim.concrete.ConcreteExpectedSarsa (
      agent = Maze,
