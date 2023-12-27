@@ -50,3 +50,9 @@ object CarSpec
       yield r1 >= r2 
     }
 
+  property("Velocity is random") =
+    val states = Car.initialize.take(5).toList
+    val vs = states.map(s => s.v)
+    vs.combinations(2).exists(pair => pair(0) != pair(1))
+
+
