@@ -52,10 +52,9 @@ object Maze
     Episodic:
 
   val TimeHorizon: Int = 2000
-  val TimeLimit: Int = 10
 
   def isFinal (s: MazeState): Boolean =
-    (s._1, s._2) == (4, 3) || (s._1, s._2) == (4, 2) || s._3 == 100
+    (s._1, s._2) == (4, 3) || (s._1, s._2) == (4, 2) || s._3 == TimeHorizon
 
   // Maze is discrete
   def observe (s: MazeState): MazeObservableState = (s._1, s._2)

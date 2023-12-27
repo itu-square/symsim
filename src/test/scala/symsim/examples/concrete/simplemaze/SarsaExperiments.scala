@@ -10,17 +10,17 @@ class SarsaExperiments
      agent = Maze,
      alpha = 0.1,
      gamma = 1,
-     epsilon = 0.05,
+     epsilon = 0.1,
      episodes = 60000,
    )
 
    s"SimpleMaze experiment with ${sarsa}" in {
 
      val policies = learnAndLog(sarsa)
-        .grouped (100)
-        .take (100)
-        .flatMap { _.headOption }
-        .toList
+//        .grouped (100)
+//        .take (100)
+//        .flatMap { _.headOption }
+//        .toList
 
      val policy = policies.head
 
