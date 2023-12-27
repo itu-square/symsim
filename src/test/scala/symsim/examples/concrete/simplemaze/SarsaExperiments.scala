@@ -17,10 +17,10 @@ class SarsaExperiments
    s"SimpleMaze experiment with ${sarsa}" in {
 
      val policies = learnAndLog(sarsa)
-//        .grouped (100)
-//        .take (100)
-//        .flatMap { _.headOption }
-//        .toList
+        .grouped (100)
+        .take (100)
+        .flatMap { _.headOption }
+        .toList
 
      val policy = policies.head
 
