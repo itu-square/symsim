@@ -50,7 +50,7 @@ case class ConcreteExpectedSarsaLaws[State, ObservableState, Action]
    */
   val bdl =  
     symsim.concrete.BdlConcreteExpectedSarsa[State, ObservableState, Action] 
-      (agent, sarsa.α, this.γ, sarsa.ε, -1)
+      (agent, sarsa.α, this.γ, sarsa.ε0, -1)
 
   given Arbitrary[Q] = 
     Arbitrary (vf.genVF (using agent.instances.arbitraryReward))

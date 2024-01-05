@@ -15,7 +15,7 @@ class BdlConcreteSarsaIsSarsaSpec
     agent = MountainCar,
     alpha = 0.1,
     gamma = 0.2,
-    epsilon = 0.0, // the update distribution test requires low ε for stability
+    epsilon0 = 0.0, // the update distribution test requires low ε for stability
     episodes = 1000,
   )
 

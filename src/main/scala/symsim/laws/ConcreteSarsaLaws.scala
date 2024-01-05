@@ -45,7 +45,7 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
   // A shortcut for instantiating the interpreter with the right term for SARSA
   val bdl =  
     symsim.concrete.BdlConcreteSarsa[State, ObservableState, Action] 
-      (agent, sarsa.α, this.γ, sarsa.ε, -1)
+      (agent, sarsa.α, this.γ, sarsa.ε0, -1)
 
   given Arbitrary[Q] = 
     Arbitrary (vf.genVF (using agent.instances.arbitraryReward))

@@ -28,11 +28,11 @@ trait ExpectedSarsa[State, ObservableState, Action, Reward, Scheduler[_]]
       (s_tt, r_tt)  = sa_tt
                     // Expected Sarsa (p.133 in Sutton & Barto)
       (os_t, os_tt) = (agent.observe (s_t), agent.observe (s_tt))
-      a_tt         <- vf.chooseAction (ε) (q_t) (os_tt)
+      a_tt         <- vf.chooseAction (ε0) (q_t) (os_tt)
       q_t_value     = q_t (os_t, a_t)
       expectation   = agent.instances.allActions
                         .map { a => 
-                          vf.probability (ε) (q_t) (os_tt, a)
+                          vf.probability (ε0) (q_t) (os_tt, a)
                             * q_t (os_tt, a) }
                         .arithSum
       g_tt          = r_tt + γ * expectation

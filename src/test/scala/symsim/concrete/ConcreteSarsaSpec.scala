@@ -14,7 +14,7 @@ class ConcreteSarsaSpec
     agent = UnitAgent,
     alpha = 0.1,
     gamma = 0.1,
-    epsilon = 0.2, // explore vs exploit ratio
+    epsilon0 = 0.2, // explore vs exploit ratio
     episodes = 2*C
   )
 
@@ -43,7 +43,7 @@ class ConcreteSarsaSpec
   // but at least checks for crash
   // also with the immediate final state 'learn' is not really tested here
   "learn is tail recursive, no stack overflow (regression)"  in {
-    val result = sarsa.learningEpisode ((sarsa.vf.initialize, List[sarsa.vf.Q]()), ())
+    val result = sarsa.learningEpisode ((sarsa.vf.initialize, List[sarsa.vf.Q](), sarsa.ε0), ())
     result.head
   }
 

@@ -68,7 +68,7 @@ case class SarsaLaws[State, ObservableState, Action, Reward, Scheduler[_]]
       forAll (sarsa.vf.genVF) { (q: sarsa.vf.Q) =>
         forAll { (s: State) =>
           val sa: Scheduler[Action] =
-            sarsa.vf.chooseAction (sarsa.ε) (q) (sarsa.agent.observe (s))
+            sarsa.vf.chooseAction (sarsa.ε0) (q) (sarsa.agent.observe (s))
           forAll (sa.toGen) { a => allActions.contains (a)
       } } },
     )

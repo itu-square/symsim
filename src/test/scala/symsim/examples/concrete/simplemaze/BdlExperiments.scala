@@ -10,7 +10,7 @@ class BdlExperiments
      agent = Maze,
      alpha = 0.2,
      gamma = 1,
-     epsilon = 0.05,
+     epsilon0 = 0.05,
      episodes = 60000,
    )
 

@@ -46,7 +46,7 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
   def bdl: Update 
 
   override def toString: String =
-    s"BDL(..., 𝜀=$epsilon, $episodes episodes)"
+    s"BDL(..., 𝜀=$epsilon0, $episodes episodes)"
 
   /** A single step of the learning algorithm
    *
@@ -78,7 +78,7 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
       (os_t, os_tk)            = (agent.observe (s_t), agent.observe (s_tk))
       expectation              = allActions
                                   .map { a => 
-                                    vf.probability (ε) (q_t) (os_tk, a)
+                                    vf.probability (ε0) (q_t) (os_tk, a)
                                       * q_t (os_tk, a) }
                                   .arithSum
       g_tkk                    = g_tk + γ_tk * expectation
@@ -118,7 +118,7 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
       for 
         sr           <- agent.step (s_t) (a_t) // intermediate name needed for stryker which fails with -source:future
         (s_tt, r_tt) =  sr
-        a_tt         <- vf.chooseAction (ε) (q_t) (agent.observe (s_tt))
+        a_tt         <- vf.chooseAction (ε0) (q_t) (agent.observe (s_tt))
         g_tt         =  g_t + γ_t * r_tt
         γ_tt         =  γ_t * γ
       yield (s_tt, a_tt, g_tt, γ_tt)
@@ -128,12 +128,12 @@ trait BdlLearn[State, ObservableState, Action, Reward, Scheduler[_]]
         sr           <- agent.step (s_t) (a_t) // intermediate name needed for stryker which fails with -source:future
         (s_tt, r_tt) =  sr
         os_tt        =  agent.observe (s_tt)
-        a_tt         <- vf.chooseAction (ε) (q_t) (os_tt)
+        a_tt         <- vf.chooseAction (ε0) (q_t) (os_tt)
         expectation  =  allActions
                          .filter { _ != a_tt }
                          .map { a => 
-                           vf.probability (ε) (q_t) (os_tt, a) * q_t (os_tt, a) }
+                           vf.probability (ε0) (q_t) (os_tt, a) * q_t (os_tt, a) }
                          .arithSum
         g_tt         =  g_t + γ_t * (r_tt + expectation) 
-        γ_tt         =  γ_t * γ * vf.probability (ε) (q_t) (os_tt, a_tt)
+        γ_tt         =  γ_t * γ * vf.probability (ε0) (q_t) (os_tt, a_tt)
       yield (s_tt, a_tt, g_tt, γ_tt)

@@ -11,10 +11,11 @@ case class BdlConcreteExpectedSarsa [
   val agent: Agent[State, ObservableState, Action, Double, Randomized],
   val alpha: Double,
   val gamma: Double,
-  val epsilon: Probability,
+  val epsilon0: Probability,
   val episodes: Int,
 ) extends BdlLearn[State, ObservableState, Action, Double, Randomized],
-  ConcreteExactRL[State, ObservableState, Action]:
+  ConcreteExactRL[State, ObservableState, Action],
+  NoDecay:
 
   import Est.*, Upd.*  
   val bdl = Update (List(Sample (gamma)), alpha, ExpectationU)

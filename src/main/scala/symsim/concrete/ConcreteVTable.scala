@@ -15,7 +15,7 @@ trait ConcreteVTable[State, ObservableState, Action]
   def bestAction (v: V) (s: State): Action = ???
     
   def chooseAction (v: V) (s: State): Scheduler[Action] = for
-    explore <- Randomized.coin (this.epsilon)
+    explore <- Randomized.coin (this.epsilon0)
     action <- if explore
     then Randomized.oneOf (allActions*)
     else Randomized.const (bestAction (v) (s))

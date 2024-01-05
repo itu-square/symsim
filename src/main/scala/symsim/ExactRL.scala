@@ -32,9 +32,14 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
   import vf.{VF, chooseAction}
 
   def alpha: Double
-  def epsilon: Probability
+  def epsilon0: Probability
   def α: Double = this.alpha
-  def ε: Probability = this.epsilon
+  def ε0: Probability = this.epsilon0
+
+  /** A decay function for ε (exploration probability).  Override to define. 
+    * If you do not want decay use identity (mix in NoDecay)
+    */
+  def decay (ε: Probability): Probability
 
 
   /* Policy Learning */
@@ -57,15 +62,19 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
   /** Execute a full learning episode (until the final state of agent is
     * reached).
     */
-  def learningEpisode(fR: (VF, List[VF]), s_t: State): Scheduler[(VF, List[VF])] =
+  def learningEpisode(fR: (VF, List[VF], Probability), s_t: State)
+    : Scheduler[(VF, List[VF], Probability)] =
+
     def done (f: VF, s: State, a: Action): Boolean = agent.isFinal(s)
-    val f = fR._1
-    val qL_t = fR._2
+
+    val (f, qL_t, ε) = fR
+
     for
       a    <- chooseAction (ε) (f) (agent.observe (s_t))
       fin  <- Monad[Scheduler].iterateUntilM (f, s_t, a) (learningEpoch) (done)
       qL_tt = fin._1 :: qL_t
-    yield (fin._1, qL_tt)
+    yield (fin._1, qL_tt, decay (ε))
+
 
   /** Executes as many full learning episodes (until the final state of agent is
     * reached) as the given state scheduler generates.  For this method to work
@@ -75,9 +84,11 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
     * Scheduler is lazy then the evaluation is not really doing more than just
     * formulating the thunk of that scheduler.
     */
-  final def learn (f: VF, q_l: List[VF], ss: => Scheduler[State]):
-    Scheduler[(VF, List[VF])] =
-      ss.foldM[Scheduler, (VF, List[VF])] (f, q_l) (learningEpisode)
+  final def learn (f: VF, q_l: List[VF], ss: => Scheduler[State])
+    : Scheduler[(VF, List[VF])] =
+    val result = 
+      ss.foldM[Scheduler, (VF, List[VF], Probability)] (f, q_l, ε0) (learningEpisode)
+    result.map { (vf, history, ε) => (vf, history) }
 
 
 
