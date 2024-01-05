@@ -13,7 +13,7 @@ class Experiments
     agent = CliffWalking,
     alpha = 0.1,
     gamma = 0.1,
-    epsilon = 0.1,
+    epsilon0 = 0.1,
     episodes = 100
   )
 

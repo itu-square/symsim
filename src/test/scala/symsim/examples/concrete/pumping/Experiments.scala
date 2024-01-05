@@ -12,7 +12,7 @@ class Experiments
     agent = Pump,
     alpha = 0.1,
     gamma = 0.9,
-    epsilon = 0.05,
+    epsilon0 = 0.05,
     episodes = 3000,
   )
 

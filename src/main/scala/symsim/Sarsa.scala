@@ -29,7 +29,7 @@ trait Sarsa[State, ObservableState, Action, Reward, Scheduler[_]]
       (s_tt, r_tt)  = sa_tt
                       // SARSA: on-policy (p.844 in Russel & Norvig)
       (os_t, os_tt) = (agent.observe (s_t), agent.observe (s_tt))
-      a_tt         <- vf.chooseAction (ε) (q_t) (os_tt)
+      a_tt         <- vf.chooseAction (ε0) (q_t) (os_tt)
       q_t_value     = q_t (os_t, a_t)
       g_tt          = r_tt + γ * q_t (os_tt, a_tt)
       q_tt_value    = q_t_value + α * (g_tt - q_t_value)

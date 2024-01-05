@@ -35,7 +35,7 @@ class GolfSpec
 
   property ("Q-table values are non-positive") =
     forAll { (s: GolfState, a: GolfAction) =>
-      for res <- sarsa.learningEpisode ((sarsa.vf.initialize, List[sarsa.vf.Q]()), s)
+      for res <- sarsa.learningEpisode ((sarsa.vf.initialize, List[sarsa.vf.Q](), sarsa.ε0), s)
         q = res._1
       yield q (s, a) <= 0
     }

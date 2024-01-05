@@ -36,5 +36,5 @@ trait QLearning[State, ObservableState, Action, Reward, Scheduler[_]]
       qval         = old_entry + alpha * correction
 
       q1           = q.updated (ds_t, a_t, qval)
-      a_tt1        <- chooseAction (ε) (q1) (ds_tt)
+      a_tt1        <- chooseAction (ε0) (q1) (ds_tt)
     yield (q1, s_tt, a_tt1)

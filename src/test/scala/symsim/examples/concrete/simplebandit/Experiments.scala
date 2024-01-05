@@ -8,7 +8,7 @@ class Experiments
     agent = BanditObjConst,
     alpha = 0.1,
     gamma = 0.0,
-    epsilon = 0.05,
+    epsilon0 = 0.05,
     episodes = 8000,
   )
 
@@ -26,7 +26,7 @@ class Experiments
     agent = BanditObjGaussian,
     alpha = 0.01,
     gamma = 0.0,
-    epsilon = 0.1,
+    epsilon0 = 0.1,
     episodes = 1000,
   )
 

@@ -12,7 +12,7 @@ class Experiments
     agent = MountainCar,
     alpha = 0.1,
     gamma = 0.1,
-    epsilon = 0.05,
+    epsilon0 = 0.05,
     episodes = 80000,
   )
 

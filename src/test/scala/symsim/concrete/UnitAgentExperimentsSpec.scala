@@ -11,7 +11,7 @@ class UnitAgentExperiments
      agent = UnitAgent,
      alpha = 0.1,
      gamma = 0.1,
-     epsilon = 0.05, // explore vs exploit ratio
+     epsilon0 = 0.05, // explore vs exploit ratio
      episodes = 100,
   )
 
@@ -24,7 +24,7 @@ class UnitAgentExperiments
      agent = UnitAgent,
      alpha = 0.1,
      gamma = 0.1,
-     epsilon = 0.05, // explore vs exploit ratio
+     epsilon0 = 0.05, // explore vs exploit ratio
      episodes = 100,
   )
 

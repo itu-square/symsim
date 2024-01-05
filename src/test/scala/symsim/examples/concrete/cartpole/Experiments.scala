@@ -11,7 +11,7 @@ class Experiments extends
     agent = CartPole,
     alpha = 0.1,
     gamma = 0.1,
-    epsilon = 0.05,
+    epsilon0 = 0.05,
     episodes = 20000,
   )
 

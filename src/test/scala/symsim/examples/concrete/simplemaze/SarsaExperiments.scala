@@ -10,7 +10,7 @@ class SarsaExperiments
      agent = Maze,
      alpha = 0.1,
      gamma = 1,
-     epsilon = 0.1,
+     epsilon0 = 0.1,
      episodes = 60000,
    )
 
