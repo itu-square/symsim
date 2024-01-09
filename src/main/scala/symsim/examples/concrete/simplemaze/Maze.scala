@@ -1,11 +1,9 @@
 package symsim
 package examples.concrete.simplemaze
 
-import cats.{Eq, Foldable, Monad}
+import cats.{Eq, Foldable, Hash, Monad}
 import cats.kernel.BoundedEnumerable
-
 import org.scalacheck.{Arbitrary, Gen}
-
 import symsim.concrete.Randomized
 
 /**
@@ -51,10 +49,12 @@ object Maze
     Agent[MazeState, MazeObservableState, MazeAction, MazeReward, Randomized],
     Episodic:
 
-  val TimeHorizon: Int = 2000
+  val TimeHorizon: Int = 1200
+  val WIDTH : Int = 100
+  val HEIGHT: Int = 100
 
   def isFinal (s: MazeState): Boolean =
-    (s._1, s._2) == (4, 3) || (s._1, s._2) == (4, 2) || s._3 == TimeHorizon
+    (s._1, s._2) == (WIDTH, HEIGHT) || (s._1, s._2) == (WIDTH, HEIGHT) || s._3 >= TimeHorizon
 
   // Maze is discrete
   def observe (s: MazeState): MazeObservableState = (s._1, s._2)
@@ -62,8 +62,8 @@ object Maze
   // We are not using the original reward function from AIAMA as it
   // gives to unstable learning results
   private def mazeReward (s: MazeState): MazeReward = (s._1, s._2) match
-    case (4, 3) => +0.0     // Good final state
-    case (4, 2) => -1000.0   // Bad final state (dead)
+    case (WIDTH, HEIGHT) => +0.0     // Good final state
+    case (WIDTH, y) if y == HEIGHT-1 => -1000.0   // Bad final state (dead)
     case (_, _) => -1.0
 
 
@@ -82,7 +82,7 @@ object Maze
     if valid (result) then result else s
 
   def valid (s: MazeState): Boolean =
-     s._1 >= 1 && s._1 <= 4 && s._2 >= 1 && s._2 <= 3 && (s._1, s._2) != (2, 2)
+     s._1 >= 1 && s._1 <= WIDTH && s._2 >= 1 && s._2 <= HEIGHT && (s._1, s._2) != (2, 2)
 
   val attention = 0.8
 
@@ -94,8 +94,8 @@ object Maze
     yield (newState, mazeReward (newState))
 
   def initialize: Randomized[MazeState] = for
-    x <- Randomized.repeat(Randomized.between(1, 4))
-    y <- Randomized.between(1, 3)
+    x <- Randomized.repeat(Randomized.between(1, WIDTH))
+    y <- Randomized.between(1, HEIGHT)
     t = 0
     s = (x, y, t) if !isFinal(s) && valid (s)
   yield s
@@ -116,8 +116,8 @@ object MazeInstances
 
    given enumState: BoundedEnumerable[MazeObservableState] =
       val ss = for
-         y <- List (1, 2, 3)
-         x <- List (1, 2, 3, 4)
+         y <- (1 to Maze.HEIGHT).toList
+         x <- (1 to Maze.WIDTH).toList
          result = (x, y, 0)
          if Maze.valid (result)
       yield (result._1, result._2)
@@ -130,9 +130,9 @@ object MazeInstances
    given canTestInScheduler: CanTestIn[Randomized] = Randomized.canTestInRandomized
 
    lazy val genMazeState: Gen[MazeState] = for
-      y <- Gen.choose (1, 3)
-      x <- Gen.choose (1, 4)
-      t = 0
+      y <- Gen.choose (1, Maze.HEIGHT)
+      x <- Gen.choose (1, Maze.WIDTH)
+      t <- Gen.choose (1, Maze.TimeHorizon)
       if (x != 2 && y != 2)
    yield (x.abs, y.abs, t)
 
