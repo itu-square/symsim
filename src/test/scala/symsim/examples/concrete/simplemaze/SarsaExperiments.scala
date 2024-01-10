@@ -2,6 +2,7 @@ package symsim
 package examples.concrete.simplemaze
 
 import Maze.instances.given
+import symsim.concrete.Randomized
 
 class SarsaExperiments
    extends ExperimentSpec[MazeState, MazeObservableState, MazeAction]:
@@ -11,16 +12,16 @@ class SarsaExperiments
      alpha = 0.1,
      gamma = 1,
      epsilon0 = 0.1,
-     episodes = 60000,
+     episodes = 10000,
    )
 
    s"SimpleMaze experiment with ${sarsa}" in {
 
      val policies = learnAndLog(sarsa)
-        .grouped (100)
-        .take (100)
-        .flatMap { _.headOption }
-        .toList
+//        .grouped (100)
+//        .take (100)
+//        .flatMap { _.headOption }
+//        .toList
 
      val policy = policies.head
 
@@ -47,6 +48,7 @@ class SarsaExperiments
       // Left is faster, down is safer
       withClue ("4,1") { policy (4, 1) should (be (Down) or be (Left)) }
 
-      val results = eval (sarsa, policies)
+      val evalInitial = Randomized.const ((1, 1, 0))
+      val results = eval (sarsa, policies, Some (evalInitial))
       results.save ("simplemaze.csv")
    }
