@@ -67,7 +67,6 @@ trait ExperimentSpec[State, ObservableState, Action]
     noOfEpisodes: Int = 5
   ):  EvaluationResults = 
     val ss: Randomized[State] = initials.getOrElse (setup.agent.initialize)
-    println(policies.map {_.toString}.mkString("\n"))
     for p <- policies
         episodeRewards: Randomized[Randomized[Double]] = setup.evaluate (p, ss)
         rewards: Randomized[Double] = episodeRewards.map { e => e.sample () }
