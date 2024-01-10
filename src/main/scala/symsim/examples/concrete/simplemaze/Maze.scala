@@ -51,10 +51,10 @@ object Maze
     Agent[MazeState, MazeObservableState, MazeAction, MazeReward, Randomized],
     Episodic:
 
-  val TimeHorizon: Int = 2000
+  val TimeHorizon: Int = 200000
 
   def isFinal (s: MazeState): Boolean =
-    (s._1, s._2) == (4, 3) || (s._1, s._2) == (4, 2) || s._3 == TimeHorizon
+    (s._1, s._2) == (4, 3) || (s._1, s._2) == (4, 2) || s._3 >= TimeHorizon
 
   // Maze is discrete
   def observe (s: MazeState): MazeObservableState = (s._1, s._2)
