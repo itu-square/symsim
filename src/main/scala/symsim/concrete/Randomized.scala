@@ -2,7 +2,6 @@ package symsim.concrete
 
 import scala.annotation.targetName
 
-import cats.data.State
 import org.scalacheck.{Gen, Prop}
 
 import scala.jdk.StreamConverters.*
