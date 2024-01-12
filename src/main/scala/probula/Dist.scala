@@ -70,7 +70,7 @@ trait Dist[+T]:
    *
    *  [1] Technically the resulting model does not have to be
    *  univariate, even though it typically is. It will have the arity
-   *  of type `U`.
+   *  of the type `U`.
    *
    * @param name The descriptive name of the only variable in the new
    *             model.
@@ -727,3 +727,20 @@ object Uniform:
 
   def apply[T](values: T*): Uniform[T] = 
     new Uniform[T](Name.No)(values*)
+
+case class UniformC(name: Name, lower: Double, upper: Double) 
+  extends Dist[Double]:
+  assert (lower <= upper)
+
+  private lazy val gen = 
+    spire.random.Uniform[Double](lower, upper)
+
+  def sample[S >: Double](using rng: RNG): IData[S] = 
+    val chain = gen.toLazyList(rng)
+    IData(this.name, chain)
+
+object UniformC: 
+  def apply(lower: Double, upper: Double): UniformC = 
+    new UniformC(Name.No, lower, upper)
+  def apply(l: String, lower: Double, upper: Double): UniformC = 
+    new UniformC(l.toName, lower, upper)
