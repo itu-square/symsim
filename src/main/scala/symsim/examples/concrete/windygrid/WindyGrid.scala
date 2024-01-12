@@ -4,10 +4,11 @@ package examples.concrete.windygrid
 import examples.concrete.windygrid.GridAction.*
 import cats.{Eq, Foldable, Monad}
 import cats.kernel.BoundedEnumerable
+import cats.syntax.all.*
 
 import org.scalacheck.{Arbitrary, Gen}
 
-import symsim.concrete.Randomized
+import symsim.concrete.Randomized2
 
 case class GridState (x: Int, y: Int):
   override def toString: String = s"($x,$y)"
@@ -19,8 +20,8 @@ enum GridAction:
   case R, L, U, D
 
 
-object WindyGrid extends 
-  Agent[GridState, GridObservableState, GridAction, GridReward, Randomized]:
+class WindyGrid (using probula.RNG) extends 
+  Agent[GridState, GridObservableState, GridAction, GridReward, Randomized2]:
 
   val WindSpec = Array (0, 0, 0, 1, 1, 1, 2, 2, 1, 0)
 
@@ -54,30 +55,30 @@ object WindyGrid extends
     val y1 = ((s.y - 1 + WindSpec (s.x - 1)).max (1)).min (7)
     GridState (x1, y1)
 
-  def step (s: GridState) (a: GridAction): Randomized[(GridState, GridReward)] =
+  def step (s: GridState) (a: GridAction): Randomized2[(GridState, GridReward)] =
     val s1 = a match
       case GridAction.R => stepRight (s)
       case GridAction.L => stepLeft (s)
       case GridAction.U => stepUp (s)
       case GridAction.D => stepDown (s)
-    Randomized.const (s1 -> gridReward (s1) (a))
+    Randomized2.const (s1 -> gridReward (s1) (a))
 
-  def initialize: Randomized[GridState] = for
-    x <- Randomized.repeat (Randomized.between (1, 11))
-    y <- Randomized.repeat (Randomized.between (1, 8))
-    s = GridState (x, y) if !isFinal (s)
-  yield s
+  def initialize: Randomized2[GridState] = { for
+    x <- Randomized2.between (1, 11)
+    y <- Randomized2.between (1, 8)
+    s = GridState (x, y)
+  yield s }.filter { ! this.isFinal (_) }
 
-  val instances = WindyGridInstances
+  val instances = new WindyGridInstances
 
 end WindyGrid
 
 /** Here is a proof that our types actually deliver on everything that an Agent
   * needs to be able to do to work in the framework.
   */
-object WindyGridInstances
+class WindyGridInstances (using probula.RNG)
   extends AgentConstraints[GridState, GridObservableState, GridAction, 
-    GridReward, Randomized]:
+    GridReward, Randomized2]:
 
   given enumAction: BoundedEnumerable[GridAction] =
     BoundedEnumerableFromList (U, L, R, D)
@@ -89,22 +90,24 @@ object WindyGridInstances
     yield GridState (x, y)
     BoundedEnumerableFromList (ss*)
 
-  given schedulerIsMonad: Monad[Randomized] = Randomized.randomizedIsMonad
+  given schedulerIsMonad: Monad[Randomized2] = 
+    Randomized2.randomizedIsMonad
 
-  val schedulerIsFoldable: Foldable[Randomized] = Randomized.randomizedIsFoldable
-
-  given canTestInScheduler: CanTestIn[Randomized] = Randomized.canTestInRandomized
+  given canTestInScheduler: CanTestIn[Randomized2] = 
+    Randomized2.canTestInRandomized
 
   lazy val genGridState: Gen[GridState] = for
     x <- Gen.choose (1, 10)
     y <- Gen.choose (1, 7)
   yield GridState (x, y)
 
-  given arbitraryState: Arbitrary[GridState] = Arbitrary (genGridState)
+  given arbitraryState: Arbitrary[GridState] = 
+    Arbitrary (genGridState)
 
   given eqGridState: Eq[GridState] = Eq.fromUniversalEquals
 
-  given arbitraryReward: Arbitrary[GridReward] = Arbitrary (Gen.double)
+  given arbitraryReward: Arbitrary[GridReward] = 
+    Arbitrary (Gen.double)
 
   given rewardArith: Arith[GridReward] = Arith.arithDouble
 

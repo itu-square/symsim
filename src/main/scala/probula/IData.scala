@@ -35,7 +35,7 @@ case class IData[+T](name: Name, chain: Chain[T]):
   private[probula] def map[S](f: T => S): IData[S] = 
     IData(this.name, this.chain.map(f))
 
-  private[probula] def flatMap[S](f: T => IData[S]): IData[S] =
+  def flatMap[S](f: T => IData[S]): IData[S] =
     val newChain: Chain[S] = 
       this.chain.map[S] { t => f(t).chain.head }
     this.copy (chain = newChain)
@@ -100,7 +100,9 @@ extension [T](ego: IData[T])
     val s = (if (N != M) ego.chain.tail else ego.chain).sorted
     s(M / 2) 
 
-  /** Compute a mean for a numeric sample. */
+  /** Compute a mean for a numeric sample. 
+   *  Note: This fails for large samples due to overflow 
+   */
   def mean(using math.Numeric[T]): Double =
     ego.chain.sum.toDouble / ego.size
 

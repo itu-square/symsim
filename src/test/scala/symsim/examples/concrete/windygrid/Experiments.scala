@@ -1,15 +1,17 @@
 package symsim
 package examples.concrete.windygrid
 
+private val windyGrid = new WindyGrid (using spire.random.rng.SecureJava.apply)
+
 class Experiments
   extends ExperimentSpec[GridState, GridObservableState, GridAction]:
 
   // Import evidence that states and actions can be enumerated
-  import WindyGrid.*
-  import WindyGrid.instances.given
+  import windyGrid.*
+  import windyGrid.instances.given
 
   val sarsa = symsim.concrete.ConcreteSarsa (
-    agent = WindyGrid,
+    agent = windyGrid,
     alpha = 0.1,
     gamma = 0.1,
     epsilon0 = 0.1,

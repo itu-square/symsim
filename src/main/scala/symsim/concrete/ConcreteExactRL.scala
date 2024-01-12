@@ -3,8 +3,11 @@ package concrete
 
 import cats.kernel.BoundedEnumerable
 
+given spire.random.rng.SecureJava = 
+  spire.random.rng.SecureJava.apply
+
 trait ConcreteExactRL[State, ObservableState, Action]
-  extends ExactRL[State, ObservableState, Action, Double, Randomized]:
+  extends ExactRL[State, ObservableState, Action, Double, Randomized2]:
 
   import agent.instances.*
   import agent.instances.given
@@ -23,9 +26,9 @@ trait ConcreteExactRL[State, ObservableState, Action]
   // symbolic or approximate algos we should promote this to the trait
 
   def runQ: (Q, List[Q]) =
-    val initials = Randomized.repeat (agent.initialize).take (episodes)
-    val schedule = learn (vf.initialize, List[VF](), initials)
-    (schedule.head._1, schedule.head._2)
+    val initials = agent.initialize.sample(episodes)
+    val outcome = learn (vf.initialize, List[VF](), initials).sample()
+    (outcome._1, outcome._2)
 
   override def run: Policy =
     qToPolicy (this.runQ._1)
@@ -43,5 +46,5 @@ trait ConcreteExactRL[State, ObservableState, Action]
    *  the inner distribution is over randomness in the learning
    *  process/environment.
    */
-  def evaluate (p: Policy): Randomized[Randomized[Double]] =
+  def evaluate (p: Policy): Randomized2[Randomized2[Double]] =
     evaluate (p, agent.initialize)

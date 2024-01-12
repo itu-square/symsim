@@ -76,15 +76,11 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
     yield (fin._1, qL_tt, decay (ε))
 
 
-  /** Executes as many full learning episodes (until the final state of agent is
-    * reached) as the given state scheduler generates.  For this method to work
-    * the scheduler needs to be foldable, and we use foldRight with Eval, to
-    * make the evaluation lazy. We force the evaluation when we
-    * are done to return the value.  However, to my best understanding, if the
-    * Scheduler is lazy then the evaluation is not really doing more than just
-    * formulating the thunk of that scheduler.
+  /** Executes as many full learning episodes (until the final state of agent
+   *  is reached) as the given state LazyList generates. The list should be
+   *  finite. We force the evaluation when we are done to return the value.
     */
-  final def learn (f: VF, q_l: List[VF], ss: => Scheduler[State])
+  final def learn (f: VF, q_l: List[VF], ss: LazyList[State])
     : Scheduler[(VF, List[VF])] =
     val result = 
       ss.foldM[Scheduler, (VF, List[VF], Probability)] (f, q_l, ε0) (learningEpisode)

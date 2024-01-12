@@ -75,9 +75,6 @@ object Randomized:
   given randomizedIsMonad: cats.Monad[Randomized] =
     cats.instances.lazyList.catsStdInstancesForLazyList
 
-  given randomizedIsFoldable: cats.Foldable[Randomized] =
-    cats.instances.lazyList.catsStdInstancesForLazyList
-
   given canTestInRandomized: symsim.CanTestIn[Randomized] =
     new symsim.CanTestIn[Randomized] {
 
@@ -116,7 +113,7 @@ object Randomized:
      *  not have n samples.
      *
      */
-    def sample (n: Int): List[A] = self.take(n).toList
+    def sample (n: Int): LazyList[A] = self.take(n)
 
     /** Perform an imperative operation that depends on one sample from this
      *  Randomized.  This is mostly meant for IO at this point.

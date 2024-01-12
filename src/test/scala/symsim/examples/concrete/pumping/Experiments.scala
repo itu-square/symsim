@@ -1,15 +1,17 @@
 package symsim
 package examples.concrete.pumping
 
+private val pump = new Pump (using spire.random.rng.SecureJava.apply)
+
 class Experiments
-  extends ExperimentSpec[PumpState,ObservablePumpState,PumpAction]:
+  extends ExperimentSpec[PumpState, ObservablePumpState, PumpAction]:
 
   // Import evidence that states and actions can be enumerated
-  import Pump.*
-  import Pump.instances.given
+  import pump.*
+  import pump.instances.given
 
   val sarsa = symsim.concrete.ConcreteSarsa (
-    agent = Pump,
+    agent = pump,
     alpha = 0.1,
     gamma = 0.9,
     epsilon0 = 0.05,

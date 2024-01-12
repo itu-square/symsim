@@ -8,12 +8,12 @@ case class ConcreteQLearning [
   ObservableState: BoundedEnumerable,
   Action: BoundedEnumerable
 ] (
-  val agent: Agent[State, ObservableState, Action, Double, Randomized],
+  val agent: Agent[State, ObservableState, Action, Double, Randomized2],
   val alpha: Double,
   val gamma: Double,
   val epsilon0: Probability,
   val episodes: Int,
-) extends QLearning[State, ObservableState, Action, Double, Randomized],
+) extends QLearning[State, ObservableState, Action, Double, Randomized2],
   ConcreteExactRL[State, ObservableState, Action],
   NoDecay:
 

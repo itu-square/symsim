@@ -2,13 +2,16 @@ package symsim
 package examples.concrete.mountaincar
 
 import Math.cos
+import probula.RNG
 
 import cats.{Eq, Foldable, Monad}
 import cats.kernel.BoundedEnumerable
+import cats.syntax.all.*
 
 import org.scalacheck.{Arbitrary, Gen}
 
-import symsim.concrete.Randomized
+import symsim.concrete.Randomized2
+import symsim.concrete.Randomized2.given
 
 /**
  * We map the car states to
@@ -27,8 +30,8 @@ type CarAction = Double
 type CarReward = Double
 
 
-object MountainCar
-  extends Agent[CarState, CarObservableState, CarAction, CarReward, Randomized]
+class MountainCar (using RNG)
+  extends Agent[CarState, CarObservableState, CarAction, CarReward, Randomized2]
   with Episodic:
 
   val TimeHorizon: Int = 3000000
@@ -65,23 +68,22 @@ object MountainCar
 
 
   // TODO: this is now deterministic but eventually needs to be randomized
-  def step (s: CarState) (a: CarAction): Randomized[(CarState, CarReward)] =
+  def step (s: CarState) (a: CarAction): Randomized2[(CarState, CarReward)] =
     val v = s.v + (gravity * mass * cos (3.0 * s.p) + a / mass - friction * s.v) * dt
     val p = s.p + (v * dt)
     val (v1, p1) = if p < -1.2 then (-1.2, 0.0) else (v, p) 
     val s1 = CarState (v = v1.max (-1.5).min (1.5), 
                        p = p1.min (0.5))
-    Randomized.const (s1 -> carReward (s1) (a))
+    Randomized2.const (s1 -> carReward (s1) (a))
 
 
-  def initialize: Randomized[CarState] = for
-    p <- Randomized.repeat (Randomized.between (-1.2, 0.5))
-    v <- Randomized.repeat (Randomized.between (-1.5, 1.5))
+  def initialize: Randomized2[CarState] = (for
+    p <- Randomized2.between (-1.2, 0.5)
+    v <- Randomized2.between (-1.5, 1.5)
     s  = CarState (v=v, p=p) 
-         if !isFinal (s) 
-  yield s
+  yield s).filter { !this.isFinal (_) }
 
-  val instances = MountainCarInstances
+  val instances = new MountainCarInstances
 
 end MountainCar
 
@@ -89,8 +91,8 @@ end MountainCar
 /** Here is a proof that our types actually deliver on everything that an Agent
   * needs to be able to do to work in the framework.
   */
-object MountainCarInstances
-  extends AgentConstraints[CarState, CarObservableState, CarAction, CarReward, Randomized]:
+class MountainCarInstances (using RNG)
+  extends AgentConstraints[CarState, CarObservableState, CarAction, CarReward, Randomized2]:
 
   given enumAction: BoundedEnumerable[CarAction] =
     BoundedEnumerableFromList (-0.2, 0.0, 0.2)
@@ -103,11 +105,11 @@ object MountainCarInstances
     BoundedEnumerableFromList (ss*)
 
 
-  given schedulerIsMonad: Monad[Randomized] = Randomized.randomizedIsMonad
+  given schedulerIsMonad: Monad[Randomized2] = 
+    Randomized2.randomizedIsMonad
 
-  given schedulerIsFoldable: Foldable[Randomized] = Randomized.randomizedIsFoldable
-
-  given canTestInScheduler: CanTestIn[Randomized] = Randomized.canTestInRandomized
+  given canTestInScheduler: CanTestIn[Randomized2] = 
+    Randomized2.canTestInRandomized
 
   lazy val genCarState: Gen[CarState] = for
     p <- Gen.choose (-1.2, 0.5)

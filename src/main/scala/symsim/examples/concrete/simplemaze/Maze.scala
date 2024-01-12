@@ -3,10 +3,11 @@ package examples.concrete.simplemaze
 
 import cats.{Eq, Foldable, Monad}
 import cats.kernel.BoundedEnumerable
+import cats.syntax.all.*
 
 import org.scalacheck.{Arbitrary, Gen}
 
-import symsim.concrete.Randomized
+import symsim.concrete.Randomized2
 
 /**
  * Russell, Norvig, Fig 17.1, p. 646
@@ -39,16 +40,16 @@ type MazeState = (Int, Int, Int)
 type MazeObservableState = (Int, Int)
 type MazeReward = Double
 
-sealed trait MazeAction
-case object Left extends MazeAction
-case object Right extends MazeAction
-case object Up extends MazeAction
-case object Down extends MazeAction
+def valid (s: MazeState): Boolean =
+  s._1 >= 1 && s._1 <= 4 && s._2 >= 1 && s._2 <= 3 && (s._1, s._2) != (2, 2)
 
+enum MazeAction: 
+  case Left, Right, Up, Down
+import MazeAction.*
 
-object Maze
+class Maze (using probula.RNG)
   extends 
-    Agent[MazeState, MazeObservableState, MazeAction, MazeReward, Randomized],
+    Agent[MazeState, MazeObservableState, MazeAction, MazeReward, Randomized2],
     Episodic:
 
   val TimeHorizon: Int = 2000
@@ -67,9 +68,9 @@ object Maze
     case (_, _) => -1.0
 
 
-  def distort (a: MazeAction): Randomized[MazeAction] = a match
-    case Up | Down => Randomized.oneOf (Left, Right)
-    case Left | Right => Randomized.oneOf (Up, Down)
+  def distort (a: MazeAction): Randomized2[MazeAction] = a match
+    case Up | Down => Randomized2.oneOf (Left, Right)
+    case Left | Right => Randomized2.oneOf (Up, Down)
 
 
   def successor (s: MazeState) (a: MazeAction): MazeState =
@@ -81,26 +82,23 @@ object Maze
       case Right => (s._1+1, s._2, s._3+1)
     if valid (result) then result else s
 
-  def valid (s: MazeState): Boolean =
-     s._1 >= 1 && s._1 <= 4 && s._2 >= 1 && s._2 <= 3 && (s._1, s._2) != (2, 2)
-
   val attention = 0.8
 
-  def step (s: MazeState) (a: MazeAction): Randomized[(MazeState, MazeReward)] =
+  def step (s: MazeState) (a: MazeAction): Randomized2[(MazeState, MazeReward)] =
     for
-      precise <- Randomized.coin (attention)
-      action <- if precise then Randomized.const (a) else distort (a)
+      precise <- Randomized2.coin (attention)
+      action <- if precise then Randomized2.const (a) else distort (a)
       newState = successor (s) (action)
     yield (newState, mazeReward (newState))
 
-  def initialize: Randomized[MazeState] = for
-    x <- Randomized.repeat(Randomized.between(1, 4))
-    y <- Randomized.between(1, 3)
+  def initialize: Randomized2[MazeState] = { for
+    x <- Randomized2.between (1, 4)
+    y <- Randomized2.between (1, 3)
     t = 0
-    s = (x, y, t) if !isFinal(s) && valid (s)
-  yield s
+    s = (x, y, t)
+  yield s }.filter { s => !isFinal (s) && valid (s) }
 
-  val instances = MazeInstances
+  val instances = new MazeInstances
 
 end Maze
 
@@ -108,8 +106,8 @@ end Maze
 /** Here is a proof that our types actually deliver on everything that an Agent
   * needs to be able to do to work in the framework.
   */
-object MazeInstances
-   extends AgentConstraints[MazeState, MazeObservableState, MazeAction, MazeReward, Randomized]:
+class MazeInstances (using probula.RNG)
+   extends AgentConstraints[MazeState, MazeObservableState, MazeAction, MazeReward, Randomized2]:
 
    given enumAction: BoundedEnumerable[MazeAction] =
       BoundedEnumerableFromList (Up, Down, Left, Right)
@@ -119,15 +117,15 @@ object MazeInstances
          y <- List (1, 2, 3)
          x <- List (1, 2, 3, 4)
          result = (x, y, 0)
-         if Maze.valid (result)
+         if valid (result)
       yield (result._1, result._2)
       BoundedEnumerableFromList (ss*)
 
-   given schedulerIsMonad: Monad[Randomized] = Randomized.randomizedIsMonad
+   given schedulerIsMonad: Monad[Randomized2] = 
+     Randomized2.randomizedIsMonad
 
-   given schedulerIsFoldable: Foldable[Randomized] = Randomized.randomizedIsFoldable
-
-   given canTestInScheduler: CanTestIn[Randomized] = Randomized.canTestInRandomized
+   given canTestInScheduler: CanTestIn[Randomized2] = 
+     Randomized2.canTestInRandomized
 
    lazy val genMazeState: Gen[MazeState] = for
       y <- Gen.choose (1, 3)

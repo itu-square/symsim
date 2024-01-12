@@ -3,13 +3,11 @@ package concrete
 
 import symsim.examples.concrete.mountaincar.MountainCar
 
-import MountainCar.instances.given
-
 class ConcreteExpectedSarsaIsSarsaSpec
   extends SymSimSpec:
 
   val csarsa = ConcreteExpectedSarsa (
-    agent = MountainCar,
+    agent = new MountainCar,
     alpha = 0.1,
     gamma = 0.2,
     epsilon0 = 0.003, // The update distribution test requires low ε for stability

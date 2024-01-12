@@ -2,13 +2,17 @@ package symsim
 package concrete
 
 import cats.kernel.BoundedEnumerable
-import cats.syntax.option.*
+import cats.syntax.all.*
 
 import org.typelevel.paiges.Doc
 import symsim.QTable
 
+import symsim.concrete.Randomized2.given 
+
+// import cats.Monad.nonInheritedOps.toFlatMapOps
+
 class ConcreteQTable[ObservableState: BoundedEnumerable, Action: BoundedEnumerable]
-  extends QTable[ObservableState, Action, Double, Randomized]:
+  extends QTable[ObservableState, Action, Double, Randomized2]:
 
   def value (q: Q) (s: ObservableState, a: Action): Double = 
     q (s, a)
@@ -27,11 +31,11 @@ class ConcreteQTable[ObservableState: BoundedEnumerable, Action: BoundedEnumerab
 
 
   def chooseAction (ε: Probability) (q: Q) (s: ObservableState)
-    : Randomized[Action] = for
-      explore <- Randomized.coin (ε)
+    : Randomized2[Action] = for
+      explore <- Randomized2.coin (ε)
       action  <- if explore
-                 then Randomized.oneOf (allActions*)
-                 else Randomized.const (bestAction (q) (s))
+                 then Randomized2.oneOf (allActions*)
+                 else Randomized2.const (bestAction (q) (s))
     yield action
 
 

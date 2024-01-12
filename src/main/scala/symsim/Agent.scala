@@ -87,11 +87,6 @@ trait AgentConstraints[State, ObservableState, Action, Reward, Scheduler[_]]:
     */
   given schedulerIsMonad: Monad[Scheduler]
 
-  /** We need to be able to iterate over a schedule (fold) to sequence and merge
-   *  schedule elements.
-    */
-  given schedulerIsFoldable: Foldable[Scheduler]
-
   /** We need to be able to run tests on scheduled values.
     */
   given canTestInScheduler: CanTestIn[Scheduler]

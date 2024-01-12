@@ -4,13 +4,14 @@ package laws
 import breeze.stats.distributions.{Rand, Beta}
 import breeze.stats.distributions.Rand.VariableSeed.*
 import scala.language.postfixOps
+import cats.syntax.all.*
 
 import org.scalacheck.Prop.*
 import org.scalacheck.Arbitrary
 
 import symsim.concrete.ConcreteExactRL
 import symsim.concrete.ConcreteQTable
-import symsim.concrete.Randomized
+import symsim.concrete.Randomized2
 
 /** Laws that have to be obeyed by any refinement of symsim.ConcreetSarsa
  *
@@ -69,7 +70,7 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
         // 0.95 belief that the probability of suboptimal action is ≤ ε.
         // We check this by computing the posterior and asking CDF (ε) ≥ 0.94
 
-        val successes = trials.take (n).count { _ == true }
+        val successes = trials.sample (n).count { _ == true }
         val failures = n - successes
 
         // α=1 and β=1 gives a prior, weak flat, unbiased
@@ -96,12 +97,12 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
          val os_t = agent.observe (s_t)
 
          // call the tested implementation
-         val sut: Randomized[(Q, State, Action)] =
-           Randomized.repeat (sarsa.learningEpoch (q_t, s_t, a_t))
+         val sut: Randomized2[(Q, State, Action)] =
+           sarsa.learningEpoch (q_t, s_t, a_t)
 
          // call the spec interpreter
-         val spec: Randomized[(Q, State, Action)] =
-           Randomized.repeat (bdl.learningEpoch (q_t, s_t, a_t))
+         val spec: Randomized2[(Q, State, Action)] =
+           bdl.learningEpoch (q_t, s_t, a_t)
 
          // We find a Bayesian posterior (analytically) for the mean
          // difference between them means, and checking whether we
@@ -110,14 +111,13 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
          
          // Extract a univariate distributions over updates
          
-         val sutUpdates = sut.map { (q_tt, _, _) => q_tt (os_t, a_t) }
-         val specUpdates = spec.map { (q_tt, _, _) => q_tt (os_t, a_t) }
+         val sutUpdates = sut.sample (n).map { (q_tt, _, _) => q_tt (os_t, a_t) }
+         val specUpdates = spec.sample (n).map { (q_tt, _, _) => q_tt (os_t, a_t) }
 
          // A random variable representing differences between updates
 
          val diffs = (sutUpdates zip specUpdates)
            .map { _ - _ }
-           .take (n)
           
          // Infer the posterior on mean update.
          // Prior: we assume zero reward, with large standard deviation
@@ -151,9 +151,9 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
 
        "The value of variables in the Q table are not NaN after learning (divergence)" -> 
        forAllNoShrink { (q_t: Q, s_t: State) =>
-          val initials = Randomized.repeat (agent.initialize).take (10)
-          val schedule = sarsa.learn (q_t, List[Q](), initials)
-          val q = schedule.head._1
+          val initials = agent.initialize.sample (10)
+          val schedule = sarsa.learn (q_t, List[Q](), initials).sample()
+          val q = schedule._1
           val os_t = agent.observe (s_t)
           vf.actionValues (q) (os_t)
             .values

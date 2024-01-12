@@ -2,13 +2,15 @@ package symsim
 package examples.concrete.cartpole
 
 // Import evidence that states and actions can be enumerated
-import CartPole.instances.given
+private val cartPole = 
+  new CartPole (using spire.random.rng.SecureJava.apply)
+import cartPole.instances.{enumAction, enumState}
 
 class Experiments extends 
   ExperimentSpec[CartPoleState, CartPoleObservableState, CartPoleAction]:
 
   val sarsa = symsim.concrete.ConcreteSarsa (
-    agent = CartPole,
+    agent = cartPole,
     alpha = 0.1,
     gamma = 0.1,
     epsilon0 = 0.05,

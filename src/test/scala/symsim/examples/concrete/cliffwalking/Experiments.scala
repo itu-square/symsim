@@ -1,16 +1,18 @@
 package symsim
 package examples.concrete.cliffWalking
 
-import CliffWalking.instances.given
+private val cliffWalking = 
+  new CliffWalking (using spire.random.rng.SecureJava.apply)
+import cliffWalking.instances.{enumAction, enumState}
 
 class Experiments
   extends ExperimentSpec[CWState, CWObservableState, CWAction]:
 
   // Import evidence that states and actions can be enumerated
-  import CliffWalking.*
+  import cliffWalking.*
 
   val sarsa = symsim.concrete.ConcreteSarsa (
-    agent = CliffWalking,
+    agent = cliffWalking,
     alpha = 0.1,
     gamma = 0.1,
     epsilon0 = 0.1,

@@ -2,12 +2,12 @@ package symsim
 package concrete
 
 case class ConcreteExpectedSarsa[State, ObservableState, Action] (
- val agent: Agent[State, ObservableState, Action, Double, Randomized],
+ val agent: Agent[State, ObservableState, Action, Double, Randomized2],
  val alpha: Double,
  val gamma: Double,
  val epsilon0: Probability,
  val episodes: Int,
-) extends ExpectedSarsa[State, ObservableState, Action, Double, Randomized],
+) extends ExpectedSarsa[State, ObservableState, Action, Double, Randomized2],
   ConcreteExactRL[State, ObservableState, Action],
   NoDecay:
 

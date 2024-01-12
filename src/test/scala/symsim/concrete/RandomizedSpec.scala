@@ -130,14 +130,4 @@ class RandomizedSpec
     }
   }
 
-  "Randomized Foldable Instance" - {
-
-    "check that foldLeft works (sum)" in {
-      val r = Randomized.repeat (Randomized.oneOf (1)).take (C)
-      val sum = Randomized.randomizedIsFoldable
-        .foldLeft[Int, Int] (r, 0) { _ + _ }
-      assert (sum == C)
-    }
-  }
-
 end RandomizedSpec

@@ -52,7 +52,7 @@ trait Dist[+T]:
    *  users of the library. They will use the variant that takes a
    *  sample size.
    */
-  protected def sample[U >: T](using RNG): IData[U]
+  def sample[U >: T](using RNG): IData[U]
 
   // Derived members
 
@@ -728,19 +728,44 @@ object Uniform:
   def apply[T](values: T*): Uniform[T] = 
     new Uniform[T](Name.No)(values*)
 
-case class UniformC(name: Name, lower: Double, upper: Double) 
-  extends Dist[Double]:
-  assert (lower <= upper)
-
-  private lazy val gen = 
-    spire.random.Uniform[Double](lower, upper)
+/** sub class of distributions over double numbers / "real numbers" */
+trait DistD extends Dist[Double]:
+  
+  protected def gen: spire.random.Dist[Double]
 
   def sample[S >: Double](using rng: RNG): IData[S] = 
     val chain = gen.toLazyList(rng)
     IData(this.name, chain)
+
+
+
+case class UniformC(name: Name, lower: Double, upper: Double) 
+  extends DistD:
+  assert (this.lower <= this.upper)
+
+  protected lazy val gen = 
+    spire.random.Uniform[Double](lower, upper)
 
 object UniformC: 
   def apply(lower: Double, upper: Double): UniformC = 
     new UniformC(Name.No, lower, upper)
   def apply(l: String, lower: Double, upper: Double): UniformC = 
     new UniformC(l.toName, lower, upper)
+
+
+
+case class Gaussian(name: Name, mean: Double = 0.0, stdDev: Double = 1.0) 
+  extends DistD:
+
+  protected lazy val gen = 
+    spire.random.Gaussian(mean, stdDev)
+
+object Gaussian: 
+  def apply(mean: Double, stdDev: Double): Gaussian = 
+    new Gaussian(Name.No, mean, stdDev)
+  def apply: Gaussian = 
+    new Gaussian(Name.No, 0.0, 1.0)
+  def apply(l: String, mean: Double, stdDev: Double): Gaussian = 
+    new Gaussian(l.toName, mean, stdDev)
+  def apply(l: String): Gaussian = 
+    new Gaussian(l.toName, 0.0, 1.0)

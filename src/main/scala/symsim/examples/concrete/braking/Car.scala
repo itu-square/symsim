@@ -1,7 +1,8 @@
 package symsim
 package examples.concrete.braking
 
-import symsim.concrete.Randomized
+import symsim.concrete.Randomized2
+import cats.syntax.all.*
 
 /**
  * We map the car states to
@@ -19,8 +20,8 @@ type CarObservableState = CarState
 type CarAction = Double
 type CarReward = Double
 
-object Car
-  extends Agent[CarState, CarObservableState, CarAction, CarReward, Randomized]
+class Car (using probula.RNG)
+  extends Agent[CarState, CarObservableState, CarAction, CarReward, Randomized2]
   with Episodic:
 
     /** The episode should be guaranteed to terminate after
@@ -34,7 +35,7 @@ object Car
     private val t: Double = 2.0
 
     /** Evidence of type class membership for this agent. */
-    val instances = CarInstances
+    val instances = new CarInstances
 
     def isFinal (s: CarState): Boolean =
       s.v == 0.0 || s.p >= 10 || Math.abs (s.p) >= 1000.0
@@ -57,7 +58,7 @@ object Car
 
 
     // TODO: this is now deterministic but eventually needs to be randomized
-    def step (s: CarState) (a: CarAction): Randomized[(CarState, CarReward)] =
+    def step (s: CarState) (a: CarAction): Randomized2[(CarState, CarReward)] =
       require (instances.enumAction.membersAscending.contains (a))
       // Stop moving when velecity is zero, braking is not moving backwards
       val t1 = Math.min (- s.v / a, t)
@@ -65,14 +66,14 @@ object Car
       val v1 = if p1 == 10 then 0
                else Math.max(s.v + a * t1, 0.0)
       val s1 = CarState (v = v1, p = p1)
-      Randomized.const (s1, carReward (s1) (a))
+      Randomized2.const (s1, carReward (s1) (a))
 
 
-    def initialize: Randomized[CarState] = for
-      v <- Randomized.repeat (Randomized.between (0.0, 15.0))
-      p <- Randomized.between (0.0, 20.0)
-      s = CarState (v, p) if !isFinal (s)
-    yield s
+    def initialize: Randomized2[CarState] = (for
+      v <- Randomized2.between (0.0, 15.0)
+      p <- Randomized2.between (0.0, 20.0)
+      s = CarState (v, p)
+    yield s).filter { !this.isFinal (_)}
 
 end Car
 
@@ -80,8 +81,8 @@ end Car
 /** Here is a proof that our types actually deliver on everything that an Agent
   * needs to be able to do to work in the framework.
   */
-object CarInstances
-  extends AgentConstraints[CarState, CarObservableState, CarAction, CarReward, Randomized]:
+class CarInstances (using probula.RNG)
+  extends AgentConstraints[CarState, CarObservableState, CarAction, CarReward, Randomized2]:
 
   import cats.{Eq, Monad, Foldable}
   import cats.kernel.BoundedEnumerable
@@ -100,14 +101,11 @@ object CarInstances
     yield CarState (v,p)
     BoundedEnumerableFromList (ss*)
 
-  given schedulerIsMonad: Monad[Randomized] =
-    concrete.Randomized.randomizedIsMonad
+  given schedulerIsMonad: Monad[Randomized2] =
+    concrete.Randomized2.randomizedIsMonad
 
-  given schedulerIsFoldable: Foldable[Randomized] =
-    concrete.Randomized.randomizedIsFoldable
-
-  given canTestInScheduler: CanTestIn[Randomized] =
-    concrete.Randomized.canTestInRandomized
+  given canTestInScheduler: CanTestIn[Randomized2] =
+    concrete.Randomized2.canTestInRandomized
 
   lazy val genCarState: Gen[CarState] = for
      v <- Gen.choose (0.0, 10.0)

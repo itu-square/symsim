@@ -1,17 +1,24 @@
 package symsim
 package examples.concrete.simplemaze
 
-import Maze.instances.given
+given spire.random.rng.SecureJava = 
+  spire.random.rng.SecureJava.apply
+
+private val maze = new Maze
+
+import MazeAction.*
 
 class SarsaExperiments
    extends ExperimentSpec[MazeState, MazeObservableState, MazeAction]:
 
+   import maze.instances.{enumAction, enumState}
+
    val sarsa = symsim.concrete.ConcreteSarsa (
-     agent = Maze,
+     agent = maze,
      alpha = 0.1,
      gamma = 1,
      epsilon0 = 0.1,
-     episodes = 60000,
+     episodes = 1000000,
    )
 
    s"SimpleMaze experiment with ${sarsa}" in {

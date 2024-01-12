@@ -1,17 +1,16 @@
 package symsim
 package examples.concrete.braking
 
-import symsim.concrete.Randomized
+import symsim.concrete.Randomized2
+
+private val car = new Car (using spire.random.rng.SecureJava.apply)
+import car.instances.{enumAction, enumState}
 
 class Experiments
   extends ExperimentSpec[CarState, CarObservableState, CarAction]:
 
-  // Import evidence that states and actions can be enumerated
-  import Car.*
-  import Car.instances.given
-
   val sarsa = symsim.concrete.ConcreteSarsa (
-    agent = Car,
+    agent = car,
     alpha = 0.1,
     gamma = 0.1,
     epsilon0 = 0.05,
@@ -25,7 +24,7 @@ class Experiments
       .flatMap { _.headOption }
       .toList
     // FIXME: I tentatively just try from an adhoc state
-    val evalInitial = Randomized.const (CarState (10.0, 0.0))
+    val evalInitial = Randomized2.const (CarState (10.0, 0.0))
     eval (sarsa, policies, Some (evalInitial))
       .save ("braking.csv")
   }

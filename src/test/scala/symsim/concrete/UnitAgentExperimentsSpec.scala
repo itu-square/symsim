@@ -1,14 +1,15 @@
 package symsim
 package concrete
 
+private val unitAgent = 
+  new UnitAgent (using spire.random.rng.SecureJava.apply)
+import unitAgent.instances.enumAction
+
 class UnitAgentExperiments
   extends ExperimentSpec[UnitState, UnitState, UnitAction]:
 
-  // Import evidence that states and actions can be enumerated
-  import UnitAgent.*
-
   val sarsa = symsim.concrete.ConcreteSarsa (
-     agent = UnitAgent,
+     agent = unitAgent,
      alpha = 0.1,
      gamma = 0.1,
      epsilon0 = 0.05, // explore vs exploit ratio
@@ -21,7 +22,7 @@ class UnitAgentExperiments
   }
 
   val qLearning = symsim.concrete.ConcreteQLearning (
-     agent = UnitAgent,
+     agent = unitAgent,
      alpha = 0.1,
      gamma = 0.1,
      epsilon0 = 0.05, // explore vs exploit ratio
