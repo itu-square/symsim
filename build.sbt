@@ -1,6 +1,6 @@
 name := "symsim"
 
-ThisBuild / scalaVersion := "3.1.3"
+ThisBuild / scalaVersion := "3.3.1"
 
 val scalatestVersion = "3.2.14"
 val catsVersion = "2.6.1"
