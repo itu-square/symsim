@@ -53,8 +53,11 @@ case class IData[+T](name: Name, chain: Chain[T]):
   def label(name: String): IData[T] = 
     label(name.toName)
 
+  /** Show the data as a string, for the prefix of at most 100 elements 
+   */
   override def toString : String = 
-    s"""${this.name.toString}: ${this.chain.mkString(",")}"""
+    val elipsis = if this.chain.drop(100).isEmpty then "" else "..."
+    s"""${this.name}: ${this.chain.take(100).mkString(",")} ${elipsis}"""
 
   /** Estimate the probability of an event defined by the predicate `p`.
     * Precondition - the sample size is finite. 
