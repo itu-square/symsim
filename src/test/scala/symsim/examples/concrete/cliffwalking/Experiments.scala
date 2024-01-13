@@ -23,7 +23,7 @@ class Experiments
 
   s"CliffWalking experiment with $sarsa" in {
     val policies = learnAndLog (sarsa)
-      .grouped (10)
+      .grouped (100)
       .take (10)
       .flatMap { _.headOption }
       .toList

@@ -65,7 +65,8 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
   def learningEpisode(fR: (VF, List[VF], Probability), s_t: State)
     : Scheduler[(VF, List[VF], Probability)] =
 
-    def done (f: VF, s: State, a: Action): Boolean = agent.isFinal(s)
+    def done (f: VF, s: State, a: Action): Boolean = 
+      agent.isFinal(s)
 
     val (f, qL_t, ε) = fR
 

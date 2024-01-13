@@ -13,7 +13,7 @@ import symsim.concrete.Randomized2
 val BoardWidth: Int = 11
 val BoardHeight: Int = 3
 
-class CWObservableState (x: Int, y: Int):
+case class CWObservableState (x: Int, y: Int):
   require (x >= 0,           s"Negative horizontal position $x")
   require (x <= BoardWidth,  s"Out-Of-Width x: ¬($x ≤ $BoardWidth)")
   require (y >= 0,           s"Negative vertical board position $y}")
@@ -21,8 +21,11 @@ class CWObservableState (x: Int, y: Int):
 
   override def toString: String = s"($x,$y)"
 
-case class CWState (x: Int, y: Int, t: Int) 
-  extends CWObservableState (x, y):
+case class CWState (x: Int, y: Int, t: Int):
+  require (x >= 0,           s"Negative horizontal position $x")
+  require (x <= BoardWidth,  s"Out-Of-Width x: ¬($x ≤ $BoardWidth)")
+  require (y >= 0,           s"Negative vertical board position $y}")
+  require (y <= BoardHeight, s"Out-of-Height y: ¬($y ≤ $BoardHeight)")
 
   override def toString: String = s"($x,$y,$t)"
 
@@ -38,9 +41,9 @@ enum CWAction:
     case CWAction.Left => "←"
     case CWAction.Right => "→"
 
-class CliffWalking (using probula.RNG)
-  extends Agent[CWState, CWObservableState, CWAction, CWReward, Randomized2]
-    with Episodic:
+class CliffWalking (using probula.RNG) extends 
+  Agent[CWState, CWObservableState, CWAction, CWReward, Randomized2],
+  Episodic:
 
   /** The episode should be guaranteed to terminate after
     * TimeHorizon steps. This is used *only* *for* testing. It does
@@ -52,7 +55,8 @@ class CliffWalking (using probula.RNG)
   def isFinal (s: CWState): Boolean =
     (s.y == 0 && s.x > 0) || s.t >= TimeHorizon
 
-  def observe (s: CWState): CWObservableState = s
+  def observe (s: CWState): CWObservableState =
+    CWObservableState(s.x, s.y)
 
   def move (s: CWState, a: CWAction): CWState = a match
     case CWAction.Up => 
@@ -78,7 +82,7 @@ class CliffWalking (using probula.RNG)
   def initialize: Randomized2[CWState] = { for
     x <- Randomized2.between (0, BoardWidth  + 1)
     y <- Randomized2.between (0, BoardHeight + 1)
-    s = CWState (x, y, 0) 
+    s  = CWState (x, y, 0) 
   yield s }.filter { !this.isFinal (_) }
 
   val instances = new CliffWalkingInstances
@@ -96,8 +100,7 @@ class CliffWalking (using probula.RNG)
       val ss = for
         x <- 0 to BoardWidth
         y <- 0 to BoardHeight
-        t <- 0 to TimeHorizon
-      yield CWState (x, y, t)
+      yield CWObservableState (x, y)
       BoundedEnumerableFromList (ss*)
   
   
