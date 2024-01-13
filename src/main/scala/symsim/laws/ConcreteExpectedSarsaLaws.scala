@@ -14,10 +14,6 @@ import symsim.concrete.ConcreteExactRL
 import symsim.concrete.ConcreteQTable
 import symsim.concrete.Randomized2
 
-given spire.random.rng.SecureJava = 
-  spire.random.rng.SecureJava.apply
-
-
 /** Laws that have to be obeyed by any refinement of symsim.ConcreetSarsa
  *
  * @param sarsa A   problem  configured   together  with   a  learning
@@ -40,7 +36,8 @@ given spire.random.rng.SecureJava =
 case class ConcreteExpectedSarsaLaws[State, ObservableState, Action] 
   (sarsa: ConcreteExactRL[State, ObservableState, Action], 
    gamma: Double
-  ) extends org.typelevel.discipline.Laws:
+  ) (using probula.RNG) 
+  extends org.typelevel.discipline.Laws:
 
   import sarsa.{agent,vf}
   import sarsa.agent.instances.given
@@ -59,7 +56,7 @@ case class ConcreteExpectedSarsaLaws[State, ObservableState, Action]
 
   given Arbitrary[Q] = 
     Arbitrary (vf.genVF (using agent.instances.arbitraryReward))
-  
+
   val laws: RuleSet = SimpleRuleSet (
     "concreteExpectedSarsa",
 
@@ -71,7 +68,7 @@ case class ConcreteExpectedSarsaLaws[State, ObservableState, Action]
         val n = 4000
         val ε = 0.1 // Ignore ε in the problem as it might be zero for
                     // the sake of the other test
-        
+
         val trials = for 
           s_t  <- agent.initialize
           a_tt <- vf.chooseAction (ε) (q) (agent.observe (s_t))

@@ -35,7 +35,8 @@ import symsim.concrete.Randomized2
 case class ConcreteSarsaLaws[State, ObservableState, Action]
   (sarsa: ConcreteExactRL[State, ObservableState, Action],
    gamma: Double
-  ) extends org.typelevel.discipline.Laws:
+  ) (using probula.RNG) 
+  extends org.typelevel.discipline.Laws:
 
   import sarsa.{agent,vf}
   import sarsa.agent.instances.given
@@ -116,7 +117,7 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
 
          // A random variable representing differences between updates
 
-         val diffs = (sutUpdates zip specUpdates)
+         val diffs = sutUpdates.zip (specUpdates)
            .map { _ - _ }
           
          // Infer the posterior on mean update.

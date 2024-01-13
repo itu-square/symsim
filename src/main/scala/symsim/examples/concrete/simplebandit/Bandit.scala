@@ -62,7 +62,7 @@ class BanditInstances (banditReward: List [Randomized2[BanditReward]]) (using pr
       BoundedEnumerableFromList (List.range(0, banditReward.size)*)
 
     given enumState: BoundedEnumerable[BanditState] =
-    	BoundedEnumerableFromList (false, true)
+      BoundedEnumerableFromList (false, true)
 
     given schedulerIsMonad: Monad[Randomized2] = Randomized2.randomizedIsMonad
 
