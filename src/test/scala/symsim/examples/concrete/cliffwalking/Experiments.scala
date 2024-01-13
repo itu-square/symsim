@@ -18,7 +18,7 @@ class Experiments
     alpha = 0.1,
     gamma = 0.1,
     epsilon0 = 0.1,
-    episodes = 100
+    episodes = 1000
   )
 
   s"CliffWalking experiment with $sarsa" in {
@@ -27,6 +27,8 @@ class Experiments
       .take (10)
       .flatMap { _.headOption }
       .toList
+    val fileN = "cliffwalking.csv"
+    info (s"Starting evaluation and saving to $fileN")
     eval (sarsa, policies)
-      .save ("cliffwalking.csv")
+      .save (fileN)
   }
