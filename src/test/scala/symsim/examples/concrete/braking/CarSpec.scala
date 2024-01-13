@@ -41,16 +41,16 @@ object CarSpec
   property ("Reward is valid 1") = 
     forAll  { (s1: CarState, s2: CarState, a: CarAction) => 
       for
-        (_, r1) <- car.step (CarState (v = s1.v, p = s1.p min s2.p)) (a)
-        (_, r2) <- car.step (CarState (v = s1.v, p = s1.p max s2.p)) (a)
+        (_, r1) <- car.step (CarState (v = s1.v, p = s1.p.min (s2.p))) (a)
+        (_, r2) <- car.step (CarState (v = s1.v, p = s1.p.max (s2.p))) (a)
       yield r1 >= r2 
     }
 
   property ("Reward is valid 2") = 
     forAll { (s1: CarState, s2: CarState, a: CarAction) => 
       for
-        (_, r1) <- car.step (CarState (v = s1.v min s2.v, p = s1.p)) (a)
-        (_, r2) <- car.step (CarState (v = s1.v max s2.v, p = s1.p)) (a)
+        (_, r1) <- car.step (CarState (v = s1.v.min (s2.v), p = s1.p)) (a)
+        (_, r2) <- car.step (CarState (v = s1.v.max (s2.v), p = s1.p)) (a)
       yield r1 >= r2 
     }
 
