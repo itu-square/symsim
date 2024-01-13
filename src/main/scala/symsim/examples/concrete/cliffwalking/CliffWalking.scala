@@ -9,8 +9,18 @@ import org.scalacheck.{Arbitrary, Gen}
 
 import symsim.concrete.Randomized2
 
+val BoardWidth: Int = 11
+val BoardHeight: Int = 3
+
 case class CWState (x: Int, y: Int):
+  require (x >= 0,           s"Negative horizontal position $x")
+  require (x <= BoardWidth,  s"Out-Of-Width x: ¬($x ≤ $BoardWidth)")
+  require (y >= 0,           s"Negative vertical board position $y}")
+  require (y <= BoardHeight, s"Out-of-Height y: ¬($y ≤ $BoardHeight)")
+
   override def toString: String = s"($x,$y)"
+
+
 
 type CWObservableState = CWState
 type CWReward = Double
@@ -23,9 +33,6 @@ enum CWAction:
     case CWAction.Up => "↑"
     case CWAction.Left => "←"
     case CWAction.Right => "→"
-
-val BoardWidth: Int = 11
-val BoardHeight: Int = 3
 
 class CliffWalking (using probula.RNG)
   extends Agent[CWState, CWObservableState, CWAction, CWReward, Randomized2]
@@ -44,10 +51,6 @@ class CliffWalking (using probula.RNG)
   def observe (s: CWState): CWObservableState = s
 
   def move (s: CWState, a: CWAction): CWState =
-    require (s.x >= 0)
-    require (s.x <= BoardWidth)
-    require (s.y >= 0)
-    require (s.y <= BoardHeight)
 
     a match
       case CWAction.Up => CWState (s.x, (s.y + 1).min (BoardHeight))
