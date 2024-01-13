@@ -19,10 +19,10 @@ object Randomized2:
    probula.UniformC (0.0, 1.0) 
 
   def between (minInclusive: Int, maxExclusive: Int): Randomized2[Int] =
-    probula.Uniform (minInclusive, maxExclusive+1)
+    probula.Uniform (minInclusive, maxExclusive - 1)
 
-  def between (minInclusive: Double, maxExclusive: Double): Randomized2[Double] =
-    probula.UniformC (minInclusive, maxExclusive)
+  def between (minInclusive: Double, maxInclusive: Double): Randomized2[Double] =
+    probula.UniformC (minInclusive, maxInclusive)
 
   def gaussian (mean: Double = 0.0, stdDev: Double = 1.0): Randomized2[Double] =
     probula.Gaussian (mean, stdDev)
