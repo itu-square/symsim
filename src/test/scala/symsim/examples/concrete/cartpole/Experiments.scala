@@ -14,7 +14,7 @@ class Experiments extends
     alpha = 0.1,
     gamma = 0.1,
     epsilon0 = 0.05,
-    episodes = 20000,
+    episodes = 2000,
   )
 
   s"CartPole experiment with $sarsa" in {
