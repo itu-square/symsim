@@ -27,7 +27,7 @@ import spire.random.Uniform.*
 import spire.random.Dist.*
 import spire.random.*
 
-type RNG = spire.random.rng.SecureJava
+type RNG = spire.random.Generator
 
 /** A representation of probabilistic models as multivariate
  *  distributions,  effectively hierarchical Bayesian models.
