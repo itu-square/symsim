@@ -21,14 +21,14 @@ abstract class CartPoleAbstractState (
   val pv: Double
 ):
 
-  require (cp >= CpMin, "cp too low")
-  require (cp <= CpMax, "cp too high")
-  require (cv >= CvMin, "cv too low")
-  require (cv <= CvMax, "cv too high")
-  require (pa >= PaMin, "pa too low")
-  require (pa <= PaMax, "pa too high")
-  require (pv >= PvMin, "pv too low")
-  require (pv <= PvMin, "pv too high")
+  require (cp >= CpMin, s"cp too low: ¬ ($pv ≥ $CpMin)")
+  require (cp <= CpMax, s"cp too high: ¬ ($pv ≤ $CpMax)")
+  require (cv >= CvMin, s"cv too low: ¬ ($pv ≥ $CvMin)")
+  require (cv <= CvMax, s"cv too high: ¬ ($pv ≤ $CvMax)")
+  require (pa >= PaMin, s"pa too low: ¬ ($pv ≥ $PaMin)")
+  require (pa <= PaMax, s"pa too high: ¬ ($pv ≤ $PaMax)")
+  require (pv >= PvMin, s"pv too low: ¬ ($pv ≥ $PvMin)")
+  require (pv <= PvMax, s"pv too high: ¬ ($pv ≤ $PvMax)")
 
   override def toString: String = 
     s"[cart position=$cp, cart velocity=$cv,"
