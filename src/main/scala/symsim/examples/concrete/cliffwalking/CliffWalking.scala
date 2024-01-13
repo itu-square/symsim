@@ -9,6 +9,7 @@ import org.scalacheck.{Arbitrary, Gen}
 
 import symsim.concrete.Randomized2
 
+
 val BoardWidth: Int = 11
 val BoardHeight: Int = 3
 
@@ -70,8 +71,8 @@ class CliffWalking (using probula.RNG)
     Randomized2.const (s1, cwReward (s1) (a))
 
   def initialize: Randomized2[CWState] = { for
-    x <- Randomized2.between (0, BoardWidth)
-    y <- Randomized2.between (0, BoardHeight)
+    x <- Randomized2.between (0, BoardWidth +1)
+    y <- Randomized2.between (0, BoardHeight+1)
     s = CWState (x, y) 
   yield s }.filter { !this.isFinal (_) }
 
