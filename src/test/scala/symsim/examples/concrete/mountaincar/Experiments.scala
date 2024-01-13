@@ -28,6 +28,8 @@ class Experiments
       .take (10)
       .flatMap { _.headOption }
       .toList
-    val results = eval (sarsa, policies)
-    results.save ("mountaincar.csv")
+    val fileN = "mountaincar.csv"
+    info (s"Evaluation report will be written to $fileN")
+    eval (sarsa, policies)
+      .save (fileN)
   }
