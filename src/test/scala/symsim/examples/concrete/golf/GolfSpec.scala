@@ -7,7 +7,7 @@ import org.scalacheck.Prop.*
 
 import symsim.CanTestIn.given
 import symsim.concrete.ConcreteSarsa
-import symsim.concrete.Randomized
+import symsim.concrete.Randomized2
 
 // Eliminate the warning on GolfSpec until scalacheck marks Properties it open
 import scala.language.adhocExtensions
@@ -46,7 +46,7 @@ class GolfSpec
     }
 
   property ("Using club D in the sand is the best trained action after 100 episodes") =
-    val initials = Randomized.repeat(Randomized.const(golf.StartState)).take(200)
-    val q = sarsa.learn (sarsa.vf.initialize, List[sarsa.vf.Q](), initials)
+    val initials = Randomized2.const (golf.StartState).sample (200)
+    val q = sarsa.learn (sarsa.vf.initialize, List[sarsa.vf.Q] (), initials)
     q.sample (50)
      .forall { (q, _) => sarsa.vf.bestAction (q) (golf.SandState)._1 == Club.D }
