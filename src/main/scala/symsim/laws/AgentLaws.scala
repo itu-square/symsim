@@ -22,7 +22,8 @@ case class AgentLaws[State, ObservableState, Action, Reward, Scheduler[_]]
 
   import agent.instances.given
 
-  val observableStates = agent.instances.enumState.membersAscending
+  val observableStates = 
+    agent.instances.enumState.membersAscending.toSet
 
   val laws: RuleSet = SimpleRuleSet (
     "agent",

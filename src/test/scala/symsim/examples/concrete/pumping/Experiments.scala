@@ -2,10 +2,9 @@ package symsim
 package examples.concrete.pumping
 
 class Experiments
-  extends ExperimentSpec[PumpState,ObservablePumpState,PumpAction]:
+  extends ExperimentSpec[PumpState, ObservablePumpState, PumpAction]:
 
   // Import evidence that states and actions can be enumerated
-  import Pump.*
   import Pump.instances.given
 
   val sarsa = symsim.concrete.ConcreteSarsa (
