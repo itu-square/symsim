@@ -47,25 +47,24 @@ enum MazeAction:
   case Left, Right, Up, Down
 import MazeAction.*
 
-class Maze (using probula.RNG)
-  extends 
-    Agent[MazeState, MazeObservableState, MazeAction, MazeReward, Randomized2],
-    Episodic:
+class Maze (using probula.RNG) extends 
+  Agent[MazeState, MazeObservableState, MazeAction, MazeReward, Randomized2],
+  Episodic:
 
   val TimeHorizon: Int = 2000
 
   def isFinal (s: MazeState): Boolean =
-    (s._1, s._2) == (4, 3) || (s._1, s._2) == (4, 2) || s._3 == TimeHorizon
+    (s._1, s._2) == (4, 3) || (s._1, s._2) == (4, 2) || s._3 >= TimeHorizon
 
   // Maze is discrete
   def observe (s: MazeState): MazeObservableState = (s._1, s._2)
 
   // We are not using the original reward function from AIAMA as it
   // gives to unstable learning results
-  private def mazeReward (s: MazeState): MazeReward = (s._1, s._2) match
-    case (4, 3) => +0.0     // Good final state
-    case (4, 2) => -1000.0   // Bad final state (dead)
-    case (_, _) => -1.0
+  private def mazeReward (s: MazeState): MazeReward = s match
+    case (4, 3, _) => +0.0      // Good final state
+    case (4, 2, _) => -1000.0   // Bad final state (dead)
+    case (_, _, _) => -1.0
 
 
   def distort (a: MazeAction): Randomized2[MazeAction] = a match
@@ -76,10 +75,10 @@ class Maze (using probula.RNG)
   def successor (s: MazeState) (a: MazeAction): MazeState =
     require (valid (s))
     val result = a match
-      case Up    => (s._1, s._2+1, s._3+1)
-      case Down  => (s._1, s._2-1, s._3+1)
-      case Left  => (s._1-1, s._2, s._3+1)
-      case Right => (s._1+1, s._2, s._3+1)
+      case Up    => (s._1,     s._2 + 1, s._3 + 1)
+      case Down  => (s._1,     s._2 - 1, s._3 + 1)
+      case Left  => (s._1 - 1, s._2,     s._3 + 1)
+      case Right => (s._1 + 1, s._2,     s._3 + 1)
     if valid (result) then result else s
 
   val attention = 0.8
@@ -87,15 +86,15 @@ class Maze (using probula.RNG)
   def step (s: MazeState) (a: MazeAction): Randomized2[(MazeState, MazeReward)] =
     for
       precise <- Randomized2.coin (attention)
-      action <- if precise then Randomized2.const (a) else distort (a)
+      action  <- if precise then Randomized2.const (a) else distort (a)
       newState = successor (s) (action)
     yield (newState, mazeReward (newState))
 
   def initialize: Randomized2[MazeState] = { for
-    x <- Randomized2.between (1, 4)
-    y <- Randomized2.between (1, 3)
-    t = 0
-    s = (x, y, t)
+    x <- Randomized2.between (1, 4 + 1)
+    y <- Randomized2.between (1, 3 + 1)
+    t  = 0
+    s  = (x, y, t)
   yield s }.filter { s => !isFinal (s) && valid (s) }
 
   val instances = new MazeInstances
