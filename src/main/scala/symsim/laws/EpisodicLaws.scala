@@ -13,7 +13,6 @@ import org.scalacheck.Prop
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Prop.forAllNoShrink
 
-import symsim.concrete.Randomized
 import symsim.CanTestIn.*
 
 /** Collect the laws that define correctness of an Agent with Episodic.

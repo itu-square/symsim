@@ -7,7 +7,6 @@ import org.scalacheck.Gen
 import org.scalacheck.Prop.*
 
 import symsim.CanTestIn.given
-import symsim.concrete.Randomized.given
 
 import car.instances.{arbitraryState, arbitraryAction}
 

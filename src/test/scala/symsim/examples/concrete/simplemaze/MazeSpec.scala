@@ -6,7 +6,6 @@ import org.scalacheck.Gen
 import org.scalacheck.Prop.forAll
 
 import symsim.CanTestIn.given
-import symsim.concrete.Randomized.given
 
 private val maze = new Maze (using spire.random.rng.SecureJava.apply)
 import maze.instances.{arbitraryAction, arbitraryState}

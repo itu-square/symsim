@@ -6,6 +6,8 @@ import probula.{Dist, Name, IData}
 
 opaque type Randomized2[+A] = Dist[A]
 
+type Probability = Double
+
 object Randomized2:
 
   /** Create a generator that produces a single 'a'. Used to create

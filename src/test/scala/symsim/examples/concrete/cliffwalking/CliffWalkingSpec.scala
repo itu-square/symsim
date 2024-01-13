@@ -5,7 +5,6 @@ import org.scalacheck.Gen
 import org.scalacheck.Prop.forAll
 
 import symsim.CanTestIn.given
-import symsim.concrete.Randomized.given
 
 private val cliffWalking = 
   new CliffWalking (using spire.random.rng.SecureJava.apply)

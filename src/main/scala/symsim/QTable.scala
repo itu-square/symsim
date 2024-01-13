@@ -10,7 +10,7 @@ import org.scalacheck.Gen
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.arbitrary
 import org.typelevel.paiges.Doc
-import symsim.concrete.{ConcreteExactRL, Randomized}
+import symsim.concrete.ConcreteExactRL
 
 import symsim.Arith.*
 
