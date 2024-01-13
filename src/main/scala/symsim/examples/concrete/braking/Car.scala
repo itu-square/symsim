@@ -48,7 +48,7 @@ class Car (using probula.RNG)
       val dp = (s.p/5.0).floor * 5.0
       val dv = (s.v/5.0).floor * 5.0
 
-      CarState (dv min 10.0, dp min 15.0)
+      CarState (dv.min (10.0), dp.min (15.0))
 
 
     private def carReward (s: CarState) (a: CarAction): CarReward =
