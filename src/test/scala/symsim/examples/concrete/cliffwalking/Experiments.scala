@@ -28,7 +28,7 @@ class Experiments
       .flatMap { _.headOption }
       .toList
     val fileN = "cliffwalking.csv"
-    info (s"Starting evaluation and saving to $fileN")
+    info (s"Evaluation report will be written to $fileN")
     eval (sarsa, policies)
       .save (fileN)
   }

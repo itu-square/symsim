@@ -21,13 +21,12 @@ import scala.language.adhocExtensions
 object WindyGridSpec
   extends org.scalacheck.Properties ("WindyGrid"):
 
-  import windyGrid.instances.{arbitraryAction, arbitraryState, enumState, enumAction}
+  import windyGrid.instances.given
 
   property ("Up and Down will never affect the x value") =
     forAll { (s: GridState) => 
-      for
-        (s1, r) <- windyGrid.step (s) (GridAction.U)
-        (s2, r) <- windyGrid.step (s) (GridAction.D)
+      for (s1, r) <- windyGrid.step (s) (GridAction.U)
+          (s2, r) <- windyGrid.step (s) (GridAction.D)
       yield s1._1 == s.x && s2._1 == s.x
     }
 
@@ -48,10 +47,11 @@ object WindyGridSpec
   // to rerun training multiple times (if it is put inside the property)
   val sarsa = ConcreteSarsa (windyGrid, 0.1, 0.5, 0.1, 1)
   val initials = LazyList (windyGrid.instances.allObservableStates*)
+    .map { (s: GridObservableState) => GridState(s.x, s.y, 0) }
   val qs = sarsa.learn (sarsa.vf.initialize, List[sarsa.vf.Q] (), initials)
     .sample (5)
   import sarsa.vf.apply
 
   property ("Q-table values are non-positive") =
-    forAll { (s: GridState, a: GridAction) => 
+    forAll { (s: GridObservableState, a: GridAction) => 
       qs.forall { (q, _) => q (s, a) <= 0 } }
