@@ -51,13 +51,11 @@ class CliffWalking (using probula.RNG)
 
   def observe (s: CWState): CWObservableState = s
 
-  def move (s: CWState, a: CWAction): CWState =
-
-    a match
-      case CWAction.Up => CWState (s.x, (s.y + 1).min (BoardHeight))
-      case CWAction.Down => CWState (s.x, (s.y - 1).max (0))
-      case CWAction.Right => CWState ((s.x + 1).min (BoardWidth), s.y)
-      case CWAction.Left => CWState ((s.x - 1).max (0), s.y)
+  def move (s: CWState, a: CWAction): CWState = a match
+    case CWAction.Up => CWState (s.x, (s.y + 1).min (BoardHeight))
+    case CWAction.Down => CWState (s.x, (s.y - 1).max (0))
+    case CWAction.Right => CWState ((s.x + 1).min (BoardWidth), s.y)
+    case CWAction.Left => CWState ((s.x - 1).max (0), s.y)
 
 
   def cwReward (s: CWState) (a: CWAction): CWReward =
@@ -71,8 +69,8 @@ class CliffWalking (using probula.RNG)
     Randomized2.const (s1, cwReward (s1) (a))
 
   def initialize: Randomized2[CWState] = { for
-    x <- Randomized2.between (0, BoardWidth +1)
-    y <- Randomized2.between (0, BoardHeight+1)
+    x <- Randomized2.between (0, BoardWidth  + 1)
+    y <- Randomized2.between (0, BoardHeight + 1)
     s = CWState (x, y) 
   yield s }.filter { !this.isFinal (_) }
 
@@ -91,8 +89,8 @@ class CliffWalkingInstances (using probula.RNG)
 
   given enumState: BoundedEnumerable[CWObservableState] =
     val ss = for
-      x <- (0 to BoardWidth).toSeq
-      y <- (0 to BoardHeight).toSeq
+      x <- 0 to BoardWidth
+      y <- 0 to BoardHeight
     yield CWState (x, y)
     BoundedEnumerableFromList (ss*)
 

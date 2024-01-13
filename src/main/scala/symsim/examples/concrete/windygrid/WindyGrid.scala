@@ -10,9 +10,15 @@ import org.scalacheck.{Arbitrary, Gen}
 
 import symsim.concrete.Randomized2
 
+val xMin = 1
+val xMax = 10
+val yMin = 1
+val yMax = 7
+
 case class GridState (x: Int, y: Int):
+  require (x >= 1 && x <= 10 && y >= 1 && y <= 7)
   override def toString: String = s"($x,$y)"
-  
+
 type GridObservableState = GridState
 type GridReward = Double
 
@@ -67,7 +73,7 @@ class WindyGrid (using probula.RNG) extends
     x <- Randomized2.between (1, 11)
     y <- Randomized2.between (1, 8)
     s = GridState (x, y)
-  yield s }.filter { ! this.isFinal (_) }
+  yield s }.filter { !this.isFinal (_) }
 
   val instances = new WindyGridInstances
 
@@ -85,8 +91,8 @@ class WindyGridInstances (using probula.RNG)
 
   given enumState: BoundedEnumerable[GridObservableState] =
     val ss = for
-      x <- Seq (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-      y <- Seq (1, 2, 3, 4, 5, 6, 7)
+      x <- xMin to xMax
+      y <- yMin to yMax
     yield GridState (x, y)
     BoundedEnumerableFromList (ss*)
 

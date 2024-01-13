@@ -3,7 +3,9 @@ package examples.concrete.braking
 
 import symsim.concrete.Randomized2
 
-private val car = new Car (using spire.random.rng.SecureJava.apply)
+private given spire.random.rng.SecureJava = 
+  spire.random.rng.SecureJava.apply
+private val car: Car = new Car
 import car.instances.{enumAction, enumState}
 
 class Experiments

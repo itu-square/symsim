@@ -69,11 +69,11 @@ class Car (using probula.RNG)
       Randomized2.const (s1, carReward (s1) (a))
 
 
-    def initialize: Randomized2[CarState] = (for
+    def initialize: Randomized2[CarState] = { for
       v <- Randomized2.between (0.0, 15.0)
       p <- Randomized2.between (0.0, 20.0)
       s = CarState (v, p)
-    yield s).filter { !this.isFinal (_)}
+    yield s }.filter { !this.isFinal (_) }
 
 end Car
 
