@@ -33,11 +33,6 @@ object Randomized2:
   def oneOf[A] (choices: A*): Randomized2[A] =
     probula.Uniform(choices*)
 
-  /** For this representation of Randomized, repeat does nothing (an identity),
-   *  we should probably remove repeat from the API. */
-  def repeat[A] (ra: =>Randomized2[A]): Randomized2[A] = ra
-
-
   given randomizedIsMonad: cats.Monad[Randomized2] = new cats.Monad[Randomized2]:
     def flatMap[A, B](fa: Randomized2[A])(f: A => Randomized2[B]): Randomized2[B] =
       fa.flatMap(f)
