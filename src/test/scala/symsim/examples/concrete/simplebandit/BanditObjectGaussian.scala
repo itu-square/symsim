@@ -1,9 +1,8 @@
-package symsim
-package examples.concrete.simplebandit
+package symsim.examples.concrete.simplebandit
 
 import symsim.concrete.Randomized2
 
-val BanditObjGaussian = new Bandit (List (
+val BanditObjGaussian: Bandit = new Bandit (List (
   Randomized2.gaussian (-0.2, 1),
   Randomized2.gaussian ( 0.2, 1),
   Randomized2.gaussian ( 0.4, 1),
