@@ -15,7 +15,8 @@ case class ConcreteQLearningWithDecay [
   val epsilon0: Probability,
   val episodes: Int,
 
-) extends QLearning[State, ObservableState, Action, Double, Randomized2],
+) (using val rng: probula.RNG) 
+  extends QLearning[State, ObservableState, Action, Double, Randomized2],
   ConcreteExactRL[State, ObservableState, Action],
   BoundedEpsilonDecay:
 

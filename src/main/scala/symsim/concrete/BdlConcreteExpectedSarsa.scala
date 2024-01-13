@@ -13,7 +13,8 @@ case class BdlConcreteExpectedSarsa [
   val gamma: Double,
   val epsilon0: Probability,
   val episodes: Int,
-) extends BdlLearn[State, ObservableState, Action, Double, Randomized2],
+) (using val rng: probula.RNG)
+  extends BdlLearn[State, ObservableState, Action, Double, Randomized2],
   ConcreteExactRL[State, ObservableState, Action],
   NoDecay:
 

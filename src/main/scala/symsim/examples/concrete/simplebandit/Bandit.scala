@@ -59,7 +59,7 @@ class BanditInstances (banditReward: List [Randomized2[BanditReward]]) (using pr
   extends AgentConstraints[BanditState, BanditState, BanditAction, BanditReward, Randomized2]:
 
     given enumAction: BoundedEnumerable[BanditAction] = 
-      BoundedEnumerableFromList (List.range(0, banditReward.size)*)
+      BoundedEnumerableFromList (List.range (0, banditReward.size)*)
 
     given enumState: BoundedEnumerable[BanditState] =
       BoundedEnumerableFromList (false, true)

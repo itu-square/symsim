@@ -1,6 +1,9 @@
 package symsim
 package examples.concrete.simplebandit
 
+private given spire.random.rng.SecureJava = 
+  spire.random.rng.SecureJava.apply
+
 class Experiments
   extends ExperimentSpec[BanditState,BanditState,BanditAction]:
 

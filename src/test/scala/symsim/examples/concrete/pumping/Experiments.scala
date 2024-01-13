@@ -1,7 +1,10 @@
 package symsim
 package examples.concrete.pumping
 
-private val pump = new Pump (using spire.random.rng.SecureJava.apply)
+
+private given spire.random.rng.SecureJava = 
+  spire.random.rng.SecureJava.apply
+private val pump: Pump = new Pump
 
 class Experiments
   extends ExperimentSpec[PumpState, ObservablePumpState, PumpAction]:

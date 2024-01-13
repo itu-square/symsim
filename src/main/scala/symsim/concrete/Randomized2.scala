@@ -95,7 +95,7 @@ object Randomized2:
     /** Perform an imperative operation that depends on one sample from this
      *  Randomized.  This is mostly meant for IO at this point.
      */
-    def run (f: A => Unit): Unit = f(self.sample ())
+    def run (f: A => Unit) (using RNG): Unit = f(self.sample ())
 
     def filter (p: A => Boolean): Randomized2[A] = 
       self.filter (p)

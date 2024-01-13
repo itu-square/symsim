@@ -1,8 +1,10 @@
 package symsim
 package examples.concrete.mountaincar
 
-private val mountainCar = 
-  new MountainCar (using spire.random.rng.SecureJava.apply)
+
+private given spire.random.rng.SecureJava = 
+  spire.random.rng.SecureJava.apply
+private val mountainCar: MountainCar = new MountainCar 
 import mountainCar.instances.{enumAction, enumState}
 
 class Experiments

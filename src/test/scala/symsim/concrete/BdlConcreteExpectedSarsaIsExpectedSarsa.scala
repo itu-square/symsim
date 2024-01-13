@@ -5,6 +5,8 @@ import symsim.examples.concrete.mountaincar.MountainCar
 
 private val mountainCar = 
   new MountainCar (using spire.random.rng.SecureJava.apply)
+private given spire.random.rng.SecureJava = 
+  spire.random.rng.SecureJava.apply
 
 import mountainCar.instances.given
 

@@ -1,8 +1,10 @@
 package symsim
 package examples.concrete.cliffWalking
 
-private val cliffWalking = 
-  new CliffWalking (using spire.random.rng.SecureJava.apply)
+
+private given spire.random.rng.SecureJava = 
+  spire.random.rng.SecureJava.apply
+private val cliffWalking: CliffWalking = new CliffWalking 
 import cliffWalking.instances.{enumAction, enumState}
 
 class Experiments

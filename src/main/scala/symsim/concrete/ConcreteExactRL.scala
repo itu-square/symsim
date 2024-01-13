@@ -3,9 +3,6 @@ package concrete
 
 import cats.kernel.BoundedEnumerable
 
-given spire.random.rng.SecureJava = 
-  spire.random.rng.SecureJava.apply
-
 trait ConcreteExactRL[State, ObservableState, Action]
   extends ExactRL[State, ObservableState, Action, Double, Randomized2]:
 
@@ -24,10 +21,12 @@ trait ConcreteExactRL[State, ObservableState, Action]
 
   // TODO: unclear if this is general (if it turns out to be the same im
   // symbolic or approximate algos we should promote this to the trait
+  
+  given rng: probula.RNG
 
   def runQ: (Q, List[Q]) =
-    val initials = agent.initialize.sample(episodes)
-    val outcome = learn (vf.initialize, List[VF](), initials).sample()
+    val initials = agent.initialize.sample (episodes)
+    val outcome = learn (vf.initialize, List[VF] (), initials).sample ()
     (outcome._1, outcome._2)
 
   override def run: Policy =

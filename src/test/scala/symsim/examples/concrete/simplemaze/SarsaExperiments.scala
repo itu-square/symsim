@@ -1,7 +1,7 @@
 package symsim
 package examples.concrete.simplemaze
 
-given spire.random.rng.SecureJava = 
+private given spire.random.rng.SecureJava = 
   spire.random.rng.SecureJava.apply
 
 private val maze = new Maze

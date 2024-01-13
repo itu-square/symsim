@@ -10,8 +10,6 @@ import symsim.concrete.Randomized2
 import cats.syntax.all.*
 import symsim.concrete.Randomized2.*
 
-given spire.random.rng.SecureJava = 
-  spire.random.rng.SecureJava.apply
 
 trait ExperimentSpec[State, ObservableState, Action]
   extends org.scalatest.freespec.AnyFreeSpec,
@@ -70,12 +68,13 @@ trait ExperimentSpec[State, ObservableState, Action]
     policies: List[setup.Policy], 
     initials: Option[Randomized2[State]] = None,
     noOfEpisodes: Int = 5
-  ):  EvaluationResults = 
+  ) (using probula.RNG):  EvaluationResults = 
     val ss: Randomized2[State] = initials.getOrElse (setup.agent.initialize)
     for p <- policies
         episodeRewards: Randomized2[Randomized2[Double]] = 
           setup.evaluate (p, ss)
-        rewards: Randomized2[Double] = episodeRewards.map { e => e.sample () }
+        rewards: Randomized2[Double] = 
+          episodeRewards.map { e => e.sample () }
     yield rewards.sample (noOfEpisodes).toList  
 
 

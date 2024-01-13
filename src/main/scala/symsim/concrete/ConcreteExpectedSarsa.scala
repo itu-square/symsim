@@ -7,7 +7,8 @@ case class ConcreteExpectedSarsa[State, ObservableState, Action] (
  val gamma: Double,
  val epsilon0: Probability,
  val episodes: Int,
-) extends ExpectedSarsa[State, ObservableState, Action, Double, Randomized2],
+) (using val rng: probula.RNG) 
+  extends ExpectedSarsa[State, ObservableState, Action, Double, Randomized2],
   ConcreteExactRL[State, ObservableState, Action],
   NoDecay:
 

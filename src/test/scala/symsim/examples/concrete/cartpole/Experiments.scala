@@ -1,9 +1,9 @@
 package symsim
 package examples.concrete.cartpole
 
-// Import evidence that states and actions can be enumerated
-private val cartPole = 
-  new CartPole (using spire.random.rng.SecureJava.apply)
+private given spire.random.rng.SecureJava = 
+  spire.random.rng.SecureJava.apply
+private val cartPole: CartPole = new CartPole 
 import cartPole.instances.{enumAction, enumState}
 
 class Experiments extends 

@@ -10,7 +10,8 @@ import symsim.concrete.ConcreteSarsa
 import symsim.concrete.Randomized2
 import symsim.concrete.Randomized2.given
 
-given spire.random.rng.SecureJava = spire.random.rng.SecureJava.apply
+private given spire.random.rng.SecureJava = 
+  spire.random.rng.SecureJava.apply
 
 private val windyGrid = new WindyGrid 
 
