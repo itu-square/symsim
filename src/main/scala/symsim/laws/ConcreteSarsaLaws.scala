@@ -1,7 +1,7 @@
 package symsim
 package laws
 
-import breeze.stats.distributions.{Rand, Beta}
+import breeze.stats.distributions.{Rand, Beta, Gaussian, Binomial}
 import breeze.stats.distributions.Rand.VariableSeed.*
 import scala.language.postfixOps
 
@@ -50,37 +50,89 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
   given Arbitrary[Q] = 
     Arbitrary (vf.genVF (using agent.instances.arbitraryReward))
   
+  val δ = 0.01 // addmitted tail for the test of #successes / explorations
+
   val laws: RuleSet = SimpleRuleSet (
     "concreteSarsa",
 
-    "probability of not choosing the best action is smaller than ε" ->
-      forAllNoShrink { (q: Q, a_t: Action) =>
+    f"#explorations is not in the ${2*δ}-tail of binomial likelihood" ->
+      forAllNoShrink { (q: Q, a_t: Action, n0: Int) =>
 
-        val n = 4000
-        val ε = 0.1 // Ignore ε in the problem as it might be zero for
-                    // the sake of the other test
+        val n = 100 + (n0 % 3000).abs
+        assert (n >= 100 && n < 3100)
+
+        val ε = 0.5 // Ignore ε in the problem as it might be zero for
+                    // the sake of the other test. 
+
+        // The probability of choosing an exploring (suboptimal) action 
+        val εd = ε * (1 - 1.0 / agent.instances.numberOfActions)
         
         val trials = for 
           s_t  <- agent.initialize
           a_tt <- vf.chooseAction (ε) (q) (agent.observe (s_t))
         yield a_tt != vf.bestAction (q) (agent.observe (s_t))
 
-        // We implement this as a Bayesian test, checking whether htere is
-        // 0.95 belief that the probability of suboptimal action is ≤ ε.
-        // We check this by computing the posterior and asking CDF (ε) ≥ 0.94
+        val successes = trials.take (n).count { _ == true }
+
+        // calculate a "cdf" for number of successes 
+        val distribution = Binomial (n, εd)
+        val fakeCdf = LazyList.tabulate (n+1) { distribution.probabilityOf }
+          .scanLeft[(Int, Double)] (-1, 0.0) { case ((k, z), p) =>  (k+1, p + z) } 
+          .tail // drop the head (which is the initial seed)
+          .toMap
+
+        val pmfTrialsBelow = fakeCdf (successes) 
+        { δ <= pmfTrialsBelow && pmfTrialsBelow <= 1-δ } :| 
+          f"""|P(k <= $successes) <= $pmfTrialsBelow
+              |    $successes successes out of $n trials
+              |    probability of success ${εd}
+              |    P(k <= ${n}) = ${fakeCdf (n)}""".stripMargin
+              
+    },
+
+    "probability of not choosing the best action is ε(1-|Action|^-1)" ->
+      forAllNoShrink { (q: Q, a_t: Action) =>
+
+        val n = 3000
+        val ε = 0.5 // Ignore ε in the problem as it might be zero for
+                    // the sake of the other test. 
+                    // Also a central ε makes the Bernouli test much stronger
+                    // (testing extremely small or large ε's requires extremely
+                    // many trials to achieve the desired confidence)
+
+        // the probability of choosing an exploring (suboptimal) action should be
+        val εd = ε*(1 - 1.0 / agent.instances.numberOfActions)
+
+        val trials = for 
+          s_t  <- agent.initialize
+          a_tt <- vf.chooseAction (ε) (q) (agent.observe (s_t))
+        yield a_tt != vf.bestAction (q) (agent.observe (s_t))
+
+        // We implement this as a Bayesian test, checking whether a small ROPE
+        // εd ± 0.05 attracts more than 0.95 belief.
+        // The HDI calculation seems not to be needed. Since the entire HDI
+        // has to be inside the ROPE we can just measure the ROPE's mass.
+        // It should be larger than the required confidence mass (p)
 
         val successes = trials.take (n).count { _ == true }
         val failures = n - successes
 
         // α=1 and β=1 gives a prior, weak flat, unbiased
-        val cdfEpsilon =  Beta (2 + successes, 2 + failures).cdf (ε)
+        val p = 0.95
+        val posterior = Beta (1 + successes, 1 + failures)
+        val (ciL, ciR) =  (εd - 0.05, εd + 0.05) 
 
-        (cdfEpsilon >= 0.94) :| 
-          s"""|The beta posterior test results (failing):
-              |    posterior_cdf(${ε}) == $cdfEpsilon
-              |    #exploration selections ≠ best action: $successes 
-              |    #best action selections: $failures 
-              |    #total trials: $n""".stripMargin
+        (posterior.probability (ciL, ciR) >= p) :|
+          f"""|The beta posterior test results (failing):
+              |    posterior(${εd}) == ${posterior.pdf(εd)}
+              |    posterior mode: ${posterior.mode}
+              |    ROPE [$ciL;$ciR] has mass ${posterior.probability (ciL, ciR)}
+              |    total trials: $n
+              |    exploration selections (success): $successes 
+              |    best action selections (failure): $failures""".stripMargin
+
+       // 2. I am still seeing negative left point of the Beta HDI, so there is
+       //    a bug in that function? TODO
     },
 
     // TODO: this test is alsmost the same as for ConcreteExpectedSarsaLaws.
@@ -139,8 +191,8 @@ case class ConcreteSarsaLaws[State, ObservableState, Action]
 
          // Is the expected difference of the updates close to zero?
          val tolerance = 0.025
-         val ci_mass = symsim.concrete.GaussianMass (μ_post_diff, σ2_post_diff) 
-           (-tolerance, +tolerance)
+         val ci_mass = Gaussian (μ_post_diff, σ2_post_diff)
+           .probability (-tolerance, +tolerance)
 
          val msg = s"""|The normal posterior test results (failing):
                        |    ci mass == ${ci_mass}
