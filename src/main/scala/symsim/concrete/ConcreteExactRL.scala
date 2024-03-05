@@ -24,6 +24,12 @@ trait ConcreteExactRL[State, ObservableState, Action]
   
   given rng: probula.RNG
 
+  /** Execute the learning process for this.episodes number of episodes.
+   *  It initializes the process and calls learn to construct a sampler 
+   *  of outcomes
+   *
+   *  @return A pair: the final Q-Table and a list of intermediate Q-Tables.
+   */
   def runQ: (Q, List[Q]) =
     val initials = agent.initialize.sample (episodes)
     val outcome = learn (vf.initialize, List[VF] (), initials).sample ()

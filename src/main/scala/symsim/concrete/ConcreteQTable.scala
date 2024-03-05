@@ -9,8 +9,6 @@ import symsim.QTable
 
 import symsim.concrete.Randomized2.given 
 
-// import cats.Monad.nonInheritedOps.toFlatMapOps
-
 class ConcreteQTable[ObservableState: BoundedEnumerable, Action: BoundedEnumerable]
   extends QTable[ObservableState, Action, Double, Randomized2]:
 

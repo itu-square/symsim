@@ -79,8 +79,17 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
 
   /** Executes as many full learning episodes (until the final state of agent
    *  is reached) as the given state LazyList generates. The list should be
-   *  finite. We force the evaluation when we are done to return the value.
-    */
+   *  finite. Learn is lazy, it just constructs a sampler that is able to sample 
+   *  outcomes of learning.  Each sample costs executing an episode. We force 
+   *  the evaluation when we are done to return the value (in runQ).
+   *
+   *  @param f   the initial value function (for instance a Q-table)
+   *  @param q_l the initial (empty) list of past value functions (a log)
+   *  @param ss  a lazy list of initial states for the episode. Should be finite.
+   *
+   *  @return    a scheduler (a sampler) of final Q-Tables and intermediate
+   *             Q-tables that led to them
+   */
   final def learn (f: VF, q_l: List[VF], ss: LazyList[State])
     : Scheduler[(VF, List[VF])] =
     val result = 
