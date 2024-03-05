@@ -3,10 +3,11 @@ package examples.concrete.simplebandit
 
 import cats.{Eq, Foldable, Monad}
 import cats.kernel.BoundedEnumerable
+import cats.syntax.all.*
 
 import org.scalacheck.{Arbitrary, Gen}
 
-import symsim.concrete.Randomized
+import symsim.concrete.Randomized2
 
 /**
  * Sutton, Barto, Section 2.5 p 32.
@@ -29,8 +30,8 @@ type BanditReward = Double
 type BanditAction = Int
 
 
-class Bandit (banditReward: List [Randomized[BanditReward]])
-  extends Agent[BanditState, BanditState, BanditAction, BanditReward, Randomized]
+class Bandit (banditReward: List [Randomized2[BanditReward]]) (using probula.RNG)
+  extends Agent[BanditState, BanditState, BanditAction, BanditReward, Randomized2]
   with Episodic:
 
   val TimeHorizon: Int = 3
@@ -41,35 +42,32 @@ class Bandit (banditReward: List [Randomized[BanditReward]])
   // Bandit is discrete
   override def observe (s: BanditState): BanditState = s
   
-  override def step (s: BanditState) (a: BanditAction): Randomized[(BanditState, BanditReward)] =
+  override def step (s: BanditState) (a: BanditAction): Randomized2[(BanditState, BanditReward)] =
     for r <- banditReward (a) yield (true, r)
 
-  override def initialize: Randomized[BanditState] =
-    Randomized.const (false)
+  override def initialize: Randomized2[BanditState] =
+    Randomized2.const (false)
 
-  override val instances = BanditInstances (banditReward)
+  override val instances = new BanditInstances (banditReward)
 
 end Bandit
 
 /** Here is a proof that our types actually deliver on everything that an Agent
  * needs to be able to do to work in the framework.
  */
-class BanditInstances (banditReward: List [Randomized[BanditReward]])
-  extends AgentConstraints[BanditState, BanditState, BanditAction, BanditReward, Randomized]:
+class BanditInstances (banditReward: List [Randomized2[BanditReward]]) (using probula.RNG)
+  extends AgentConstraints[BanditState, BanditState, BanditAction, BanditReward, Randomized2]:
 
     given enumAction: BoundedEnumerable[BanditAction] = 
-      BoundedEnumerableFromList (List.range(0, banditReward.size)*)
+      BoundedEnumerableFromList (List.range (0, banditReward.size)*)
 
     given enumState: BoundedEnumerable[BanditState] =
-    	BoundedEnumerableFromList (false, true)
+      BoundedEnumerableFromList (false, true)
 
-    given schedulerIsMonad: Monad[Randomized] = Randomized.randomizedIsMonad
+    given schedulerIsMonad: Monad[Randomized2] = Randomized2.randomizedIsMonad
 
-    given schedulerIsFoldable: Foldable[Randomized] = 
-      Randomized.randomizedIsFoldable
-
-    given canTestInScheduler: CanTestIn[Randomized] = 
-      Randomized.canTestInRandomized
+    given canTestInScheduler: CanTestIn[Randomized2] = 
+      Randomized2.canTestInRandomized
 
     lazy val genBanditState: Gen[BanditState] = Gen.oneOf (false, true)
 

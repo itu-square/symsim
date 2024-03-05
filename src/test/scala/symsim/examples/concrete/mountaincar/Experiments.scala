@@ -1,15 +1,21 @@
 package symsim
 package examples.concrete.mountaincar
 
+
+private given spire.random.rng.SecureJava = 
+  spire.random.rng.SecureJava.apply
+private val mountainCar: MountainCar = new MountainCar 
+import mountainCar.instances.{enumAction, enumState}
+
 class Experiments
   extends ExperimentSpec[CarState, CarObservableState, CarAction]:
 
   // Import evidence that states and actions can be enumerated
-  import MountainCar.*
-  import MountainCar.instances.given
+  import mountainCar.*
+  import mountainCar.instances.given
 
   val sarsa = symsim.concrete.ConcreteSarsa (
-    agent = MountainCar,
+    agent = mountainCar,
     alpha = 0.1,
     gamma = 0.1,
     epsilon0 = 0.05,
@@ -22,6 +28,8 @@ class Experiments
       .take (10)
       .flatMap { _.headOption }
       .toList
-    val results = eval (sarsa, policies)
-    results.save ("mountaincar.csv")
+    val fileN = "mountaincar.csv"
+    info (s"Evaluation report will be written to $fileN")
+    eval (sarsa, policies)
+      .save (fileN)
   }

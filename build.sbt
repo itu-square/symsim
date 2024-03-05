@@ -1,16 +1,16 @@
 name := "symsim"
 
-ThisBuild / scalaVersion := "3.1.3"
+ThisBuild / scalaVersion := "3.3.1"
 
-val scalatestVersion = "3.2.14"
+val scalatestVersion = "3.2.17"
 val catsVersion = "2.6.1"
 
 
 scalacOptions ++= Seq (
   "-deprecation",
   "-feature",
-  "-Yindent-colons",
-  // "-source:future", Disabled for stryker
+  "-source:future", // doesn't work with stryker
+  "-language:adhocExtensions",
 )
 
 
@@ -25,6 +25,7 @@ libraryDependencies ++= Seq (
   "org.typelevel" %% "discipline-scalatest" % "2.1.5",
   "org.typelevel" %% "paiges-core" % "0.4.2",
   "org.scalanlp" %% "breeze" % "2.1.0",
+  "org.typelevel" %% "spire" % "0.18.0" // for probula
 )
 
 Test / parallelExecution := false

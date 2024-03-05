@@ -1,14 +1,17 @@
 package symsim
 package examples.concrete.golf
 
+private given spire.random.rng.SecureJava = 
+  spire.random.rng.SecureJava.apply
+private val golf: Golf = new Golf 
+
+import golf.instances.{enumAction, enumState}
+
 class Experiments
   extends ExperimentSpec[GolfState, GolfState, GolfAction]:
 
-  import Golf.*
-  import Golf.instances.given
-
   val sarsa = symsim.concrete.ConcreteSarsa (
-    agent = Golf,
+    agent = golf,
     alpha = 0.1,
     gamma = 0.1,
     epsilon0 = 0.1,

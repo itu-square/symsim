@@ -1,7 +1,8 @@
 package symsim
 package examples.concrete.cartpole
 
-import symsim.concrete.Randomized
+import symsim.concrete.Randomized2
+import cats.syntax.all.*
 
 
 /** The state of the CartPole, an abstract type shared by the continuous state
@@ -20,14 +21,14 @@ abstract class CartPoleAbstractState (
   val pv: Double
 ):
 
-  require (cp >= CpMin, "cp too low")
-  require (cp <= CpMax, "cp too high")
-  require (cv >= CvMin, "cv too low")
-  require (cv <= CvMax, "cv too high")
-  require (pa >= PaMin, "pa too low")
-  require (pa <= PaMax, "pa too high")
-  require (pv >= PvMin, "pv too low")
-  require (pv <= PvMin, "pv too high")
+  require (cp >= CpMin, s"cp too low: ¬ ($pv ≥ $CpMin)")
+  require (cp <= CpMax, s"cp too high: ¬ ($pv ≤ $CpMax)")
+  require (cv >= CvMin, s"cv too low: ¬ ($pv ≥ $CvMin)")
+  require (cv <= CvMax, s"cv too high: ¬ ($pv ≤ $CvMax)")
+  require (pa >= PaMin, s"pa too low: ¬ ($pv ≥ $PaMin)")
+  require (pa <= PaMax, s"pa too high: ¬ ($pv ≤ $PaMax)")
+  require (pv >= PvMin, s"pv too low: ¬ ($pv ≥ $PvMin)")
+  require (pv <= PvMax, s"pv too high: ¬ ($pv ≤ $PvMax)")
 
   override def toString: String = 
     s"[cart position=$cp, cart velocity=$cv,"
@@ -84,9 +85,9 @@ val PvCutPoints =
  *  Correct equations for the dynamics of the cart-pole system.
  *  https://coneural.org/florian/papers/05_cart_pole.pdf
  */
-object CartPole 
+class CartPole (using probula.RNG)
   extends Agent[CartPoleState, CartPoleObservableState, CartPoleAction, 
-    CartPoleReward, Randomized],
+    CartPoleReward, Randomized2],
     Episodic:
 
     /** The episode guarantees to terminate after TimeHorizon steps. 
@@ -121,7 +122,7 @@ object CartPole
       : CartPoleReward = 1.0
 
     def step (s: CartPoleState) (a: CartPoleAction)
-      : Randomized[(CartPoleState, CartPoleReward)] =
+      : Randomized2[(CartPoleState, CartPoleReward)] =
       require (instances.enumAction.membersAscending.contains (a))
       val cos_τ = Math.cos (s.pa)
       val sin_τ = Math.sin (s.pa)
@@ -140,18 +141,18 @@ object CartPole
       val pa1 = s.pa + τ * s.pv
       val pv1 = s.pv + τ * τAcc
       val s1  = CartPoleState (cp1, cv1, pa1, pv1)
-      Randomized.const (s1, cartPoleReward (s1) (a))
+      Randomized2.const (s1, cartPoleReward (s1) (a))
 
-    def initialize: Randomized[CartPoleState] = for
-      cp <- Randomized.repeat (Randomized.between (-0.05, 0.05))
-      cv <- Randomized.repeat (Randomized.between (-0.05, 0.05))
-      pa <- Randomized.repeat (Randomized.between (-0.05, 0.05))
-      pv <- Randomized.between(-0.05, 0.05)
-      s = CartPoleState (cp, cv, pa, pv) if !isFinal (s)
-    yield s
+    def initialize: Randomized2[CartPoleState] = (for
+      cp <- Randomized2.between (-0.05, 0.05)
+      cv <- Randomized2.between (-0.05, 0.05)
+      pa <- Randomized2.between (-0.05, 0.05)
+      pv <- Randomized2.between (-0.05, 0.05)
+      s = CartPoleState (cp, cv, pa, pv) 
+    yield s).filter { !this.isFinal (_) }
 
     /** Evidence of type class membership for this agent. */
-    val instances = CartPoleInstances
+    val instances = new CartPoleInstances
 
 end CartPole
 
@@ -159,9 +160,9 @@ end CartPole
 /** Here is a proof that our types actually deliver on everything that an Agent
   * needs to be able to do to work in the framework.
   */
-object CartPoleInstances
+class CartPoleInstances (using probula.RNG)
   extends AgentConstraints[CartPoleState, CartPoleObservableState, 
-    CartPoleAction, CartPoleReward, Randomized]:
+    CartPoleAction, CartPoleReward, Randomized2]:
 
   import cats.{Eq, Monad, Foldable}
   import cats.kernel.BoundedEnumerable
@@ -179,14 +180,11 @@ object CartPoleInstances
     yield CartPoleObservableState (cp, cv, pa, pv)
     BoundedEnumerableFromList (ss*)
 
-  given schedulerIsMonad: Monad[Randomized] =
-    concrete.Randomized.randomizedIsMonad
+  given schedulerIsMonad: Monad[Randomized2] =
+    concrete.Randomized2.randomizedIsMonad
 
-  given schedulerIsFoldable: Foldable[Randomized] =
-    concrete.Randomized.randomizedIsFoldable
-
-  given canTestInScheduler: CanTestIn[Randomized] =
-    concrete.Randomized.canTestInRandomized
+  given canTestInScheduler: CanTestIn[Randomized2] =
+    concrete.Randomized2.canTestInRandomized
 
   lazy val genCartPoleState: Gen[CartPoleState] = for
     cp <- Gen.choose[Double] (CpMin, CpMax)

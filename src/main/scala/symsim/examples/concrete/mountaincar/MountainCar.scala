@@ -2,13 +2,16 @@ package symsim
 package examples.concrete.mountaincar
 
 import Math.cos
+import probula.RNG
 
 import cats.{Eq, Foldable, Monad}
 import cats.kernel.BoundedEnumerable
+import cats.syntax.all.*
 
 import org.scalacheck.{Arbitrary, Gen}
 
-import symsim.concrete.Randomized
+import symsim.concrete.Randomized2
+import symsim.concrete.Randomized2.given
 
 /**
  * We map the car states to
@@ -19,19 +22,21 @@ import symsim.concrete.Randomized
  * the same type to represent the finite state space.
  */
 
-case class CarState (v: Double, p: Double):
+case class CarState (v: Double, p: Double, t: Int):
+  override def toString: String = f"[v $v%+2.2f, p $p%+2.2f, t $t]"
+
+case class CarObservableState (v: Double, p: Double): 
   override def toString: String = f"[v $v%+2.2f, p $p%+2.2f]"
 
-type CarObservableState = CarState
 type CarAction = Double
 type CarReward = Double
 
 
-object MountainCar
-  extends Agent[CarState, CarObservableState, CarAction, CarReward, Randomized]
+class MountainCar (using RNG)
+  extends Agent[CarState, CarObservableState, CarAction, CarReward, Randomized2]
   with Episodic:
 
-  val TimeHorizon: Int = 3000000
+  val TimeHorizon: Int = 2000
 
   def roundAt (p: Int) (n: Double): Double =
     val s = Math.pow (10, p)
@@ -39,7 +44,7 @@ object MountainCar
 
 
   def isFinal (s: CarState): Boolean =
-    s.p >= 0.5
+    s.p >= 0.5 || s.t >= TimeHorizon
 
 
   def observe (s: CarState): CarObservableState =
@@ -50,7 +55,7 @@ object MountainCar
 
     val dp = roundAt (2) (-1.2 + (((s.p + 1.2) / 0.17).floor) * 0.17)
     val dv = roundAt (2) (-1.5 + (((s.v + 1.5) / 0.30).floor) * 0.30)
-    CarState (v = dv.min (1.5).max (-1.5), p = dp.min (0.5).max (-1.2))
+    CarObservableState (v = dv.min (1.5).max (-1.5), p = dp.min (0.5).max (-1.2))
 
 
   private def carReward (s: CarState) (a: CarAction): CarReward =
@@ -65,66 +70,69 @@ object MountainCar
 
 
   // TODO: this is now deterministic but eventually needs to be randomized
-  def step (s: CarState) (a: CarAction): Randomized[(CarState, CarReward)] =
+  def step (s: CarState) (a: CarAction): Randomized2[(CarState, CarReward)] =
     val v = s.v + (gravity * mass * cos (3.0 * s.p) + a / mass - friction * s.v) * dt
     val p = s.p + (v * dt)
     val (v1, p1) = if p < -1.2 then (-1.2, 0.0) else (v, p) 
     val s1 = CarState (v = v1.max (-1.5).min (1.5), 
-                       p = p1.min (0.5))
-    Randomized.const (s1 -> carReward (s1) (a))
+                       p = p1.min (0.5),
+                       t = s.t + 1)
+    Randomized2.const (s1 -> carReward (s1) (a))
 
 
-  def initialize: Randomized[CarState] = for
-    p <- Randomized.repeat (Randomized.between (-1.2, 0.5))
-    v <- Randomized.repeat (Randomized.between (-1.5, 1.5))
-    s  = CarState (v=v, p=p) 
-         if !isFinal (s) 
-  yield s
+  def initialize: Randomized2[CarState] = (for
+    p <- Randomized2.between (-1.2, 0.5)
+    v <- Randomized2.between (-1.5, 1.5)
+    s  = CarState (v=v, p=p, 0) 
+  yield s).filter { !this.isFinal (_) }
 
-  val instances = MountainCarInstances
+  val instances = new MountainCarInstances
+
+
+  /** Here is a proof that our types actually deliver on everything that an Agent
+    * needs to be able to do to work in the framework.
+    */
+  class MountainCarInstances (using RNG)
+    extends AgentConstraints[CarState, CarObservableState, CarAction, CarReward, Randomized2]:
+  
+    given enumAction: BoundedEnumerable[CarAction] =
+      BoundedEnumerableFromList (-0.2, 0.0, 0.2)
+  
+    given enumState: BoundedEnumerable[CarObservableState] =
+      val ss = for
+        p0 <- Seq (-1.2, -1.03, -0.86, -0.69, -0.52, -0.35, -0.18, -0.01, 0.16, 0.33, 0.5)
+        v0 <- Seq (-1.5, -1.2, -0.9, -0.6, -0.3, 0.0, 0.3, 0.6, 0.9, 1.2, 1.5)
+      yield CarObservableState (v = v0, p = p0)
+      BoundedEnumerableFromList (ss*)
+  
+  
+    given schedulerIsMonad: Monad[Randomized2] = 
+      Randomized2.randomizedIsMonad
+  
+    given canTestInScheduler: CanTestIn[Randomized2] = 
+      Randomized2.canTestInRandomized
+  
+    lazy val genCarState: Gen[CarState] = for
+      p <- Gen.choose (-1.2, 0.5)
+      v <- Gen.choose (-1.5, 1.5)
+      t <- Gen.choose (0, TimeHorizon)
+    yield CarState (v = v, p = p, t = t)
+  
+    given arbitraryState: Arbitrary[CarState] = Arbitrary (genCarState)
+  
+    given eqCarState: Eq[CarState] = Eq.fromUniversalEquals
+  
+    /** This is useful to limit as it is used in tests and
+      * initialization of Q tables. If these values are unreasonably
+      * large they will break statistical tests.
+      */
+    given arbitraryReward: Arbitrary[CarReward] = 
+      Arbitrary (Gen.choose (-300.0, 300.0))
+  
+    given rewardArith: Arith[CarReward] = Arith.arithDouble
+  
+  end MountainCarInstances
+
 
 end MountainCar
 
-
-/** Here is a proof that our types actually deliver on everything that an Agent
-  * needs to be able to do to work in the framework.
-  */
-object MountainCarInstances
-  extends AgentConstraints[CarState, CarObservableState, CarAction, CarReward, Randomized]:
-
-  given enumAction: BoundedEnumerable[CarAction] =
-    BoundedEnumerableFromList (-0.2, 0.0, 0.2)
-
-  given enumState: BoundedEnumerable[CarObservableState] =
-    val ss = for
-      p0 <- Seq (-1.2, -1.03, -0.86, -0.69, -0.52, -0.35, -0.18, -0.01, 0.16, 0.33, 0.5)
-      v0 <- Seq (-1.5, -1.2, -0.9, -0.6, -0.3, 0.0, 0.3, 0.6, 0.9, 1.2, 1.5)
-    yield CarState (v = v0, p = p0)
-    BoundedEnumerableFromList (ss*)
-
-
-  given schedulerIsMonad: Monad[Randomized] = Randomized.randomizedIsMonad
-
-  given schedulerIsFoldable: Foldable[Randomized] = Randomized.randomizedIsFoldable
-
-  given canTestInScheduler: CanTestIn[Randomized] = Randomized.canTestInRandomized
-
-  lazy val genCarState: Gen[CarState] = for
-    p <- Gen.choose (-1.2, 0.5)
-    v <- Gen.choose (-1.5, 1.5)
-  yield CarState (v, p)
-
-  given arbitraryState: Arbitrary[CarState] = Arbitrary (genCarState)
-
-  given eqCarState: Eq[CarState] = Eq.fromUniversalEquals
-
-  /** This is useful to limit as it is used in tests and
-    * initialization of Q tables. If these values are unreasonably
-    * large they will break statistical tests.
-    */
-  given arbitraryReward: Arbitrary[CarReward] = 
-    Arbitrary (Gen.choose (-300.0, 300.0))
-
-  given rewardArith: Arith[CarReward] = Arith.arithDouble
-
-end MountainCarInstances

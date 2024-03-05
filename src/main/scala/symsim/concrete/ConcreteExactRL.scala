@@ -4,7 +4,7 @@ package concrete
 import cats.kernel.BoundedEnumerable
 
 trait ConcreteExactRL[State, ObservableState, Action]
-  extends ExactRL[State, ObservableState, Action, Double, Randomized]:
+  extends ExactRL[State, ObservableState, Action, Double, Randomized2]:
 
   import agent.instances.*
   import agent.instances.given
@@ -21,11 +21,19 @@ trait ConcreteExactRL[State, ObservableState, Action]
 
   // TODO: unclear if this is general (if it turns out to be the same im
   // symbolic or approximate algos we should promote this to the trait
+  
+  given rng: probula.RNG
 
+  /** Execute the learning process for this.episodes number of episodes.
+   *  It initializes the process and calls learn to construct a sampler 
+   *  of outcomes
+   *
+   *  @return A pair: the final Q-Table and a list of intermediate Q-Tables.
+   */
   def runQ: (Q, List[Q]) =
-    val initials = Randomized.repeat (agent.initialize).take (episodes)
-    val schedule = learn (vf.initialize, List[VF](), initials)
-    (schedule.head._1, schedule.head._2)
+    val initials = agent.initialize.sample (episodes)
+    val outcome = learn (vf.initialize, List[VF] (), initials).sample ()
+    (outcome._1, outcome._2)
 
   override def run: Policy =
     qToPolicy (this.runQ._1)
@@ -43,5 +51,5 @@ trait ConcreteExactRL[State, ObservableState, Action]
    *  the inner distribution is over randomness in the learning
    *  process/environment.
    */
-  def evaluate (p: Policy): Randomized[Randomized[Double]] =
+  def evaluate (p: Policy): Randomized2[Randomized2[Double]] =
     evaluate (p, agent.initialize)

@@ -65,7 +65,8 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
   def learningEpisode(fR: (VF, List[VF], Probability), s_t: State)
     : Scheduler[(VF, List[VF], Probability)] =
 
-    def done (f: VF, s: State, a: Action): Boolean = agent.isFinal(s)
+    def done (f: VF, s: State, a: Action): Boolean = 
+      agent.isFinal(s)
 
     val (f, qL_t, ε) = fR
 
@@ -76,15 +77,20 @@ trait ExactRL[State, ObservableState, Action, Reward, Scheduler[_]]
     yield (fin._1, qL_tt, decay (ε))
 
 
-  /** Executes as many full learning episodes (until the final state of agent is
-    * reached) as the given state scheduler generates.  For this method to work
-    * the scheduler needs to be foldable, and we use foldRight with Eval, to
-    * make the evaluation lazy. We force the evaluation when we
-    * are done to return the value.  However, to my best understanding, if the
-    * Scheduler is lazy then the evaluation is not really doing more than just
-    * formulating the thunk of that scheduler.
-    */
-  final def learn (f: VF, q_l: List[VF], ss: => Scheduler[State])
+  /** Executes as many full learning episodes (until the final state of agent
+   *  is reached) as the given state LazyList generates. The list should be
+   *  finite. Learn is lazy, it just constructs a sampler that is able to sample 
+   *  outcomes of learning.  Each sample costs executing an episode. We force 
+   *  the evaluation when we are done to return the value (in runQ).
+   *
+   *  @param f   the initial value function (for instance a Q-table)
+   *  @param q_l the initial (empty) list of past value functions (a log)
+   *  @param ss  a lazy list of initial states for the episode. Should be finite.
+   *
+   *  @return    a scheduler (a sampler) of final Q-Tables and intermediate
+   *             Q-tables that led to them
+   */
+  final def learn (f: VF, q_l: List[VF], ss: LazyList[State])
     : Scheduler[(VF, List[VF])] =
     val result = 
       ss.foldM[Scheduler, (VF, List[VF], Probability)] (f, q_l, ε0) (learningEpisode)

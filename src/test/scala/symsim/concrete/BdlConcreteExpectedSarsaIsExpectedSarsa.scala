@@ -3,7 +3,12 @@ package concrete
 
 import symsim.examples.concrete.mountaincar.MountainCar
 
-import MountainCar.instances.given
+private val mountainCar = 
+  new MountainCar (using spire.random.rng.SecureJava.apply)
+private given spire.random.rng.SecureJava = 
+  spire.random.rng.SecureJava.apply
+
+import mountainCar.instances.given
 
 /** This test is just a sanity check - it mostly tests Bdl against
  *  itself (so an equality check).
@@ -12,7 +17,7 @@ class BdlConcreteExpectedSarsaIsExpectedSarsaSpec
   extends SymSimSpec:
 
   val csarsa = BdlConcreteExpectedSarsa (
-    agent = MountainCar,
+    agent = mountainCar,
     alpha = 0.1,
     gamma = 0.2,
     epsilon0 = 0.0, // The update distribution test requires low ε for stability

@@ -5,8 +5,11 @@ import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 
 import symsim.concrete.ConcreteQTable
-import symsim.concrete.Randomized
-import symsim.concrete.Randomized.sample
+import symsim.concrete.Randomized2
+
+import cats.syntax.all.*
+import symsim.concrete.Randomized2.*
+
 
 trait ExperimentSpec[State, ObservableState, Action]
   extends org.scalatest.freespec.AnyFreeSpec,
@@ -63,14 +66,16 @@ trait ExperimentSpec[State, ObservableState, Action]
   def eval (
     setup: concrete.ConcreteExactRL [State, ObservableState, Action],
     policies: List[setup.Policy], 
-    initials: Option[Randomized[State]] = None,
+    initials: Option[Randomized2[State]] = None,
     noOfEpisodes: Int = 5
-  ):  EvaluationResults = 
-    val ss: Randomized[State] = initials.getOrElse (setup.agent.initialize)
+  ) (using probula.RNG):  EvaluationResults = 
+    val ss: Randomized2[State] = initials.getOrElse (setup.agent.initialize)
     for p <- policies
-        episodeRewards: Randomized[Randomized[Double]] = setup.evaluate (p, ss)
-        rewards: Randomized[Double] = episodeRewards.map { e => e.sample () }
-    yield rewards.take (noOfEpisodes).toList  
+        episodeRewards: Randomized2[Randomized2[Double]] = 
+          setup.evaluate (p, ss)
+        rewards: Randomized2[Double] = 
+          episodeRewards.map { e => e.sample () }
+    yield rewards.sample (noOfEpisodes).toList  
 
 
   def mean(l: List[Double]): Double = 

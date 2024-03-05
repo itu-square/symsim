@@ -3,13 +3,15 @@ package concrete
 
 import symsim.examples.concrete.mountaincar.MountainCar
 
-import MountainCar.instances.given
+private val mountainCar = 
+  new MountainCar (using spire.random.rng.SecureJava.apply)
+import mountainCar.instances.{enumAction, enumState}
 
 class ConcreteSarsaIsSarsaSpec
   extends SymSimSpec:
 
   val csarsa = ConcreteSarsa (
-    agent = MountainCar,
+    agent = mountainCar,
     alpha = 0.1,
     gamma = 0.2,
     epsilon0 = 0.003, // The update distribution test requires low ε for stability

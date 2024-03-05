@@ -8,12 +8,13 @@ case class ConcreteSarsa [
   ObservableState: BoundedEnumerable,
   Action: BoundedEnumerable
 ] (
-  val agent: Agent[State, ObservableState, Action, Double, Randomized],
+  val agent: Agent[State, ObservableState, Action, Double, Randomized2],
   val alpha: Double,
   val gamma: Double,
   val epsilon0: Probability,
   val episodes: Int,
-) extends Sarsa[State, ObservableState, Action, Double, Randomized],
+) (using val rng: probula.RNG) 
+  extends Sarsa[State, ObservableState, Action, Double, Randomized2],
   ConcreteExactRL[State, ObservableState, Action],
   NoDecay:
 

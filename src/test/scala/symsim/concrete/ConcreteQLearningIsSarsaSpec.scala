@@ -3,7 +3,9 @@ package concrete
 
 import symsim.examples.concrete.mountaincar.MountainCar
 
-import MountainCar.instances.given
+private val mountainCar = 
+  new MountainCar (using spire.random.rng.SecureJava.apply)
+import mountainCar.instances.{enumAction, enumState}
 
 /** The name of this test might be amusing, but since the test 
  *  only exercise single epoch properties, a QLearning 
@@ -14,7 +16,7 @@ class ConcreteQLearningIsSarsaSpec
   extends SymSimSpec:
 
   val qLearning = ConcreteQLearning (
-    agent = MountainCar,
+    agent = mountainCar,
     alpha = 0.1,
     gamma = 0.2,
     epsilon0 = 0.0, // The update distribution test requires low ε for stability

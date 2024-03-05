@@ -2,6 +2,7 @@ package symsim
 package laws
 
 import scala.language.postfixOps
+import cats.syntax.all.*
 
 import org.scalacheck.Prop.*
 import org.scalacheck.Arbitrary
@@ -11,7 +12,7 @@ import breeze.stats.distributions.Rand.VariableSeed.*
 
 import symsim.concrete.ConcreteExactRL
 import symsim.concrete.ConcreteQTable
-import symsim.concrete.Randomized
+import symsim.concrete.Randomized2
 
 /** Laws that have to be obeyed by any refinement of symsim.ConcreetSarsa
  *
@@ -35,7 +36,8 @@ import symsim.concrete.Randomized
 case class ConcreteExpectedSarsaLaws[State, ObservableState, Action] 
   (sarsa: ConcreteExactRL[State, ObservableState, Action], 
    gamma: Double
-  ) extends org.typelevel.discipline.Laws:
+  ) (using probula.RNG) 
+  extends org.typelevel.discipline.Laws:
 
   import sarsa.{agent,vf}
   import sarsa.agent.instances.given
@@ -54,7 +56,7 @@ case class ConcreteExpectedSarsaLaws[State, ObservableState, Action]
 
   given Arbitrary[Q] = 
     Arbitrary (vf.genVF (using agent.instances.arbitraryReward))
-  
+
   val laws: RuleSet = SimpleRuleSet (
     "concreteExpectedSarsa",
 
@@ -66,7 +68,7 @@ case class ConcreteExpectedSarsaLaws[State, ObservableState, Action]
         val n = 4000
         val ε = 0.1 // Ignore ε in the problem as it might be zero for
                     // the sake of the other test
-        
+
         val trials = for 
           s_t  <- agent.initialize
           a_tt <- vf.chooseAction (ε) (q) (agent.observe (s_t))
@@ -76,7 +78,7 @@ case class ConcreteExpectedSarsaLaws[State, ObservableState, Action]
         // 0.95 belief that the probability of suboptimal action is ≤ ε.
         // We check this by computing the posterior and asking CDF (ε) ≥ 0.94
 
-        val successes = trials.take (n).count { _ == true }
+        val successes = trials.sample (n).count { _ == true }
         val failures = n - successes
 
         // α=1 and β=1 gives a prior, weak flat, unbiased
@@ -103,12 +105,12 @@ case class ConcreteExpectedSarsaLaws[State, ObservableState, Action]
          val os_t = agent.observe (s_t)
 
          // call the tested implementation
-         val sut: Randomized[(Q, State, Action)] =
-           Randomized.repeat (sarsa.learningEpoch (q_t, s_t, a_t))
+         val sut: Randomized2[(Q, State, Action)] =
+           sarsa.learningEpoch (q_t, s_t, a_t)
 
          // call the spec interpreter
-         val spec: Randomized[(Q, State, Action)] =
-           Randomized.repeat (bdl.learningEpoch (q_t, s_t, a_t))
+         val spec: Randomized2[(Q, State, Action)] =
+           bdl.learningEpoch (q_t, s_t, a_t)
 
          // We do this test by assuming that both distributions are normal 
          // (A generalized test with StudentT would be even better).
@@ -124,14 +126,13 @@ case class ConcreteExpectedSarsaLaws[State, ObservableState, Action]
          //
          // Extract a univariate distributions over updates
         
-         val sutUpdates = sut.map { (q_tt, _, _) => q_tt (os_t, a_t) }
-         val specUpdates = spec.map { (q_tt, _, _) => q_tt (os_t, a_t) }
+         val sutUpdates = sut.sample (n).map { (q_tt, _, _) => q_tt (os_t, a_t) }
+         val specUpdates = spec.sample (n).map { (q_tt, _, _) => q_tt (os_t, a_t) }
 
          // A random variable representing differences between updates
 
          val diffs = (sutUpdates zip specUpdates)
            .map { _ - _ }
-           .take (n)
 
          // Infer the posterior on mean update.
          // Prior: we assume zero reward, with large standard deviation

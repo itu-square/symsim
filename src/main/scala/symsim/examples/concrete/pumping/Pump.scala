@@ -7,7 +7,8 @@ package examples.concrete.pumping
   * August 2021. (esp. Chapters 2 and 3)
   */
 
-import symsim.concrete.Randomized
+import symsim.concrete.Randomized2
+import cats.syntax.all.*
 
 
 /** Constants as fit in the model of AHHP (reference above).
@@ -93,8 +94,8 @@ type PumpAction = Double
 type PumpReward = Double
 
 
-object Pump extends 
-  Agent[PumpState, ObservablePumpState, PumpAction, PumpReward, Randomized],
+class Pump (using probula.RNG) extends 
+  Agent[PumpState, ObservablePumpState, PumpAction, PumpReward, Randomized2],
   Episodic:
 
   /** An upper bound on episode duration. Used only in testing */
@@ -132,17 +133,17 @@ object Pump extends
 
 
   override def step (s: PumpState) (a: PumpAction)
-    : Randomized[(PumpState, PumpReward)] =
+    : Randomized2[(PumpState, PumpReward)] =
     require (instances.enumAction.membersAscending.contains (a))
     for
-      nf   <- Randomized.gaussian (0.0, 1.0)
+      nf   <- Randomized2.gaussian (0.0, 1.0)
       f1   =  a + nf
-      nd   <- Randomized.gaussian (0.1, 0.01)
+      nd   <- Randomized2.gaussian (0.1, 0.01)
       cd   <- getDemand (s.t%24 + 1)
       d    =  cd + nd
       tl1  = s.tl + c1 * (f1 - d)
       h1   = s.h + c4 * (s.w + (c1*f1 / Math.PI))
-      nw   <- Randomized.gaussian (0.0, 1.0)
+      nw   <- Randomized2.gaussian (0.0, 1.0)
       w1   = s.w - c2*(c1*f1) + c3 + 
              (amp*Math.sin (2*Math.PI*(s.t + phase) / freq)) + nw
       hm1  = (1.0 / k)*s.phm.sum
@@ -152,26 +153,26 @@ object Pump extends
     yield (s1, pr)
 
 
-  def getDemand (t: Int): Randomized[Double] =
+  def getDemand (t: Int): Randomized2[Double] =
     require (t >= 0 && t <= 24)
-    if t < 5 then Randomized.between (5.0, 15.0)
-    if t < 12 then Randomized.between (15.0, 45.0)
-    if t < 22 then Randomized.between (20.0, 38.0)
-    else Randomized.between (5.0, 20.0)
+    if t < 5 then Randomized2.between (5.0, 15.0)
+    if t < 12 then Randomized2.between (15.0, 45.0)
+    if t < 22 then Randomized2.between (20.0, 38.0)
+    else Randomized2.between (5.0, 20.0)
 
 
-  def initialize: Randomized[PumpState] = for
-    f   <- Randomized.const (80)
-    h   <- Randomized.const (10.0)
-    hm  <- Randomized.const (10)
-    tl  <- Randomized.const (1000)
-    w   <- Randomized.const (9.11)
-    phm <- Randomized.const (List (10.0, 10.0, 10.0, 10.0, 10.0))
+  def initialize: Randomized2[PumpState] = for
+    f   <- Randomized2.const (80)
+    h   <- Randomized2.const (10.0)
+    hm  <- Randomized2.const (10)
+    tl  <- Randomized2.const (1000)
+    w   <- Randomized2.const (9.11)
+    phm <- Randomized2.const (List (10.0, 10.0, 10.0, 10.0, 10.0))
     s   =  PumpState (f, h, hm, tl, 0, w, phm)
       _ =  assert (!isFinal (s))
   yield s
 
-  val instances = PumpInstances
+  val instances = new PumpInstances
 
 end Pump
 
@@ -179,9 +180,9 @@ end Pump
 /** Here is a proof that our types actually deliver on everything that an Agent
   * needs to be able to do to work in the framework.
   */
-object PumpInstances
+class PumpInstances (using probula.RNG)
   extends AgentConstraints[PumpState, ObservablePumpState, PumpAction, 
-    PumpReward, Randomized]:
+    PumpReward, Randomized2]:
 
   import cats.{Eq, Monad, Foldable}
   import cats.kernel.BoundedEnumerable
@@ -203,14 +204,11 @@ object PumpInstances
     yield ObservablePumpState (f, h, hm, tl)
     BoundedEnumerableFromList (ss*)
 
-  given schedulerIsMonad: Monad[Randomized] =
-    concrete.Randomized.randomizedIsMonad
+  given schedulerIsMonad: Monad[Randomized2] =
+    concrete.Randomized2.randomizedIsMonad
 
-  given schedulerIsFoldable: Foldable[Randomized] =
-    concrete.Randomized.randomizedIsFoldable
-
-  given canTestInScheduler: CanTestIn[Randomized] =
-    concrete.Randomized.canTestInRandomized
+  given canTestInScheduler: CanTestIn[Randomized2] =
+    concrete.Randomized2.canTestInRandomized
 
   lazy val genPumpState: Gen[PumpState] = for
     f   <- Gen.choose[Double] (FLOW_MIN, FLOW_MAX)

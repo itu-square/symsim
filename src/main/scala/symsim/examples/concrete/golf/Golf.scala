@@ -3,10 +3,11 @@ package examples.concrete.golf
 
 import cats.{Eq, Foldable, Monad}
 import cats.kernel.BoundedEnumerable
+import cats.syntax.all.*
 
 import org.scalacheck.{Arbitrary, Gen}
 
-import symsim.concrete.Randomized
+import symsim.concrete.Randomized2
 
 /**
  * Russell, Norvig, Example 3.6 p. 61 [83] and the following pages.
@@ -35,8 +36,8 @@ enum Direction:
 
 type GolfAction = (Club, Direction)
 
-object Golf extends 
-  Agent[GolfState, GolfObservableState, GolfAction, GolfReward, Randomized],
+class Golf (using probula.RNG) extends 
+  Agent[GolfState, GolfObservableState, GolfAction, GolfReward, Randomized2],
   Episodic:
 
   val TimeHorizon: Int = 2000
@@ -92,13 +93,13 @@ object Golf extends
   def valid (s: GolfState): Boolean =
     s >= 1 && s <= 10
 
-  def step (s: GolfState) (a: GolfAction): Randomized[(GolfState, GolfReward)] =
-    Randomized.const(successor (s) (a), golfReward (s) (a))
+  def step (s: GolfState) (a: GolfAction): Randomized2[(GolfState, GolfReward)] =
+    Randomized2.const(successor (s) (a), golfReward (s) (a))
 
-  def initialize: Randomized[GolfState] =
-    Randomized.const (StartState)
+  def initialize: Randomized2[GolfState] =
+    Randomized2.const (StartState)
 
-  val instances = GolfInstances
+  val instances = new GolfInstances
 
 end Golf
 
@@ -106,9 +107,9 @@ end Golf
 /** Here is a proof that our types actually deliver on everything that an Agent
   * needs to be able to do to work in the framework.
   */
-object GolfInstances
+class GolfInstances (using probula.RNG)
   extends AgentConstraints[GolfState, GolfObservableState, GolfAction, 
-    GolfReward, Randomized]:
+    GolfReward, Randomized2]:
 
   given enumAction: BoundedEnumerable[GolfAction] =
     BoundedEnumerableFromList ((Club.P, Direction.L), (Club.P, Direction.R), 
@@ -117,21 +118,21 @@ object GolfInstances
   given enumState: BoundedEnumerable[GolfObservableState] =
      BoundedEnumerableFromList (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
 
-  given schedulerIsMonad: Monad[Randomized] = Randomized.randomizedIsMonad
+  given schedulerIsMonad: Monad[Randomized2] = 
+    Randomized2.randomizedIsMonad
 
-  given schedulerIsFoldable: Foldable[Randomized] = 
-    Randomized.randomizedIsFoldable
-
-  given canTestInScheduler: CanTestIn[Randomized] = 
-    Randomized.canTestInRandomized
+  given canTestInScheduler: CanTestIn[Randomized2] = 
+    Randomized2.canTestInRandomized
 
   lazy val genGolfState: Gen[GolfState] = Gen.choose (1, 10)
 
-  given arbitraryState: Arbitrary[GolfState] = Arbitrary (genGolfState)
+  given arbitraryState: Arbitrary[GolfState] = 
+    Arbitrary (genGolfState)
 
   given eqGolfState: Eq[GolfState] = Eq.fromUniversalEquals
 
-  given arbitraryReward: Arbitrary[GolfReward] = Arbitrary (Gen.double)
+  given arbitraryReward: Arbitrary[GolfReward] = 
+    Arbitrary (Gen.double)
 
   given rewardArith: Arith[GolfReward] = Arith.arithDouble
 

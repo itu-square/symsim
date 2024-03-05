@@ -1,17 +1,18 @@
 package symsim
 package concrete
 
+private val unitAgent = 
+  new UnitAgent (using spire.random.rng.SecureJava.apply)
+import unitAgent.instances.enumAction
+
 class ConcreteSarsaSpec
   extends org.scalatest.freespec.AnyFreeSpec,
     org.scalatest.matchers.should.Matchers:
 
-  // Import evidence that states and actions can be enumerated
-  import UnitAgent.*
-
   val C = 555555
 
   val sarsa = ConcreteSarsa (
-    agent = UnitAgent,
+    agent = unitAgent,
     alpha = 0.1,
     gamma = 0.1,
     epsilon0 = 0.2, // explore vs exploit ratio
@@ -25,11 +26,10 @@ class ConcreteSarsaSpec
   }
 
   "learnN shouldn't overflow stack (learnN is tailrec, each episode tailrec)" in {
-    val initials: Randomized[UnitState] = 
-      Randomized.repeat (UnitAgent.initialize)
-    val result: Randomized[(sarsa.vf.Q, List[sarsa.vf.Q])] =
-      sarsa.learn (sarsa.vf.initialize, List[sarsa.vf.Q](), initials.take (C))
-    try result.size == 1
+    val initials: Randomized2[UnitState] = unitAgent.initialize
+    val result: Randomized2[(sarsa.vf.Q, List[sarsa.vf.Q])] =
+      sarsa.learn (sarsa.vf.initialize, List[sarsa.vf.Q](), initials.sample (C))
+    try result.sample()
     catch case e =>
        fail (s"Forcing result of learning overflows (${e.toString})")
   }
@@ -44,7 +44,7 @@ class ConcreteSarsaSpec
   // also with the immediate final state 'learn' is not really tested here
   "learn is tail recursive, no stack overflow (regression)"  in {
     val result = sarsa.learningEpisode ((sarsa.vf.initialize, List[sarsa.vf.Q](), sarsa.ε0), ())
-    result.head
+    result.sample()
   }
 
   "runQ is tail recursive, no stack overflow (regression)"  in {
